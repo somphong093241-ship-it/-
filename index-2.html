@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>จากประชาชนสู่ประชาชน</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172033;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif}
+header{background:#075985;color:white;padding:16px}.wrap{max-width:1050px;margin:auto}
+.brand{font-size:24px;font-weight:800}.tag{opacity:.9;font-size:13px}nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 14px;font-weight:700}
+nav button{background:#ffffff20;color:#fff}.primary{background:#075985;color:white}.green{background:#15803d;color:white}.light{background:#e0f2fe;color:#075985}
+main{padding:20px 14px}.hero,.card{background:white;border:1px solid #e2e8f0;border-radius:18px;padding:20px;margin-bottom:15px}
+.hero{background:#e0f2fe;border-color:#bae6fd}.hero h1{margin:0 0 6px;font-size:30px}.muted{color:#64748b;font-size:13px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px}.action{text-align:left;background:white;border:1px solid #cbd5e1}.action span{display:block;color:#64748b;font-size:12px;font-weight:400;margin-top:4px}
+section.hidden{display:none}h2{margin:0 0 12px}textarea,input{width:100%;font:inherit;border:1px solid #cbd5e1;border-radius:12px;padding:13px;margin-top:8px}textarea{min-height:140px}
+.row{display:flex;gap:8px}.row>*{flex:1}.request{border:1px solid #e2e8f0;border-radius:15px;padding:15px;margin:10px 0;background:#fff}.top{display:flex;justify-content:space-between;gap:8px}.num{font-weight:900;color:#075985}.pill{border-radius:99px;padding:4px 9px;font-size:12px;background:#fee2e2;color:#b91c1c;height:max-content}.waiting{background:#fee2e2;color:#b91c1c}.helpnote{margin-top:5px}.coords{font-family:ui-monospace,SFMono-Regular,monospace}.taken{background:#dbeafe;color:#1d4ed8}.helping{background:#fef3c7;color:#92400e}.done{background:#dcfce7;color:#166534}.cancelled{background:#f1f5f9;color:#64748b}.urgent{background:#fee2e2;color:#b91c1c}.request p{white-space:pre-wrap}.success{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:13px;padding:15px;margin-top:12px}.big{font-size:29px;font-weight:900;color:#075985}.danger{background:#dc2626;color:white}.confirm{background:#15803d;color:white}.outline{background:white;color:#b91c1c;border:1px solid #fecaca}.actions2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#15803d;font-weight:800}.dot{width:8px;height:8px;border-radius:50%;background:#22c55e}
+.center-map{height:360px}.picker-map{height:280px;border-radius:15px;overflow:hidden;border:1px solid #cbd5e1;margin:10px 0}.center-card{border:1px solid #dbeafe;border-radius:15px;padding:15px;margin:10px 0;background:#f8fbff}.center-marker{font-size:22px;line-height:22px}.map{height:420px;border-radius:15px;overflow:hidden;border:1px solid #cbd5e1;margin:12px 0}.maptools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.maptools button{background:#e0f2fe;color:#075985}.feed{max-height:420px;overflow:auto}.empty{text-align:center;color:#64748b;padding:25px}
+@media(max-width:700px){.actions{grid-template-columns:1fr 1fr}.row{flex-direction:column}}@media(max-width:430px){.actions{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="brand">🌊 จากประชาชนสู่ประชาชน</div><div class="tag">ประชาชนขอ • ประชาชนช่วย • ประชาชนแจ้งสถานการณ์</div>
+<nav><button onclick="show('home')">หน้าแรก</button><button onclick="show('ask')">🆘 ขอความช่วยเหลือ</button><button onclick="show('requests')">🤝 คำขอที่ยังช่วย</button><button onclick="show('history')">✅ สำเร็จแล้ว</button><button onclick="show('centers')">🏥 ศูนย์ช่วยเหลือ</button><button onclick="show('report')">🌊 แจ้งสถานการณ์</button></nav>
+</div></header>
+<main class="wrap">
+<section id="home"><div class="hero"><h1>ช่วยกันตรงนี้</h1><p>ไม่มีสมาชิก ไม่มีแอดมิน ไม่มีผู้ดูแล ทุกคนเข้ามาดูข้อมูลและช่วยกันได้</p>
+<div class="live"><i class="dot"></i> ระบบอัปเดตแบบ Real Time</div>
+<div class="actions">
+<button class="action" onclick="show('ask')">🆘 ขอความช่วยเหลือ<span>พิมพ์สิ่งที่ต้องการได้เลย</span></button>
+<button class="action" onclick="show('requests')">🤝 ช่วยเหลือคนอื่น<span>ดูคำขอทั้งหมดและรับคำขอไปช่วย</span></button>
+<button class="action" onclick="show('report')">🌊 แจ้งสถานการณ์<span>บอกจุดน้ำท่วม ถนน หรือสถานการณ์ล่าสุด</span></button>
+</div></div>
+<div class="card"><h2>คำขอที่ยังต้องการความช่วยเหลือ</h2><div class="muted">คำขอที่ยังไม่สำเร็จจะแสดงที่นี่ โดยเรียงจากคำขอที่เข้ามาก่อนขึ้นก่อน</div><div id="homeFeed" class="feed"></div></div><div class="card"><h2>📍 เลือกจุดบนแผนที่</h2><div class="muted">ใช้ GPS ของคุณ หรือแตะเลือกจุดที่ต้องการบนแผนที่</div><div class="maptools"><button class="light" onclick="homeMapLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearHomePickedPoint()">✖ ล้างจุดที่เลือก</button></div><div id="homePickerMap" class="picker-map"></div><div id="homePickedCoords" class="muted">แตะบนแผนที่เพื่อเลือกจุดได้</div></div></section>
+
+<section id="ask" class="hidden"><div class="card"><h2>🆘 ขอความช่วยเหลือ</h2><div class="muted">ไม่ต้องสมัครสมาชิก ไม่ต้องเลือกหมวดหมู่ พิมพ์สิ่งที่ต้องการด้วยคำของคุณเอง</div>
+<textarea id="need" placeholder="เช่น น้ำท่วมถึงชั้น 2 มีผู้สูงอายุ 2 คน ต้องการเรือมารับ และต้องการน้ำดื่ม"></textarea>
+<input id="place" placeholder="📍 สถานที่ / หมู่บ้าน / จุดสังเกต (ถ้ามี)">
+<div class="muted"><b>เลือกพิกัดได้ 2 แบบ:</b> ใช้ตำแหน่งปัจจุบันของฉัน หรือแตะจุดที่ต้องการบนแผนที่</div>
+<div class="maptools"><button class="light" onclick="locationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearAskPoint()">✖ ล้างจุด</button></div>
+<div id="askMap" class="picker-map"></div><div id="askCoords" class="muted">ยังไม่ได้เลือกพิกัด</div>
+<input id="lat" type="hidden"><input id="lng" type="hidden">
+<button class="primary" onclick="createRequest()">🆘 ส่งคำขอความช่วยเหลือ</button><div id="sent" class="success hidden"></div></div></section>
+
+<section id="requests" class="hidden"><div class="card"><h2>🤝 คำขอที่ยังช่วยได้ <span class="live"><i class="dot"></i> Real Time</span></h2><div class="muted">🔴 คำขอ = ยังไม่มีคนรับ &nbsp; 🟠 กำลังช่วยเหลือ<br>เรียงคำขอที่เข้ามาก่อนอยู่บนสุด และคำขอที่มีคนรับแล้วอยู่ถัดลงมา<br><b>เมื่อช่วยเสร็จ ผู้ขอจะกดยืนยันเอง แล้วเคสจะย้ายไปเมนู “สำเร็จแล้ว”</b></div><div class="maptools"><button onclick="centerOnMe()">📍 ตำแหน่งของฉัน</button><button onclick="fitRequestMarkers()">🗺️ ดูคำขอทั้งหมดบนแผนที่</button></div><div id="requestMap" class="map"></div><div class="maptools"><button class="light" onclick="requestMapLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearRequestPickedPoint()">✖ ล้างจุดที่เลือก</button></div><div id="requestPickedCoords" class="muted">แตะบนแผนที่เพื่อเลือกจุดได้</div><div id="feed" class="feed"></div></div></section>
+
+<section id="history" class="hidden"><div class="card"><h2>✅ เคสที่ช่วยสำเร็จแล้ว</h2><div class="muted">เคสที่ผู้ขอยืนยันว่าได้รับความช่วยเหลือแล้ว จะถูกย้ายมาอยู่หน้านี้และไม่แสดงในหน้าคำขอที่ยังต้องการความช่วยเหลือ</div><div id="historyFeed" class="feed"></div><div class="card"><h2>📍 เลือกจุดบนแผนที่</h2><div class="muted">เลือกพิกัดด้วยการแตะบนแผนที่ หรือใช้ตำแหน่งปัจจุบันของฉัน</div><div class="maptools"><button class="light" onclick="historyMapLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearHistoryPickedPoint()">✖ ล้างจุดที่เลือก</button></div><div id="historyPickerMap" class="picker-map"></div><div id="historyPickedCoords" class="muted">แตะบนแผนที่เพื่อเลือกจุดได้</div></div></div></section>
+
+
+<section id="centers" class="hidden">
+<div class="card">
+<h2>🏥 จุดบริการ / ศูนย์ช่วยเหลือ</h2>
+<div class="muted">เพิ่มจุดบริการที่ประชาชนสามารถไปขอความช่วยเหลือได้ เช่น ศูนย์อพยพ จุดแจกน้ำ จุดแจกอาหาร หรือจุดรับส่งผู้ประสบภัย</div>
+<input id="centerName" placeholder="🏥 ชื่อศูนย์ / จุดบริการ">
+<input id="centerPlace" placeholder="📍 ที่อยู่ / สถานที่ / จุดสังเกต">
+<div class="muted"><b>เลือกตำแหน่งศูนย์:</b> แตะบนแผนที่ หรือใช้ตำแหน่งปัจจุบันของฉัน</div>
+<div class="maptools"><button class="light" onclick="centerLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearCenterPoint()">✖ ล้างจุด</button></div>
+<div id="centerPickerMap" class="picker-map"></div><div id="centerCoords" class="muted">ยังไม่ได้เลือกพิกัด</div>
+<input id="centerLat" type="hidden"><input id="centerLng" type="hidden">
+<div class="maptools"><button class="primary" onclick="createCenter()">🏥 เพิ่มศูนย์ช่วยเหลือ</button></div>
+<div id="centerMsg" class="success hidden"></div>
+</div>
+<div class="card">
+<h2>🗺️ ศูนย์ช่วยเหลือบนแผนที่</h2>
+<div class="muted">ไอคอน 🏥 คือจุดบริการ/ศูนย์ช่วยเหลือ</div>
+<div id="centerMap" class="map center-map"></div>
+</div>
+<div class="card">
+<h2>📋 รายการจุดบริการ / ศูนย์ช่วยเหลือ</h2>
+<div class="muted">ผู้ใช้สามารถเพิ่มและลบรายการได้</div>
+<div id="centerFeed" class="feed"></div>
+</div>
+</section>
+
+<section id="report" class="hidden"><div class="card"><h2>🌊 แจ้งสถานการณ์น้ำท่วม</h2><div class="muted">แจ้งข้อมูลที่คนอื่นควรรู้ เช่น น้ำสูง ถนนผ่านไม่ได้ จุดอพยพ หรือเส้นทางที่ใช้ได้</div>
+<textarea id="situation" placeholder="เช่น ถนนหน้าโรงเรียนมีน้ำสูงประมาณ 60 ซม. รถเล็กผ่านไม่ได้ แต่รถสูงยังผ่านได้"></textarea>
+<input id="splace" placeholder="📍 สถานที่ / จุดสังเกต">
+<div class="muted"><b>เลือกจุดเกิดเหตุ:</b> แตะบนแผนที่ หรือใช้ตำแหน่งปัจจุบันของฉัน</div>
+<div class="maptools"><button class="light" onclick="situationLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearSituationPoint()">✖ ล้างจุด</button></div>
+<div id="situationMap" class="picker-map"></div><div id="situationCoords" class="muted">ยังไม่ได้เลือกพิกัด</div>
+<input id="situationLat" type="hidden"><input id="situationLng" type="hidden">
+<button class="primary" onclick="createSituation()">🌊 ส่งข้อมูลสถานการณ์</button><div id="reportMsg" class="success hidden"></div></div>
+<div class="card"><h2>สถานการณ์ล่าสุด</h2><div id="situations" class="feed"></div></div></section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ใส่ค่าจาก Supabase ในสองบรรทัดนี้ก่อนนำขึ้นออนไลน์ */
+const SUPABASE_URL="https://atrhbzrxvklqakmgfdmr.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_4dsKQxqcYULWMEQPs_zkPA_OhL0dLWn";
+const configured=!!SUPABASE_URL&&!!SUPABASE_PUBLISHABLE_KEY;
+let sb=null;
+if(configured){sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);}
+const $=id=>document.getElementById(id);
+const requesterTokenKey="citizen_help_requester_token";
+const requesterToken=localStorage.getItem(requesterTokenKey)||crypto.randomUUID();
+localStorage.setItem(requesterTokenKey,requesterToken);
+function show(id){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");if(window.L){setTimeout(()=>{initPickers();if(id==="ask"&&askMap)askMap.invalidateSize();if(id==="centers"&&centerPickerMap)centerPickerMap.invalidateSize();if(id==="report"&&situationMap)situationMap.invalidateSize();if(id==="home"&&homePickerMap)homePickerMap.invalidateSize();if(id==="history"&&historyPickerMap)historyPickerMap.invalidateSize();if(id==="requests"&&requestMap)requestMap.invalidateSize();},100);}if(id==="home"||id==="requests"||id==="history"){loadRequests();if(id==="requests"){setTimeout(()=>{initRequestMap();requestMap&&requestMap.invalidateSize();},100)}}if(id==="centers"){loadCenters();setTimeout(()=>{initCenterMap();centerMap&&centerMap.invalidateSize();},100)}if(id==="report")loadSituations();scrollTo(0,0)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function localDemo(){return [{request_no:1,need:"ตัวอย่างคำขอ — เมื่อต่อฐานข้อมูลออนไลน์แล้ว ข้อมูลจริงจะขึ้นตรงนี้",place:"พื้นที่ตัวอย่าง",status:"รอความช่วยเหลือ",urgent:true}]}
+function statusClass(st){
+  if(st==="ได้รับความช่วยเหลือแล้ว") return "done";
+  if(st==="กำลังช่วยเหลือ") return "helping";
+  return "waiting";
+}
+function statusLabel(st){
+  if(st==="ได้รับความช่วยเหลือแล้ว") return "สำเร็จแล้ว";
+  if(st==="กำลังช่วยเหลือ") return "กำลังช่วยเหลือ";
+  return "คำขอ";
+}
+function card(r){
+  let st=r.status||"รอความช่วยเหลือ";
+  let cls=statusClass(st);
+  let isMine=r.requester_token===requesterToken;
+  let actions="";
+  if(st==="รอความช่วยเหลือ"){
+    actions+=`<button class="green" onclick="claim(${r.id})">🤝 รับคำขอนี้ไปช่วย</button>`;
+  }
+  if(st==="กำลังช่วยเหลือ" && isMine){
+    actions+=`<div class="actions2"><button class="confirm" onclick="confirmHelp(${r.id})">✅ ฉันได้รับความช่วยเหลือแล้ว</button></div><div class="muted helpnote">คุณเป็นผู้ขอคำช่วยเหลือนี้ เมื่อช่วยเสร็จให้กดปุ่มนี้เพื่อปิดเคส</div>`;
+  }
+  let locationText = r.place || (Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng)) ? `พิกัด ${Number(r.lat).toFixed(5)}, ${Number(r.lng).toFixed(5)}` : "ไม่ได้ระบุ");
+  let navBtn = Number.isFinite(Number(r.lat))&&Number.isFinite(Number(r.lng)) ? `<button class="light" onclick="navigateTo(${Number(r.lat)},${Number(r.lng)})">🧭 นำทางไปหาผู้ขอ</button>` : `<span class="muted">ยังไม่มีพิกัด GPS</span>`;
+  return `<div class="request"><div class="top"><span class="num">คำขอที่ ${r.request_no}</span><span class="pill ${cls}">${statusLabel(st)}</span></div><p>${esc(r.need)}</p><div class="muted">📍 ${esc(locationText)}</div>${r.lat!=null&&r.lng!=null?`<div class="muted coords">พิกัด: ${Number(r.lat).toFixed(5)}, ${Number(r.lng).toFixed(5)}</div>`:""}<div class="actions2">${navBtn}${actions}</div></div>`;
+}
+function sortActive(a,b){
+  const rank=x=>(x.status==="รอความช่วยเหลือ"?0:1);
+  const ra=rank(a), rb=rank(b);
+  if(ra!==rb)return ra-rb;
+  return Number(a.id)-Number(b.id);
+}
+async function loadRequests(){
+ if(!sb){
+   const demo=localDemo();
+   $("feed").innerHTML=demo.map(card).join("");
+   $("homeFeed").innerHTML=$("feed").innerHTML;
+   $("historyFeed").innerHTML="<div class='empty'>ยังไม่มีเคสสำเร็จ</div>";
+   return;
+ }
+ let {data,error}=await sb.from("requests").select("*");
+ if(error){
+   $("feed").innerHTML="<div class='empty'>เชื่อมต่อฐานข้อมูลไม่สำเร็จ</div>";
+   return;
+ }
+ const rows=data||[];
+ const active=rows.filter(r=>r.status!=="ได้รับความช่วยเหลือแล้ว" && r.status!=="ยกเลิกแล้ว").sort(sortActive);
+ const done=rows.filter(r=>r.status==="ได้รับความช่วยเหลือแล้ว").sort((a,b)=>Number(b.id)-Number(a.id));
+ $("feed").innerHTML=active.length?active.map(card).join(""):"<div class='empty'>🎉 ตอนนี้ไม่มีคำขอที่ยังรอความช่วยเหลือ</div>";
+ $("homeFeed").innerHTML=active.slice(0,5).map(card).join("")||"<div class='empty'>🎉 ตอนนี้ไม่มีคำขอที่ยังรอความช่วยเหลือ</div>";
+ $("historyFeed").innerHTML=done.length?done.map(card).join(""):"<div class='empty'>ยังไม่มีเคสที่ช่วยสำเร็จ</div>";
+ renderRequestMap(active);
+}
+async function createRequest(){
+ if(!sb)return alert("โปรดตั้งค่า Supabase ก่อนนำเว็บขึ้นออนไลน์");
+ let need=$("need").value.trim(),place=$("place").value.trim(),lat=parseFloat($("lat").value),lng=parseFloat($("lng").value);if(!need)return alert("กรุณาพิมพ์สิ่งที่ต้องการ");if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาเลือกจุดบนแผนที่ หรือกดใช้ตำแหน่งของฉัน");
+ let urgent=/ฉุกเฉิน|ด่วน|ผู้ป่วย|เดินไม่ได้|อพยพ/.test(need);
+ let {data,error}=await sb.from("requests").insert({need,place,urgent,status:"รอความช่วยเหลือ",requester_token:requesterToken,lat:Number.isFinite(lat)?lat:null,lng:Number.isFinite(lng)?lng:null}).select().single();
+ if(error)return alert(error.message);
+ $("sent").classList.remove("hidden");$("sent").innerHTML=`<div class="big">คำขอที่ ${data.request_no}</div><p>ส่งคำขอแล้ว ทุกคนในระบบจะเห็นคำขอนี้ทันที<br>เมื่อมีคนรับ สถานะจะเป็น “กำลังช่วยเหลือ” และคุณสามารถกดยืนยันเมื่อได้รับความช่วยเหลือแล้ว</p>`;
+ $("need").value="";$("place").value="";$("lat").value="";$("lng").value="";
+}
+async function claim(id){
+  if(!sb)return;
+  const confirmed=confirm("ยืนยันรับคำขอนี้ไปช่วยใช่หรือไม่?\\n\\nสถานะจะเปลี่ยนเป็น “กำลังช่วยเหลือ”");
+  if(!confirmed)return;
+  let {data,error}=await sb.rpc("claim_request",{p_id:id});
+  if(error)return alert(error.message);
+  if(!data?.ok)return alert("คำขอนี้มีคนรับไปแล้ว");
+  alert("รับคำขอเรียบร้อยแล้ว สถานะเป็น “กำลังช่วยเหลือ”");
+  loadRequests();
+}
+
+async function confirmHelp(id){
+  if(!sb)return;
+  if(!confirm("ยืนยันว่าได้รับความช่วยเหลือแล้วใช่หรือไม่?"))return;
+  let {error}=await sb.from("requests").update({status:"ได้รับความช่วยเหลือแล้ว"})
+    .eq("id",id).eq("requester_token",requesterToken).eq("status","กำลังช่วยเหลือ");
+  if(error)return alert("ยืนยันไม่สำเร็จ: "+error.message);
+  alert("ยืนยันได้รับความช่วยเหลือเรียบร้อยแล้ว");
+  loadRequests();
+}
+
+function locationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>{setPicker("ask",p.coords.latitude,p.coords.longitude,16);$("place").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+async function createSituation(){
+ if(!sb)return alert("โปรดตั้งค่า Supabase ก่อนนำเว็บขึ้นออนไลน์");
+ let text=$("situation").value.trim(),place=$("splace").value.trim();if(!text)return alert("กรุณาพิมพ์สถานการณ์");
+ let {error}=await sb.from("situations").insert({text,place});if(error)return alert(error.message);
+ $("reportMsg").classList.remove("hidden");$("reportMsg").innerHTML="<b>✅ ส่งข้อมูลแล้ว</b><br>ทุกคนจะเห็นข้อมูลนี้ทันที";$("situation").value="";$("splace").value="";
+}
+async function loadSituations(){
+ if(!sb){$("situations").innerHTML="<div class='empty'>ตั้งค่า Supabase เพื่อเปิดข้อมูล Real Time</div>";return}
+ let {data}=await sb.from("situations").select("*").order("id",{ascending:false}).limit(50);
+ $("situations").innerHTML=(data||[]).map(x=>`<div class="request"><b>🌊 ${esc(x.place||"ไม่ระบุสถานที่")}</b><p>${esc(x.text)}</p><div class="muted">${new Date(x.created_at).toLocaleString("th-TH")}</div></div>`).join("")||"<div class='empty'>ยังไม่มีข้อมูล</div>";
+}
+let requestMap=null;
+let requestMarkers=[];
+let askMap=null, askPicker=null;
+let centerPickerMap=null, centerPicker=null;
+let situationMap=null, situationPicker=null;
+
+function pickerIcon(label){return L.divIcon({className:"",html:`<div style="font-size:30px">${label}</div>`,iconSize:[34,34],iconAnchor:[17,30]});}
+function setPicker(kind,lat,lng,zoom=16){
+ const cfg={ask:[askMap,"askCoords","lat","lng","📍"],center:[centerPickerMap,"centerCoords","centerLat","centerLng","🏥"],situation:[situationMap,"situationCoords","situationLat","situationLng","🌊"]}[kind];
+ if(!cfg)return; const [map,coordId,latId,lngId,icon]=cfg; if(!map)return;
+ $(latId).value=Number(lat).toFixed(7); $(lngId).value=Number(lng).toFixed(7); $(coordId).textContent=`พิกัดที่เลือก: ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+ let mk=kind==="ask"?askPicker:kind==="center"?centerPicker:situationPicker;
+ if(mk)mk.setLatLng([lat,lng]); else {mk=L.marker([lat,lng],{icon:pickerIcon(icon),draggable:true}).addTo(map); if(kind==="ask")askPicker=mk;if(kind==="center")centerPicker=mk;if(kind==="situation")situationPicker=mk; mk.on("dragend",()=>{const p=mk.getLatLng();setPicker(kind,p.lat,p.lng,map.getZoom())});}
+ map.setView([lat,lng],zoom);
+}
+function setupPickerMap(id,kind){const map=L.map(id).setView([13.7563,100.5018],11);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);map.on("click",e=>setPicker(kind,e.latlng.lat,e.latlng.lng,Math.max(map.getZoom(),15)));return map;}
+function clearAskPoint(){if(askPicker){askMap.removeLayer(askPicker);askPicker=null}$("lat").value="";$("lng").value="";$("askCoords").textContent="ยังไม่ได้เลือกพิกัด"}
+function clearCenterPoint(){if(centerPicker){centerPickerMap.removeLayer(centerPicker);centerPicker=null}$("centerLat").value="";$("centerLng").value="";$("centerCoords").textContent="ยังไม่ได้เลือกพิกัด"}
+function clearSituationPoint(){if(situationPicker){situationMap.removeLayer(situationPicker);situationPicker=null}$("situationLat").value="";$("situationLng").value="";$("situationCoords").textContent="ยังไม่ได้เลือกพิกัด"}
+function setupExtraPickerMap(id,kind){const map=L.map(id).setView([13.7563,100.5018],11);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors"}).addTo(map);map.on("click",e=>setExtraPicker(kind,e.latlng.lat,e.latlng.lng,map));return map;}
+function setExtraPicker(kind,lat,lng,map){let mk=kind==="home"?homePicker:kind==="history"?historyPicker:requestPickedMarker;const el=kind==="home"?"homePickedCoords":kind==="history"?"historyPickedCoords":"requestPickedCoords";const icon=kind==="home"?"📍":kind==="history"?"✅":"📍";if(mk)mk.setLatLng([lat,lng]);else{mk=L.marker([lat,lng],{icon:pickerIcon(icon),draggable:true}).addTo(map);if(kind==="home")homePicker=mk;if(kind==="history")historyPicker=mk;if(kind==="request")requestPickedMarker=mk;mk.on("dragend",()=>{const p=mk.getLatLng();setExtraPicker(kind,p.lat,p.lng,map);});}map.setView([lat,lng],Math.max(map.getZoom(),15));$(el).textContent=`พิกัดที่เลือก: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;}
+function clearHomePickedPoint(){if(homePicker){homePickerMap.removeLayer(homePicker);homePicker=null;}$("homePickedCoords").textContent="แตะบนแผนที่เพื่อเลือกจุดได้";}
+function clearHistoryPickedPoint(){if(historyPicker){historyPickerMap.removeLayer(historyPicker);historyPicker=null;}$("historyPickedCoords").textContent="แตะบนแผนที่เพื่อเลือกจุดได้";}
+function clearRequestPickedPoint(){if(requestPickedMarker){requestMap.removeLayer(requestPickedMarker);requestPickedMarker=null;}$("requestPickedCoords").textContent="แตะบนแผนที่เพื่อเลือกจุดได้";}
+function homeMapLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>setExtraPicker("home",p.coords.latitude,p.coords.longitude,homePickerMap),()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+function historyMapLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>setExtraPicker("history",p.coords.latitude,p.coords.longitude,historyPickerMap),()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+function requestMapLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>setExtraPicker("request",p.coords.latitude,p.coords.longitude,requestMap),()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+
+function initPickers(){if(!window.L)return;if(!askMap)askMap=setupPickerMap("askMap","ask");if(!centerPickerMap)centerPickerMap=setupPickerMap("centerPickerMap","center");if(!situationMap)situationMap=setupPickerMap("situationMap","situation");if(!homePickerMap&&$("homePickerMap"))homePickerMap=setupExtraPickerMap("homePickerMap","home");if(!historyPickerMap&&$("historyPickerMap"))historyPickerMap=setupExtraPickerMap("historyPickerMap","history");[askMap,centerPickerMap,situationMap,homePickerMap,historyPickerMap].forEach(m=>m&&setTimeout(()=>m.invalidateSize(),50));}
+
+function initRequestMap(){
+  if(requestMap || !window.L) return;
+  requestMap=L.map("requestMap").setView([13.7563,100.5018],11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    attribution:"© OpenStreetMap contributors",
+    maxZoom:19
+  }).addTo(requestMap);
+}
+
+function statusColor(st){
+  if(st==="กำลังช่วยเหลือ") return "#f59e0b";
+  if(st==="ได้รับความช่วยเหลือแล้ว") return "#16a34a";
+  return "#dc2626";
+}
+
+function markerIcon(st){
+  return L.divIcon({
+    className:"",
+    html:`<div style="width:22px;height:22px;border-radius:50%;background:${statusColor(st)};border:3px solid white;box-shadow:0 1px 5px #555"></div>`,
+    iconSize:[22,22],iconAnchor:[11,11]
+  });
+}
+
+function clearRequestMarkers(){
+  requestMarkers.forEach(m=>m.remove());
+  requestMarkers=[];
+}
+
+function renderRequestMap(data){
+  initRequestMap();
+  if(!requestMap)return;
+  clearRequestMarkers();
+  const bounds=[];
+  (data||[]).forEach(r=>{
+    const lat=Number(r.lat),lng=Number(r.lng);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+    const st=r.status||"รอความช่วยเหลือ";
+    const m=L.marker([lat,lng],{icon:markerIcon(st)}).addTo(requestMap);
+    m.bindPopup(`<b>คำขอที่ ${esc(r.request_no)}</b><br><b>${esc(statusLabel(st))}</b><br>${esc(r.need)}<br>📍 ${esc(r.place||`พิกัด ${lat.toFixed(5)}, ${lng.toFixed(5)}`)}<br><br><button onclick="navigateTo(${lat},${lng})">🧭 นำทางไปหาผู้ขอ</button>`);
+    requestMarkers.push(m);
+    bounds.push([lat,lng]);
+  });
+  if(bounds.length===1) requestMap.setView(bounds[0],15);
+  else if(bounds.length>1) requestMap.fitBounds(bounds,{padding:[25,25]});
+}
+
+function fitRequestMarkers(){
+  if(requestMarkers.length===0)return alert("ยังไม่มีคำขอที่มีพิกัดบนแผนที่");
+  const b=L.latLngBounds(requestMarkers.map(m=>m.getLatLng()));
+  requestMap.fitBounds(b,{padding:[25,25]});
+}
+
+function navigateTo(lat,lng){
+  const url=`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat+","+lng)}`;
+  window.open(url,"_blank");
+}
+
+function centerOnMe(){
+  if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");
+  navigator.geolocation.getCurrentPosition(p=>{
+    if(!requestMap)initRequestMap();
+    requestMap.setView([p.coords.latitude,p.coords.longitude],15);
+  },()=>alert("อ่านตำแหน่งไม่ได้"));
+}
+
+
+let centerMap=null;
+let centerMarkers=[];
+
+function initCenterMap(){
+  if(centerMap || !window.L) return;
+  centerMap=L.map("centerMap").setView([13.7563,100.5018],11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+    attribution:"© OpenStreetMap contributors",maxZoom:19
+  }).addTo(centerMap);
+}
+
+function centerMarkerIcon(){
+  return L.divIcon({
+    className:"",
+    html:`<div style="font-size:26px;line-height:26px;text-shadow:0 1px 3px #555">🏥</div>`,
+    iconSize:[28,28],iconAnchor:[14,28]
+  });
+}
+
+function clearCenterMarkers(){
+  centerMarkers.forEach(m=>m.remove());
+  centerMarkers=[];
+}
+
+function renderCenterMap(data){
+  initCenterMap();
+  if(!centerMap)return;
+  clearCenterMarkers();
+  const bounds=[];
+  (data||[]).forEach(c=>{
+    const lat=Number(c.lat),lng=Number(c.lng);
+    if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+    const m=L.marker([lat,lng],{icon:centerMarkerIcon()}).addTo(centerMap);
+    m.bindPopup(`<b>🏥 ${esc(c.name||"ศูนย์ช่วยเหลือ")}</b><br>${esc(c.place||"ไม่ได้ระบุสถานที่")}<br><span class="muted">พิกัด ${lat.toFixed(5)}, ${lng.toFixed(5)}</span><br><br><button onclick="navigateTo(${lat},${lng})">🧭 นำทางไปศูนย์นี้</button>`);
+    centerMarkers.push(m);
+    bounds.push([lat,lng]);
+  });
+  if(bounds.length===1) centerMap.setView(bounds[0],15);
+  else if(bounds.length>1) centerMap.fitBounds(bounds,{padding:[25,25]});
+}
+
+async function loadCenters(){
+  if(!sb){
+    $("centerFeed").innerHTML="<div class='empty'>ตั้งค่า Supabase เพื่อเปิดข้อมูลศูนย์ช่วยเหลือ</div>";
+    return;
+  }
+  let {data,error}=await sb.from("help_centers").select("*").order("id",{ascending:false}).limit(100);
+  if(error){
+    $("centerFeed").innerHTML="<div class='empty'>โหลดศูนย์ช่วยเหลือไม่สำเร็จ: "+esc(error.message)+"</div>";
+    return;
+  }
+  const rows=data||[];
+  $("centerFeed").innerHTML=rows.length?rows.map(c=>`
+    <div class="center-card">
+      <div class="top"><b>🏥 ${esc(c.name||"ศูนย์ช่วยเหลือ")}</b>
+      <button class="danger" onclick="deleteCenter(${c.id})">🗑️ ลบ</button></div>
+      <div>📍 ${esc(c.place||"ไม่ได้ระบุสถานที่")}</div>
+      <div class="muted coords">พิกัด: ${Number(c.lat).toFixed(5)}, ${Number(c.lng).toFixed(5)}</div>
+      <div class="actions2"><button class="light" onclick="navigateTo(${Number(c.lat)},${Number(c.lng)})">🧭 นำทางไปศูนย์นี้</button></div>
+    </div>`).join(""):"<div class='empty'>ยังไม่มีจุดบริการ/ศูนย์ช่วยเหลือ</div>";
+  renderCenterMap(rows);
+}
+
+async function createCenter(){
+  if(!sb)return alert("โปรดตั้งค่า Supabase ก่อนนำเว็บขึ้นออนไลน์");
+  const name=$("centerName").value.trim();
+  const place=$("centerPlace").value.trim();
+  const lat=parseFloat($("centerLat").value);
+  const lng=parseFloat($("centerLng").value);
+  if(!name)return alert("กรุณาใส่ชื่อศูนย์ / จุดบริการ");
+  if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาใส่พิกัด หรือกดใช้ตำแหน่งของฉัน");
+  const {error}=await sb.from("help_centers").insert({name,place,lat,lng});
+  if(error)return alert("เพิ่มศูนย์ไม่สำเร็จ: "+error.message);
+  $("centerName").value="";$("centerPlace").value="";$("centerLat").value="";$("centerLng").value="";
+  $("centerMsg").classList.remove("hidden");
+  $("centerMsg").innerHTML="<b>✅ เพิ่มศูนย์ช่วยเหลือแล้ว</b><br>ทุกคนจะเห็นจุดนี้บนแผนที่";
+  loadCenters();
+}
+
+async function deleteCenter(id){
+  if(!sb)return;
+  if(!confirm("ยืนยันลบจุดบริการ/ศูนย์ช่วยเหลือนี้ใช่หรือไม่?"))return;
+  const {error}=await sb.from("help_centers").delete().eq("id",id);
+  if(error)return alert("ลบไม่สำเร็จ: "+error.message);
+  loadCenters();
+}
+
+function centerLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>{setPicker("center",p.coords.latitude,p.coords.longitude,16);$("centerPlace").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+function situationLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับตำแหน่ง");navigator.geolocation.getCurrentPosition(p=>{setPicker("situation",p.coords.latitude,p.coords.longitude,16);$("splace").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`;},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะจุดบนแผนที่เอง"));}
+function realtime(){
+ if(!sb)return;
+ sb.channel("public-live").on("postgres_changes",{event:"*",schema:"public",table:"requests"},()=>loadRequests()).on("postgres_changes",{event:"*",schema:"public",table:"situations"},()=>loadSituations()).subscribe();
+}
+loadRequests();loadCenters();setTimeout(()=>{initRequestMap();initCenterMap()},300);realtime();
+</script>
+</body></html>
