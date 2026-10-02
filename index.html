@@ -124,8 +124,7 @@ function clearSituationPoint(){if(situationPicker){situationPickerMap.removeLaye
 async function createSituation(){if(!sb)return alert("เชื่อมต่อ Supabase ก่อน");const text=$("situation").value.trim(),place=$("splace").value.trim(),severity=$("sseverity").value,lat=Number($("situationLat").value),lng=Number($("situationLng").value);if(!text)return alert("กรุณาพิมพ์สถานการณ์");if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาเลือกพิกัด");const {error}=await sb.from("situations").insert({text,place,severity,lat,lng});if(error)return alert(error.message);$("situation").value="";$("splace").value="";clearSituationPoint();$("reportMsg").classList.remove("hidden");$("reportMsg").innerHTML="<b>✅ ส่งสถานการณ์แล้ว</b>";loadSituations()}
 async function loadSituations(){if(!sb)return;const {data,error}=await sb.from("situations").select("*").order("id",{ascending:false}).limit(100);if(error){$("situations").innerHTML=`<div class='empty'>โหลดไม่ได้: ${esc(error.message)}</div>`;return}clearMapMarkers(situationMarkers);const bounds=[];(data||[]).forEach(x=>{const lat=Number(x.lat),lng=Number(x.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const color=severityColor(x.severity),radius=severityRadius(x.severity);const circle=L.circle([lat,lng],{radius,color,fillColor:color,fillOpacity:.18,weight:2}).addTo(situationMap);const m=L.circleMarker([lat,lng],{radius:8,color:"#fff",weight:2,fillColor:color,fillOpacity:1}).addTo(situationMap);m.bindPopup(`<b>🌊 ${esc(x.severity)}</b><br>${esc(x.place||"ไม่ระบุสถานที่")}<br>${esc(x.text)}<br><span class="muted">พื้นที่วงกลมเป็นการแสดงโดยประมาณ ${radius} เมตร</span>`);situationMarkers.push(circle,m);bounds.push([lat,lng])});if(bounds.length===1)situationMap.setView(bounds[0],15);else if(bounds.length>1)situationMap.fitBounds(bounds,{padding:[25,25]});$("situations").innerHTML=(data||[]).map(x=>`<div class="situation-card"><span class="badge severity-${x.severity==="เล็กน้อย"?"minor":x.severity==="ปานกลาง"?"medium":x.severity==="มาก"?"high":"severe"}">${esc(x.severity)}</span> <b>🌊 ${esc(x.place||"ไม่ระบุสถานที่")}</b><p>${esc(x.text)}</p><div class="muted">${fmtDate(x.created_at)}${x.lat!=null?`<br>พิกัด ${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}`:""}</div></div>`).join("")||"<div class='empty'>ยังไม่มีสถานการณ์</div>"}
 function realtime(){if(!sb)return;sb.channel("public-live-v2").on("postgres_changes",{event:"*",schema:"public",table:"requests"},()=>loadRequests()).on("postgres_changes",{event:"*",schema:"public",table:"help_centers"},()=>loadCenters()).on("postgres_changes",{event:"*",schema:"public",table:"situations"},()=>loadSituations()).subscribe()}
-
-  initMaps();
+initMaps();
 updateNameUI();
 
 if(!citizenName){
@@ -135,11 +134,10 @@ if(!citizenName){
   $("nameStep").classList.add("hidden");
   $("roleStep").classList.remove("hidden");
   $("nameGate").classList.remove("hidden");
-}else{
-  show(citizenRole==="requester" ? "ask" : "all");
 }
 
 loadRequests();
 loadCenters();
 loadSituations();
 realtime();
+  
