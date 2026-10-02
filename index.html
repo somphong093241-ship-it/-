@@ -287,7 +287,7 @@ function requestCard(x, mine=false){
   const mineByToken=x.requester_token===reqToken;
   const myClaim=helperToken===String(helpToken).trim();
   let buttons="";
-  if(canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
+  if(canClaim)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
   if(myClaim && status==="กำลังช่วยเหลือ")buttons+=`<button class="primary completeBtn" data-id="${x.id}">✅ ยืนยันการช่วยเหลือเสร็จแล้ว</button>`;
   if(role==="requester" && mineByToken && x.status==="กำลังช่วยเหลือ")buttons+=`<button class="secondary requesterDoneBtn" data-id="${x.id}">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
   return `<div class="case">
