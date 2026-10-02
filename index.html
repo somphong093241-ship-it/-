@@ -74,7 +74,7 @@ textarea,input,select{width:100%;font:inherit;border:1px solid #cbd5e1;border-ra
 <script>
 const SUPABASE_URL="https://atrhbzrxvklqakmgfdmr.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_4dsKQxqcYULWMEQPs_zkPA_OhL0dLWn";
-const configured=!!SUPABASE_URL&&!!SUPABASE_PUBLISHABLE_KEY;let sb=null;if(configured)sb=supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+const configured=!!SUPABASE_URL&&!!SUPABASE_PUBLISHABLE_KEY;let sb=null;if(configured&&window.supabase&&window.supabase.createClient)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
 const $=id=>document.getElementById(id);
 const citizenNameKey="citizen_help_name";const roleKey="citizen_help_role";let citizenName=(localStorage.getItem(citizenNameKey)||"").trim();let citizenRole=(localStorage.getItem(roleKey)||"").trim();
 function saveCitizenName(name){citizenName=name.trim();localStorage.setItem(citizenNameKey,citizenName);updateNameUI()}
