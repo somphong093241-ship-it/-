@@ -170,7 +170,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 "use strict";
 
 const API="https://atrhbzrxvklqakmgfdmr.supabase.co";
-const KEY="sb_publishable_4dsKQxqcYULWMEQPs_zkPA_OhL0dLWn";
+const KEY="sb_publishable_4dsKQxcYULWMEQPs_zkPA_OhL0dLWn";
 const NAME_KEY="citizen_help_name";
 const ROLE_KEY="citizen_help_role";
 const REQ_TOKEN_KEY="citizen_help_requester_token";
@@ -283,8 +283,11 @@ function statusClass(s){return s==="รอความช่วยเหลื�
 function requestCard(x, mine=false){
   const canClaim=x.status==="รอความช่วยเหลือ" && x.helper_token==null;
   const mineByToken=x.requester_token===reqToken;
+  const myClaim=x.helper_token===helpToken;
   let buttons="";
-  if(canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
+  if(role==="helper" && canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
+  if(role==="helper" && x.status==="กำลังช่วยเหลือ" && myClaim)buttons+=`<button class="primary completeBtn" data-id="${x.id}">✅ ยืนยันการช่วยเหลือเสร็จแล้ว</button>`;
+  if(role==="requester" && mineByToken && x.status==="กำลังช่วยเหลือ")buttons+=`<button class="secondary requesterDoneBtn" data-id="${x.id}">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
   return `<div class="case">
     <div class="between"><h3>${esc(x.need||"ไม่ได้ระบุ")}</h3><span class="status ${statusClass(x.status||"")}">${esc(x.status||"-")}</span></div>
     <div class="tag">👤 ${esc(x.requester_name||"ไม่ระบุชื่อ")}</div>
@@ -304,6 +307,8 @@ async function loadRequests(mode){
     const visible=(rows||[]).filter(x=>!x.hidden);
     target.innerHTML=visible.length?visible.map(x=>requestCard(x,mode==="mine")).join(""):'<div class="empty">ยังไม่มีเคส</div>';
     target.querySelectorAll(".claimBtn").forEach(b=>b.addEventListener("click",()=>claim(b.dataset.id)));
+    target.querySelectorAll(".completeBtn").forEach(b=>b.addEventListener("click",()=>completeHelp(b.dataset.id)));
+    target.querySelectorAll(".requesterDoneBtn").forEach(b=>b.addEventListener("click",()=>requesterConfirmHelp(b.dataset.id)));
     if(mode==="all")updateCounts(visible);
   }catch(e){target.innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้<br><span class="small">${esc(e.message)}</span></div>`}
 }
@@ -334,8 +339,35 @@ async function submitRequest(){
 $("submitRequest").addEventListener("click",submitRequest);
 
 async function claim(id){
-  try{const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id)});if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว")}else{toast("รับเคสแล้ว");loadRequests("all")}}
-  catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
+  if(role!=="helper"){toast("กรุณาเปลี่ยนบทบาทเป็นผู้ช่วยเหลือก่อน");return}
+  if(!confirm("ยืนยันรับเคสนี้ไปช่วยใช่หรือไม่?\n\nหลังจากรับแล้ว ปุ่มยืนยันการช่วยเหลือจะปรากฏในเคสนี้"))return;
+  try{
+    const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id)});
+    if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว");return}
+    toast("รับเคสแล้ว");
+    loadRequests("all");loadRequests("mine");
+  }catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
+}
+
+async function completeHelp(id){
+  if(role!=="helper")return;
+  if(!confirm("ยืนยันว่าช่วยเหลือเคสนี้เสร็จแล้วใช่หรือไม่?\n\nเมื่อยืนยัน สถานะจะเป็น “ได้รับความช่วยเหลือแล้ว”"))return;
+  try{
+    const r=await rpc("complete_request",{p_helper_token:helpToken,p_id:Number(id)});
+    if(r?.ok===false){toast("ไม่สามารถยืนยันได้ อาจมีการเปลี่ยนสถานะแล้ว");return}
+    toast("ยืนยันการช่วยเหลือสำเร็จแล้ว");
+    loadRequests("all");loadRequests("mine");
+  }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
+}
+
+async function requesterConfirmHelp(id){
+  if(role!=="requester")return;
+  if(!confirm("ยืนยันว่าได้รับความช่วยเหลือแล้วใช่หรือไม่?"))return;
+  try{
+    await api(`requests?id=eq.${encodeURIComponent(id)}&requester_token=eq.${encodeURIComponent(reqToken)}&status=eq.กำลังช่วยเหลือ`,{method:"PATCH",body:JSON.stringify({status:"ได้รับความช่วยเหลือแล้ว",completed_at:new Date().toISOString()})});
+    toast("ยืนยันได้รับความช่วยเหลือแล้ว");
+    loadRequests("mine");
+  }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
 }
 
 async function loadCenters(){
