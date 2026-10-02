@@ -84,7 +84,35 @@ function chooseRole(role){citizenRole=role;localStorage.setItem(roleKey,role);$(
 function changeRole(){if(!citizenName){$("nameGate").classList.remove("hidden");return}$("roleName").textContent=citizenName;$("nameStep").classList.add("hidden");$("roleStep").classList.remove("hidden");$("nameGate").classList.remove("hidden")}
 function changeName(){const n=prompt("ชื่อที่ต้องการแสดง",citizenName||"");if(n!==null&&n.trim())saveCitizenName(n)}
 const requesterTokenKey="citizen_help_requester_token";const requesterToken=localStorage.getItem(requesterTokenKey)||crypto.randomUUID();const helperTokenKey="citizen_help_helper_token";const helperToken=localStorage.getItem(helperTokenKey)||crypto.randomUUID();localStorage.setItem(requesterTokenKey,requesterToken);localStorage.setItem(helperTokenKey,helperToken);
-function show(id){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");setTimeout(()=>{invalidateAll();if(id==="home")loadSummary();if(["all","requests","helping","history","mine"].includes(id))loadRequests();if(id==="centers")loadCenters();if(id==="report")loadSituations();},80);scrollTo(0,0)}
+function show(id){
+  document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));
+  $(id).classList.remove("hidden");
+
+  setTimeout(()=>{
+    invalidateAll();
+  },100);
+
+  setTimeout(()=>{
+    invalidateAll();
+  },500);
+
+  setTimeout(()=>{
+    invalidateAll();
+  },1000);
+
+  setTimeout(()=>{
+    if(id==="home")loadSummary();
+    if(["all","requests","helping","history","mine"].includes(id))loadRequests();
+    if(id==="centers"){
+      loadCenters();
+      if(centerPickerMap)centerPickerMap.invalidateSize(true);
+      if(centerMap)centerMap.invalidateSize(true);
+    }
+    if(id==="report")loadSituations();
+  },120);
+
+  scrollTo(0,0);
+}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function statusLabel(st){return st==="ได้รับความช่วยเหลือแล้ว"?"สำเร็จแล้ว":st==="กำลังช่วยเหลือ"?"กำลังช่วยเหลือ":"รอความช่วยเหลือ"}
 function statusClass(st){return st==="ได้รับความช่วยเหลือแล้ว"?"done":st==="กำลังช่วยเหลือ"?"helping":"waiting"}
