@@ -200,7 +200,7 @@ async function rpc(name,body){
   return data;
 }
 
-function updateHeader(){ $("helloName").textContent=name?`สวัสดี ${name} 👋`: ""; }
+function updateHeader(){ $("helloName").textContent=name?`สวัสดี ${name} 👋`: ""; $("changeRoleBtn").textContent=role==="helper"?"🟢 บทบาท: ช่วยเหลือผู้อื่น":"🔴 บทบาท: ขอความช่วยเหลือ"; }
 function openGate(mode){
   $("gate").classList.add("show");
   if(mode==="role" && name){
@@ -212,7 +212,7 @@ function openGate(mode){
 function closeGate(){ $("gate").classList.remove("show") }
 
 function chooseRole(r){
-  role=r;localStorage.setItem(ROLE_KEY,r);closeGate();
+  role=r;localStorage.setItem(ROLE_KEY,r);updateHeader();closeGate();
   showPage(r==="requester"?"ask":"all");
 }
 function start(){
