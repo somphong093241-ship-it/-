@@ -170,7 +170,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 "use strict";
 
 const API="https://atrhbzrxvklqakmgfdmr.supabase.co";
-const KEY="sb_publishable_X8KN29r3NRz4An1fxUQy7A_FYe_vTh3";
+const KEY="sb_publishable_4dsKQxcYULWMEQPs_zkPA_OhL0dLWn";
 const NAME_KEY="citizen_help_name";
 const ROLE_KEY="citizen_help_role";
 const REQ_TOKEN_KEY="citizen_help_requester_token";
@@ -281,12 +281,14 @@ $("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.
 
 function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":"done"}
 function requestCard(x, mine=false){
-  const canClaim=x.status==="รอความช่วยเหลือ" && x.helper_token==null;
+  const status=String(x.status||"").trim();
+  const helperToken=String(x.helper_token||"").trim();
+  const canClaim=status==="รอความช่วยเหลือ" && !helperToken;
   const mineByToken=x.requester_token===reqToken;
-  const myClaim=x.helper_token===helpToken;
+  const myClaim=helperToken===String(helpToken).trim();
   let buttons="";
-  if(role==="helper" && canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
-  if(role==="helper" && x.status==="กำลังช่วยเหลือ" && myClaim)buttons+=`<button class="primary completeBtn" data-id="${x.id}">✅ ยืนยันการช่วยเหลือเสร็จแล้ว</button>`;
+  if(canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
+  if(myClaim && status==="กำลังช่วยเหลือ")buttons+=`<button class="primary completeBtn" data-id="${x.id}">✅ ยืนยันการช่วยเหลือเสร็จแล้ว</button>`;
   if(role==="requester" && mineByToken && x.status==="กำลังช่วยเหลือ")buttons+=`<button class="secondary requesterDoneBtn" data-id="${x.id}">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
   return `<div class="case">
     <div class="between"><h3>${esc(x.need||"ไม่ได้ระบุ")}</h3><span class="status ${statusClass(x.status||"")}">${esc(x.status||"-")}</span></div>
