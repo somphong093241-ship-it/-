@@ -1,143 +1,395 @@
 <!doctype html>
 <html lang="th">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>จากประชาชนสู่ประชาชน</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#172033;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif}
-header{background:#075985;color:#fff;padding:16px}.wrap{max-width:1100px;margin:auto}.brand{font-size:24px;font-weight:800}.tag{opacity:.9;font-size:13px}
-nav{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:11px 14px;font-weight:700}nav button{background:#ffffff20;color:#fff}
-main{padding:20px 14px}.hero,.card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:20px;margin-bottom:15px}.hero{background:#e0f2fe;border-color:#bae6fd}.hero h1{margin:0 0 6px;font-size:30px}
-h2{margin:0 0 12px}.muted{color:#64748b;font-size:13px}.hidden{display:none!important}.primary{background:#075985;color:#fff}.green{background:#15803d;color:#fff}.light{background:#e0f2fe;color:#075985}.danger{background:#dc2626;color:#fff}.confirm{background:#15803d;color:#fff}
-textarea,input,select{width:100%;font:inherit;border:1px solid #cbd5e1;border-radius:12px;padding:13px;margin-top:8px;background:#fff}textarea{min-height:130px}.row{display:flex;gap:8px}.row>*{flex:1}
-.map{height:420px;border-radius:15px;overflow:hidden;border:1px solid #cbd5e1;margin:12px 0}.picker-map{height:280px;border-radius:15px;overflow:hidden;border:1px solid #cbd5e1;margin:10px 0}.maptools{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.maptools button{background:#e0f2fe;color:#075985}
-.request,.center-card,.situation-card{border:1px solid #e2e8f0;border-radius:15px;padding:15px;margin:10px 0;background:#fff}.top{display:flex;justify-content:space-between;gap:8px}.num{font-weight:900;color:#075985}.pill{border-radius:99px;padding:4px 9px;font-size:12px;height:max-content}.waiting{background:#fee2e2;color:#b91c1c}.helping{background:#fef3c7;color:#92400e}.done{background:#dcfce7;color:#166534}.urgent{background:#fee2e2;color:#b91c1c}.coords{font-family:ui-monospace,SFMono-Regular,monospace}.actions2{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.request p,.situation-card p{white-space:pre-wrap}.success{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:13px;padding:15px;margin-top:12px}.empty{text-align:center;color:#64748b;padding:25px}.feed{max-height:520px;overflow:auto}
-.live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#15803d;font-weight:800}.dot{width:8px;height:8px;border-radius:50%;background:#22c55e}.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;margin:8px 0}.legend span{display:inline-flex;align-items:center;gap:5px}.swatch{width:13px;height:13px;border-radius:50%;display:inline-block;border:1px solid #fff;box-shadow:0 0 0 1px #cbd5e1}
-.badge{display:inline-block;padding:4px 8px;border-radius:99px;font-size:12px;font-weight:800;background:#f1f5f9}.foundation{background:#ede9fe;color:#6d28d9}.volunteer{background:#dcfce7;color:#166534}.community{background:#dbeafe;color:#1d4ed8}.severity-minor{background:#dcfce7;color:#166534}.severity-medium{background:#fef9c3;color:#854d0e}.severity-high{background:#ffedd5;color:#c2410c}.severity-severe{background:#fee2e2;color:#b91c1c}
-.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.categorygrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.category{border:2px solid #e2e8f0;border-radius:18px;padding:18px;background:#fff;text-align:left;min-height:150px}.category b{display:block;font-size:24px;margin-bottom:8px}.category .count{font-size:34px;font-weight:900}.category.waiting-cat{border-color:#fecaca;background:#fff7f7}.category.helping-cat{border-color:#fde68a;background:#fffbeb}.category.done-cat{border-color:#bbf7d0;background:#f0fdf4}.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;padding:14px}.stat b{display:block;font-size:25px;color:#075985}.small{font-size:12px}.gate{position:fixed;inset:0;background:rgba(2,8,23,.55);display:flex;align-items:center;justify-content:center;padding:18px;z-index:9999}.gate-card{width:min(460px,100%);background:#fff;border-radius:22px;padding:24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}.gate-card h2{font-size:25px}.namebar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px}.namechip{background:#e0f2fe;color:#075985;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:800}.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}.role-btn{border:2px solid #e2e8f0;border-radius:18px;padding:20px 14px;text-align:left;background:#fff;min-height:150px}.role-btn b{display:block;font-size:22px;margin-bottom:8px}.role-request{border-color:#fecaca;background:#fff7f7}.role-helper{border-color:#bbf7d0;background:#f0fdf4}.role-note{margin-top:12px;font-size:13px;color:#64748b}@media(max-width:430px){.role-grid{grid-template-columns:1fr}}.section-note{background:#f8fbff;border:1px solid #dbeafe;border-radius:13px;padding:12px;margin:10px 0}
-@media(max-width:700px){.row{flex-direction:column}.statgrid,.categorygrid{grid-template-columns:1fr 1fr}}@media(max-width:430px){.statgrid,.categorygrid{grid-template-columns:1fr}.brand{font-size:21px}}
+:root{--blue:#075f88;--blue2:#0b729f;--bg:#f4f7f9;--card:#fff;--text:#10202b;--muted:#64727d;--green:#18a957;--red:#e53935;--line:#d9e2e8}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--blue);color:#fff;padding:18px 18px 20px;position:relative}
+.brand{font-size:25px;font-weight:800}.sub{margin-top:4px;color:#d9f2ff}.hello{margin-top:12px;font-size:15px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{font:inherit;border:0;cursor:pointer;touch-action:manipulation}
+.chip{background:#dff4ff;color:#075f88;border-radius:24px;padding:10px 15px;font-weight:700}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:12px 16px;background:var(--blue)}
+nav button{background:#287ca2;color:white;border-radius:15px;padding:12px 6px;font-weight:750;min-height:54px}
+main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}
+.hero,.card,.case,.center,.situation{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px}
+.hero{background:#e2f4ff;border-color:#b9e5f8}.hero h1{margin:0 0 10px;font-size:30px}.hero p{font-size:18px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.stat{padding:18px;border:2px solid #eee;border-radius:20px;background:#fff}
+.stat b{font-size:34px;display:block}.red{border-color:#ffc9c9}.green{border-color:#bce8cc}.blue{border-color:#bfe1f3}
+h2{margin:4px 0 14px}.muted{color:var(--muted)}label{display:block;font-weight:700;margin:12px 0 6px}
+input,textarea,select{width:100%;padding:13px 14px;border:1px solid #cbd7de;border-radius:13px;font:inherit;background:#fff}
+textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:#fff;padding:13px 17px;border-radius:13px;font-weight:800}.secondary{background:#e9f0f4;color:#17313f;padding:12px 15px;border-radius:13px;font-weight:750}.danger{background:#ffe5e5;color:#a71919;padding:11px 14px;border-radius:12px;font-weight:750}
+.row{display:flex;gap:9px;flex-wrap:wrap}.between{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.map{height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.coords{font-size:13px;color:var(--muted);margin-top:6px}
+.case h3,.center h3,.situation h3{margin:0 0 8px}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#edf3f6;margin:3px 4px 3px 0;font-size:13px}
+.status{font-weight:800}.status.wait{color:#d44b00}.status.help{color:#087a43}.status.done{color:#315d79}
+.gate{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10000;display:none;align-items:center;justify-content:center;padding:18px}.gate.show{display:flex}
+.gate-card{width:min(520px,100%);background:#fff;border-radius:24px;padding:22px;box-shadow:0 15px 50px #0004}.gate-card h2{font-size:25px}.role-grid{display:grid;gap:10px}.role-btn{text-align:left;padding:17px;border-radius:17px;border:2px solid #ddd;background:#fff}.role-btn b{display:block;font-size:17px}.role-btn span{display:block;margin-top:5px;color:var(--muted)}.requester{border-color:#ffc4c4}.helper{border-color:#bce7ca}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#17313f;color:white;padding:12px 16px;border-radius:13px;z-index:11000;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+.small{font-size:13px}.right{text-align:right}
+@media(max-width:600px){.brand{font-size:23px}main{padding:12px}.hero h1{font-size:27px}nav button{font-size:15px;padding:10px 4px}}
 </style>
 </head>
 <body>
-<header><div class="wrap">
-<div class="brand">🌊 จากประชาชนสู่ประชาชน</div><div class="tag">ประชาชนขอ • ประชาชนช่วย • ประชาชนแจ้งสถานการณ์</div>
-<div class="namebar"><span id="helloName"></span><div class="actions2"><button class="namechip" onclick="changeRole()">🔄 เปลี่ยนบทบาท</button><button class="namechip" onclick="changeName()">✏️ เปลี่ยนชื่อ</button></div></div>
+
+<header>
+  <div class="brand">🌊 จากประชาชนสู่ประชาชน</div>
+  <div class="sub">ประชาชนขอ • ประชาชนช่วย • ประชาชนแจ้งสถานการณ์</div>
+  <div class="hello" id="helloName"></div>
+  <div class="header-actions">
+    <button class="chip" id="changeRoleBtn">🔄 เปลี่ยนบทบาท</button>
+    <button class="chip" id="changeNameBtn">✏️ เปลี่ยนชื่อ</button>
+  </div>
+</header>
+
 <nav>
-<button onclick="show('home')">🏠 หน้าแรก</button>
-<button onclick="show('ask')">🆘 ขอความช่วยเหลือ</button>
-<button onclick="show('all')">🌍 เคสทั้งหมด</button>
-<button onclick="show('mine')">👤 เคสของฉัน</button>
-<button onclick="show('centers')">🏥 จุดช่วยเหลือ</button>
-<button onclick="show('report')">🌊 สถานการณ์</button>
-</nav></div></header>
-<div id="nameGate" class="gate hidden"><div class="gate-card"><div id="nameStep"><h2>👋 ก่อนเริ่มใช้งาน</h2><p>กรุณาพิมพ์ชื่อของคุณ เพื่อให้แยกได้ว่าเคสไหนเป็นของคุณ</p><input id="citizenNameInput" placeholder="เช่น สมชาย" maxlength="80"><button class="primary" style="width:100%;margin-top:10px" onclick="startApp()">เริ่มใช้งาน</button></div><div id="roleStep" class="hidden"><h2>สวัสดี <span id="roleName"></span> 👋</h2><p>วันนี้คุณต้องการทำอะไร?</p><div class="role-grid"><button class="role-btn role-request" onclick="chooseRole('requester')"><b>🔴 ฉันต้องการความช่วยเหลือ</b><span>แจ้งเหตุหรือส่งคำขอความช่วยเหลือของคุณ</span></button><button class="role-btn role-helper" onclick="chooseRole('helper')"><b>🟢 ฉันต้องการช่วยเหลือผู้อื่น</b><span>ดูเคสที่รอความช่วยเหลือและรับเคสไปช่วย</span></button></div><div class="role-note">คุณสามารถเปลี่ยนบทบาทภายหลังได้ และสามารถทำได้ทั้งสองอย่าง</div></div></div></div>
-<main class="wrap">
-<section id="home"><div class="hero"><h1>🌊 จากประชาชนสู่ประชาชน</h1><p>เลือกหมวดที่ต้องการดู แล้วกดเข้าไปดูเคสในหมวดนั้นได้ทันที</p><div class="live"><i class="dot"></i> ระบบอัปเดตแบบ Real Time</div></div>
-<div class="card"><h2>📂 หมวดหมู่เคส</h2><div class="categorygrid">
-<button class="category waiting-cat" onclick="show('requests')"><b>🔴 คำขอ</b><span class="count" id="homeWaiting">0</span><div>เคสที่กำลังรอคนเข้าช่วย</div><div class="muted">แตะเพื่อดูเคส →</div></button>
-<button class="category helping-cat" onclick="show('helping')"><b>🟠 กำลังช่วยเหลือ</b><span class="count" id="homeHelping">0</span><div>เคสที่มีคนรับไปช่วยแล้ว</div><div class="muted">แตะเพื่อดูเคส →</div></button>
-<button class="category done-cat" onclick="show('history')"><b>🟢 ช่วยเหลือสำเร็จ</b><span class="count" id="homeDone">0</span><div>เคสที่ผู้รับเคสยืนยันว่าช่วยเหลือเสร็จสิ้น</div><div class="muted">แตะเพื่อดูเคส →</div></button>
-</div></div>
-<div class="card"><h2>➕ เมนูอื่น</h2><div class="actions2"><button class="primary" onclick="show('ask')">🆘 ขอความช่วยเหลือ</button><button class="light" onclick="show('mine')">📋 คำขอของฉัน</button><button class="light" onclick="show('centers')">🏥 จุดช่วยเหลือ</button><button class="light" onclick="show('report')">🌊 สถานการณ์</button></div></div></section>
+  <button data-page="home">🏠 หน้าแรก</button>
+  <button data-page="ask">🆘 ขอความช่วยเหลือ</button>
+  <button data-page="all">🌍 เคสทั้งหมด</button>
+  <button data-page="mine">👤 เคสของฉัน</button>
+  <button data-page="centers">🏥 จุดช่วยเหลือ</button>
+  <button data-page="situations">🌊 สถานการณ์</button>
+</nav>
 
-<section id="ask" class="hidden"><div class="card"><h2>🆘 ขอความช่วยเหลือ</h2><div class="muted">ข้อมูลคำขอจะไปแสดงเฉพาะในเมนูคำขอ ไม่เอาไปแสดงบนหน้าแรก</div>
-<textarea id="need" placeholder="เช่น น้ำท่วมถึงชั้น 2 มีผู้สูงอายุ 2 คน ต้องการเรือมารับ และต้องการน้ำดื่ม"></textarea><input id="place" placeholder="📍 สถานที่ / หมู่บ้าน / จุดสังเกต">
-<div class="muted"><b>เลือกพิกัด:</b> ใช้ GPS หรือแตะจุดบนแผนที่ แล้วลากหมุดปรับตำแหน่งได้</div><div class="maptools"><button class="light" onclick="locationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearAskPoint()">✖ ล้างจุด</button></div>
-<div id="askMap" class="picker-map"></div><div id="askCoords" class="muted">ยังไม่ได้เลือกพิกัด</div><input id="lat" type="hidden"><input id="lng" type="hidden">
-<button class="primary" onclick="createRequest()">🆘 ส่งคำขอความช่วยเหลือ</button><div id="sent" class="success hidden"></div></div></section>
+<main>
+<section id="home" class="page active">
+  <div class="hero">
+    <h1>🌊 จากประชาชนสู่ประชาชน</h1>
+    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์จากประชาชน</p>
+    <b style="color:#18864d">● ระบบอัปเดตแบบ Real Time</b>
+  </div>
+  <div class="card">
+    <h2>📊 สรุปตอนนี้</h2>
+    <div class="grid">
+      <div class="stat red"><span>🔴 คำขอรอความช่วยเหลือ</span><b id="countWait">0</b><span>เคส</span></div>
+      <div class="stat green"><span>🟢 กำลังช่วยเหลือ</span><b id="countHelp">0</b><span>เคส</span></div>
+      <div class="stat blue"><span>🏥 จุดช่วยเหลือ</span><b id="countCenter">0</b><span>จุด</span></div>
+      <div class="stat"><span>🌊 สถานการณ์</span><b id="countSituation">0</b><span>รายการ</span></div>
+    </div>
+  </div>
+</section>
 
-<section id="all" class="hidden"><div class="card"><h2>🌍 เคสทั้งหมด <span class="live"><i class="dot"></i> Real Time</span></h2><div class="section-note">รวมทุกเคสในระบบ แยกตามสถานะ: 🔴 รอความช่วยเหลือ • 🟠 กำลังช่วยเหลือ • 🟢 สำเร็จแล้ว</div><div class="statgrid"><div class="stat"><b id="allWaiting">0</b>🔴 รอความช่วยเหลือ</div><div class="stat"><b id="allHelping">0</b>🟠 กำลังช่วยเหลือ</div><div class="stat"><b id="allDone">0</b>🟢 สำเร็จแล้ว</div></div><div id="allFeed" class="feed"></div></div></section>
+<section id="ask" class="page">
+  <div class="card">
+    <h2>🆘 ขอความช่วยเหลือ</h2>
+    <p class="muted">กรอกสิ่งที่ต้องการและจุดที่ต้องการความช่วยเหลือ</p>
+    <label>ต้องการความช่วยเหลือเรื่องอะไร?</label>
+    <textarea id="need" placeholder="เช่น ต้องการเรือรับผู้สูงอายุ 2 คน"></textarea>
+    <label>สถานที่ / จุดสังเกต</label>
+    <input id="place" placeholder="เช่น ซอย... ใกล้...">
+    <label>ระดับความเร่งด่วน</label>
+    <select id="urgent"><option value="false">ทั่วไป</option><option value="true">🔴 เร่งด่วน</option></select>
+    <label>📍 เลือกตำแหน่งบนแผนที่</label>
+    <div id="askMap" class="map"></div>
+    <div id="askCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="askLocate">📍 ใช้ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="askClear">ล้างจุด</button>
+      <button class="primary" id="submitRequest">ส่งคำขอ</button>
+    </div>
+  </div>
+</section>
 
-<section id="requests" class="hidden"><div class="card"><h2>🔴 คำขอความช่วยเหลือ <span class="live"><i class="dot"></i> Real Time</span></h2><div class="section-note">แสดงเฉพาะเคสที่ยัง <b>รอความช่วยเหลือ</b> เรียงจากเก่าไปใหม่ เพื่อให้เห็นเคสที่รอนานก่อน</div><div class="legend"><span><i class="swatch" style="background:#dc2626"></i> รอความช่วยเหลือ</span></div><div id="requestsMap" class="map"></div><div id="requestsFeed" class="feed"></div></div></section>
+<section id="all" class="page">
+  <div class="card">
+    <div class="between"><h2>🌍 เคสทั้งหมด</h2><button class="secondary" id="refreshAll">↻ รีเฟรช</button></div>
+    <div id="allList"></div>
+  </div>
+</section>
 
-<section id="helping" class="hidden"><div class="card"><h2>🟠 กำลังช่วยเหลือ <span class="live"><i class="dot"></i> Real Time</span></h2><div class="section-note">หน้านี้แสดงเฉพาะคำขอที่มีคนรับไปช่วยแล้ว แผนที่ก็แสดงเฉพาะจุดของสถานะนี้</div><div class="legend"><span><i class="swatch" style="background:#f59e0b"></i> กำลังช่วยเหลือ</span></div><div id="helpingMap" class="map"></div><div id="helpingFeed" class="feed"></div></div></section>
+<section id="mine" class="page">
+  <div class="card">
+    <div class="between"><h2>👤 เคสของฉัน</h2><button class="secondary" id="refreshMine">↻ รีเฟรช</button></div>
+    <div id="mineList"></div>
+  </div>
+</section>
 
-<section id="history" class="hidden"><div class="card"><h2>🟢 ช่วยเหลือสำเร็จแล้ว</h2><div class="section-note">หน้านี้แสดงเฉพาะเคสที่ผู้รับเคสยืนยันว่าช่วยเหลือเสร็จสิ้นแล้ว และจุดจะไม่ปนกับแผนที่คำขอที่กำลังช่วย</div><div class="legend"><span><i class="swatch" style="background:#16a34a"></i> สำเร็จแล้ว</span></div><div id="historyMap" class="map"></div><div id="historyFeed" class="feed"></div></div></section>
+<section id="centers" class="page">
+  <div class="card">
+    <h2>🏥 จุดช่วยเหลือ</h2>
+    <label>ชื่อจุดช่วยเหลือ</label><input id="centerName" placeholder="เช่น ศูนย์พักพิงชุมชน">
+    <label>ประเภทบริการ</label>
+    <select id="centerType">
+      <option>ศูนย์ชุมชน/อื่นๆ</option><option>อาหารและน้ำ</option><option>ที่พักพิง</option>
+      <option>การแพทย์</option><option>เรือ/การเดินทาง</option><option>สิ่งของจำเป็น</option>
+    </select>
+    <label>เบอร์โทร</label><input id="centerPhone" placeholder="ถ้ามี">
+    <label>รายละเอียด</label><textarea id="centerDesc" placeholder="เปิดให้บริการอะไรบ้าง"></textarea>
+    <label>สถานที่</label><input id="centerPlace" placeholder="ที่อยู่ / จุดสังเกต">
+    <label>📍 ตำแหน่งบนแผนที่</label>
+    <div id="centerMap" class="map"></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="row" style="margin-top:10px"><button class="secondary" id="centerLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addCenter">เพิ่มจุดช่วยเหลือ</button></div>
+  </div>
+  <div class="card"><h2>📍 จุดที่มีอยู่</h2><div id="centerList"></div></div>
+</section>
 
-<section id="centers" class="hidden"><div class="card"><h2>🏥 จุดช่วยเหลือ</h2><div class="muted">รวมจุดบริการของมูลนิธิ อาสาสมัคร และจุดชุมชน แยกจากแผนที่คำขอและสถานการณ์</div>
-<div class="row"><div><label>ประเภทจุดบริการ</label><select id="centerType"><option value="มูลนิธิ">🏢 มูลนิธิ</option><option value="อาสาสมัคร">🧑‍🤝‍🧑 อาสาสมัคร</option><option value="ศูนย์ชุมชน/อื่นๆ">🏘️ ศูนย์ชุมชน/อื่นๆ</option></select></div><div><label>ชื่อจุดบริการ</label><input id="centerName" placeholder="เช่น จุดอาสาสมัครบ้าน..." ></div></div>
-<input id="centerPlace" placeholder="📍 ที่อยู่ / สถานที่ / จุดสังเกต"><input id="centerPhone" placeholder="☎️ เบอร์โทรติดต่อ (ถ้ามี)"><textarea id="centerDescription" placeholder="รายละเอียดบริการ เช่น แจกน้ำ อาหาร เรือ รถรับส่ง ที่พัก"></textarea>
-<div class="muted"><b>เลือกตำแหน่ง:</b> แตะบนแผนที่ หรือใช้ GPS</div><div class="maptools"><button class="light" onclick="centerLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearCenterPoint()">✖ ล้างจุด</button></div><div id="centerPickerMap" class="picker-map"></div><div id="centerCoords" class="muted">ยังไม่ได้เลือกพิกัด</div><input id="centerLat" type="hidden"><input id="centerLng" type="hidden"><button class="primary" onclick="createCenter()">🏥 เพิ่มจุดบริการ</button><div id="centerMsg" class="success hidden"></div></div>
-<div class="card"><h2>🗺️ แผนที่จุดช่วยเหลือ</h2><div class="legend"><span>🏢 มูลนิธิ</span><span>🧑‍🤝‍🧑 อาสาสมัคร</span><span>🏘️ ศูนย์ชุมชน/อื่นๆ</span></div><div id="centerMap" class="map"></div><div class="maptools"><button class="light" onclick="fitCenterMarkers()">🗺️ ดูจุดทั้งหมด</button></div></div>
-<div class="card"><h2>📋 รายการจุดบริการ</h2><div id="centerFeed" class="feed"></div></div></section>
-
-<section id="mine" class="hidden"><div class="card"><h2>👤 เคสของฉัน</h2><div class="section-note">สวัสดี <b id="mineName">-</b> 👋 หน้านี้รวมทั้งเคสที่คุณแจ้ง และเคสที่คุณรับไปช่วย</div><h3>🆘 เคสที่ฉันแจ้ง</h3><div id="myRequestsFeed" class="feed"></div><h3>🤝 เคสที่ฉันกำลังช่วย / เคยช่วย</h3><div id="myHelpFeed" class="feed"></div></div></section>
-
-<section id="report" class="hidden"><div class="card"><h2>🌊 สถานการณ์</h2><div class="muted">แจ้งน้ำท่วม ถนนผ่านไม่ได้ จุดเสี่ยง หรือสถานการณ์ล่าสุด แต่ละจุดจะแสดงเป็นวงพื้นที่โดยประมาณตามระดับความรุนแรง ไม่ใช่ขอบเขตน้ำท่วมจริง</div>
-<textarea id="situation" placeholder="เช่น ถนนหน้าโรงเรียนมีน้ำสูงประมาณ 60 ซม. รถเล็กผ่านไม่ได้"></textarea><input id="splace" placeholder="📍 สถานที่ / จุดสังเกต"><select id="sseverity"><option value="เล็กน้อย">🟢 เล็กน้อย</option><option value="ปานกลาง">🟡 ปานกลาง</option><option value="มาก">🟠 มาก</option><option value="รุนแรง">🔴 รุนแรง</option></select>
-<div class="maptools"><button class="light" onclick="situationLocationNow()">📍 ใช้ตำแหน่งของฉัน</button><button class="light" onclick="clearSituationPoint()">✖ ล้างจุด</button></div><div id="situationPickerMap" class="picker-map"></div><div id="situationCoords" class="muted">ยังไม่ได้เลือกพิกัด</div><input id="situationLat" type="hidden"><input id="situationLng" type="hidden"><button class="primary" onclick="createSituation()">🌊 ส่งข้อมูลสถานการณ์</button><div id="reportMsg" class="success hidden"></div></div>
-<div class="card"><h2>🗺️ แผนที่พื้นที่สถานการณ์</h2><div class="legend"><span><i class="swatch" style="background:#22c55e"></i> เล็กน้อย</span><span><i class="swatch" style="background:#eab308"></i> ปานกลาง</span><span><i class="swatch" style="background:#f97316"></i> มาก</span><span><i class="swatch" style="background:#ef4444"></i> รุนแรง</span></div><div id="situationMap" class="map"></div><div id="situations" class="feed"></div></div></section>
+<section id="situations" class="page">
+  <div class="card">
+    <h2>🌊 แจ้งสถานการณ์</h2>
+    <label>หัวข้อ</label><input id="sitTitle" placeholder="เช่น น้ำเริ่มท่วมถนน">
+    <label>รายละเอียด</label><textarea id="sitDesc" placeholder="เกิดอะไรขึ้น"></textarea>
+    <label>ระดับ</label>
+    <select id="sitSeverity"><option>เล็กน้อย</option><option>ปานกลาง</option><option>มาก</option><option>รุนแรง</option></select>
+    <label>สถานที่</label><input id="sitPlace" placeholder="บริเวณ / จุดสังเกต">
+    <label>📍 ตำแหน่ง</label><div id="sitMap" class="map"></div><div id="sitCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="row" style="margin-top:10px"><button class="secondary" id="sitLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addSituation">แจ้งสถานการณ์</button></div>
+  </div>
+  <div class="card"><h2>📢 สถานการณ์ล่าสุด</h2><div id="situationList"></div></div>
+</section>
 </main>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const SUPABASE_URL="https://atrhbzrxvklqakmgfdmr.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_4dsKQxqcYULWMEQPs_zkPA_OhL0dLWn";
-const configured=!!SUPABASE_URL&&!!SUPABASE_PUBLISHABLE_KEY;let sb=null;if(configured&&window.supabase&&window.supabase.createClient)sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
-const $=id=>document.getElementById(id);
-const citizenNameKey="citizen_help_name";const roleKey="citizen_help_role";let citizenName=(localStorage.getItem(citizenNameKey)||"").trim();let citizenRole=(localStorage.getItem(roleKey)||"").trim();
-function saveCitizenName(name){citizenName=name.trim();localStorage.setItem(citizenNameKey,citizenName);updateNameUI()}
-function updateNameUI(){if($("helloName"))$("helloName").innerHTML=citizenName?`สวัสดี <b>${esc(citizenName)}</b> 👋`:"";if($("mineName"))$("mineName").textContent=citizenName||"-"}
-function startApp(){const n=$("citizenNameInput").value.trim();if(!n)return alert("กรุณาพิมพ์ชื่อของคุณ");saveCitizenName(n);$("roleName").textContent=citizenName;$("nameStep").classList.add("hidden");$("roleStep").classList.remove("hidden")}
-function chooseRole(role){citizenRole=role;localStorage.setItem(roleKey,role);$("nameGate").classList.add("hidden");show(role==="requester"?"ask":"all")}
-function changeRole(){if(!citizenName){$("nameGate").classList.remove("hidden");return}$("roleName").textContent=citizenName;$("nameStep").classList.add("hidden");$("roleStep").classList.remove("hidden");$("nameGate").classList.remove("hidden")}
-function changeName(){const n=prompt("ชื่อที่ต้องการแสดง",citizenName||"");if(n!==null&&n.trim())saveCitizenName(n)}
-const requesterTokenKey="citizen_help_requester_token";const requesterToken=localStorage.getItem(requesterTokenKey)||crypto.randomUUID();const helperTokenKey="citizen_help_helper_token";const helperToken=localStorage.getItem(helperTokenKey)||crypto.randomUUID();localStorage.setItem(requesterTokenKey,requesterToken);localStorage.setItem(helperTokenKey,helperToken);
-function show(id){document.querySelectorAll("main>section").forEach(s=>s.classList.add("hidden"));$(id).classList.remove("hidden");setTimeout(()=>{if(id==="centers"){if(centerPickerMap){centerPickerMap.remove();centerPickerMap=null;centerPicker=null}if(centerMap){centerMap.remove();centerMap=null}centerPickerMap=setupPicker("centerPickerMap","center");centerMap=mapBase("centerMap")}if(id==="ask"){if(askMap){askMap.remove();askMap=null;askPicker=null}askMap=setupPicker("askMap","ask")}if(id==="report"){if(situationPickerMap){situationPickerMap.remove();situationPickerMap=null;situationPicker=null}if(situationMap){situationMap.remove();situationMap=null}situationPickerMap=setupPicker("situationPickerMap","situation");situationMap=mapBase("situationMap")}invalidateAll();if(id==="home")loadSummary();if(["all","requests","helping","history","mine"].includes(id))loadRequests();if(id==="centers")loadCenters();if(id==="report")loadSituations()},150);scrollTo(0,0)}
-function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
-function statusLabel(st){return st==="ได้รับความช่วยเหลือแล้ว"?"สำเร็จแล้ว":st==="กำลังช่วยเหลือ"?"กำลังช่วยเหลือ":"รอความช่วยเหลือ"}
-function statusClass(st){return st==="ได้รับความช่วยเหลือแล้ว"?"done":st==="กำลังช่วยเหลือ"?"helping":"waiting"}
-function fmtDate(v){return v?new Date(v).toLocaleString("th-TH"):"-"}
-function duration(r){const a=r.accepted_at?new Date(r.accepted_at):null,b=r.completed_at?new Date(r.completed_at):new Date();if(!a)return "-";const min=Math.max(0,Math.round((b-a)/60000));if(min<60)return min+" นาที";return Math.floor(min/60)+" ชม. "+(min%60)+" นาที"}
-function card(r){const st=r.status||"รอความช่วยเหลือ",mine=r.requester_token===requesterToken;let actions="";const who=r.requester_name?`<div class="small">👤 ผู้ขอ: ${esc(r.requester_name)}${mine?" (เคสของคุณ)":""}</div>`:"";if(st==="รอความช่วยเหลือ")actions+=`<button class="green" onclick="claim(${r.id})">🤝 รับคำขอนี้ไปช่วย</button>`;if(st==="กำลังช่วยเหลือ"&&r.helper_token===helperToken)actions+=`<button class="confirm" onclick="confirmHelp(${r.id})">✅ ยืนยันช่วยเหลือเสร็จสิ้น</button>`;if(st==="กำลังช่วยเหลือ"&&mine&&r.helper_token!==helperToken)actions+=`<div class="muted small">รอผู้ที่รับเคสกดยืนยันว่าช่วยเหลือเสร็จสิ้น</div>`;const lat=Number(r.lat),lng=Number(r.lng),has=Number.isFinite(lat)&&Number.isFinite(lng);const loc=r.place||(has?`พิกัด ${lat.toFixed(5)}, ${lng.toFixed(5)}`:"ไม่ได้ระบุ");return `<div class="request"><div class="top"><span class="num">คำขอที่ ${esc(r.request_no)}</span><span class="pill ${statusClass(st)}">${statusLabel(st)}</span></div><p>${esc(r.need)}</p>${who}<div>📍 ${esc(loc)}</div>${has?`<div class="muted coords">พิกัด: ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`:""}<div class="muted small">ส่งคำขอ: ${fmtDate(r.submitted||r.created_at)}${r.accepted_at?`<br>รับคำขอ: ${fmtDate(r.accepted_at)}`:""}${r.completed_at?`<br>ผู้รับเคสยืนยันสำเร็จ: ${fmtDate(r.completed_at)}<br>ระยะเวลาช่วยเหลือ: ${duration(r)}`:""}</div><div class="actions2">${has?`<button class="light" onclick="navigateTo(${lat},${lng})">🧭 นำทางไปหาผู้ขอ</button>`:""}${actions}</div></div>`}
-function requestIcon(st){const c=st==="กำลังช่วยเหลือ"?"#f59e0b":st==="ได้รับความช่วยเหลือแล้ว"?"#16a34a":"#dc2626";return L.divIcon({className:"",html:`<div style="width:22px;height:22px;border-radius:50%;background:${c};border:3px solid white;box-shadow:0 1px 5px #555"></div>`,iconSize:[22,22],iconAnchor:[11,11]})}
-function mapBase(id){const m=L.map(id).setView([13.7563,100.5018],11);L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap contributors",maxZoom:19}).addTo(m);return m}
-let askMap,askPicker,requestsMap,helpingMap,historyMap,mineMap,centerPickerMap,centerPicker,centerMap,situationPickerMap,situationPicker,situationMap;
-let requestsMarkers=[],helpingMarkers=[],historyMarkers=[],mineMarkers=[],centerMarkers=[],situationMarkers=[];
-function invalidateAll(){[askMap,requestsMap,helpingMap,historyMap,mineMap,centerPickerMap,centerMap,situationPickerMap,situationMap].forEach(m=>m&&m.invalidateSize())}
-function pickerIcon(label){return L.divIcon({className:"",html:`<div style="font-size:30px">${label}</div>`,iconSize:[34,34],iconAnchor:[17,30]})}
-function setPicker(kind,lat,lng,zoom=16){const c={ask:[askMap,"askCoords","lat","lng","📍"],center:[centerPickerMap,"centerCoords","centerLat","centerLng","🏥"],situation:[situationPickerMap,"situationCoords","situationLat","situationLng","🌊"]}[kind];if(!c||!c[0])return;const [map,coord,la,lo,ic]=c;$(la).value=lat.toFixed(7);$(lo).value=lng.toFixed(7);$(coord).textContent=`พิกัดที่เลือก: ${lat.toFixed(6)}, ${lng.toFixed(6)}`;let mk=kind==="ask"?askPicker:kind==="center"?centerPicker:situationPicker;if(!mk){mk=L.marker([lat,lng],{icon:pickerIcon(ic),draggable:true}).addTo(map);if(kind==="ask")askPicker=mk;if(kind==="center")centerPicker=mk;if(kind==="situation")situationPicker=mk;mk.on("dragend",()=>{const p=mk.getLatLng();setPicker(kind,p.lat,p.lng,map.getZoom())})}else mk.setLatLng([lat,lng]);map.setView([lat,lng],zoom)}
-function setupPicker(id,kind){const m=mapBase(id);m.on("click",e=>setPicker(kind,e.latlng.lat,e.latlng.lng,Math.max(m.getZoom(),15)));return m}
-function initMaps(){if(!window.L)return;if(!askMap)askMap=setupPicker("askMap","ask");if(!requestsMap)requestsMap=mapBase("requestsMap");if(!helpingMap)helpingMap=mapBase("helpingMap");if(!historyMap)historyMap=mapBase("historyMap");if(!mineMap)mineMap=mapBase("mineMap");if(!centerPickerMap)centerPickerMap=setupPicker("centerPickerMap","center");if(!centerMap)centerMap=mapBase("centerMap");if(!situationPickerMap)situationPickerMap=setupPicker("situationPickerMap","situation");if(!situationMap)situationMap=mapBase("situationMap");invalidateAll()}
-function clearMapMarkers(arr){arr.forEach(m=>m.remove());arr.length=0}
-function renderRequestsMap(map,arr,data){clearMapMarkers(arr);const bounds=[];(data||[]).forEach(r=>{const lat=Number(r.lat),lng=Number(r.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const m=L.marker([lat,lng],{icon:requestIcon(r.status)}).addTo(map);m.bindPopup(`<b>คำขอที่ ${esc(r.request_no)}</b><br>${esc(statusLabel(r.status))}<br>${esc(r.need)}<br>📍 ${esc(r.place||"ไม่ได้ระบุ")}`);arr.push(m);bounds.push([lat,lng])});if(bounds.length===1)map.setView(bounds[0],15);else if(bounds.length>1)map.fitBounds(bounds,{padding:[25,25]})}
-function navigateTo(lat,lng){window.open(`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat+","+lng)}`,"_blank")}
-async function loadRequests(){if(!sb)return;const {data,error}=await sb.from("requests").select("*").order("id",{ascending:true});if(error){["allFeed","requestsFeed","helpingFeed","historyFeed","myRequestsFeed","myHelpFeed"].forEach(id=>{if($(id))$(id).innerHTML=`<div class="empty" style="color:#b91c1c">โหลดเคสไม่ได้: ${esc(error.message)}<br><span class="small">ตรวจสอบ RLS / สิทธิ์ SELECT ของตาราง requests ใน Supabase</span></div>`});return}const rows=data||[],wait=rows.filter(r=>r.status==="รอความช่วยเหลือ").sort((a,b)=>Number(a.id)-Number(b.id)),help=rows.filter(r=>r.status==="กำลังช่วยเหลือ").sort((a,b)=>Number(a.id)-Number(b.id)),done=rows.filter(r=>r.status==="ได้รับความช่วยเหลือแล้ว").sort((a,b)=>Number(b.id)-Number(a.id)),mineReq=rows.filter(r=>r.requester_token===requesterToken).sort((a,b)=>Number(b.id)-Number(a.id)),mineHelp=rows.filter(r=>r.helper_token===helperToken).sort((a,b)=>Number(b.id)-Number(a.id));if($("allFeed"))$("allFeed").innerHTML=rows.length?rows.slice().sort((a,b)=>Number(b.id)-Number(a.id)).map(card).join(""):"<div class='empty'>ยังไม่มีเคสในระบบ</div>";if($("requestsFeed"))$("requestsFeed").innerHTML=wait.length?wait.map(card).join(""):"<div class='empty'>ยังไม่มีคำขอที่รอความช่วยเหลือ</div>";if($("helpingFeed"))$("helpingFeed").innerHTML=help.length?help.map(card).join(""):"<div class='empty'>ยังไม่มีคำขอที่กำลังช่วยเหลือ</div>";if($("historyFeed"))$("historyFeed").innerHTML=done.length?done.map(card).join(""):"<div class='empty'>ยังไม่มีเคสที่ช่วยสำเร็จ</div>";if($("myRequestsFeed"))$("myRequestsFeed").innerHTML=mineReq.length?mineReq.map(card).join(""):"<div class='empty'>คุณยังไม่มีเคสที่แจ้ง</div>";if($("myHelpFeed"))$("myHelpFeed").innerHTML=mineHelp.length?mineHelp.map(card).join(""):"<div class='empty'>คุณยังไม่มีเคสที่รับไปช่วย</div>";if($("allWaiting"))$("allWaiting").textContent=wait.length;if($("allHelping"))$("allHelping").textContent=help.length;if($("allDone"))$("allDone").textContent=done.length;renderRequestsMap(requestsMap,requestsMarkers,wait);renderRequestsMap(helpingMap,helpingMarkers,help);renderRequestsMap(historyMap,historyMarkers,done);renderRequestsMap(mineMap,mineMarkers,mineReq.concat(mineHelp.filter(r=>r.requester_token!==requesterToken)));loadSummary(rows)}
-async function loadSummary(rows){if(!sb){return}if(!rows){const q=await sb.from("requests").select("status");rows=q.data||[]}$("homeWaiting").textContent=rows.filter(r=>r.status==="รอความช่วยเหลือ").length;$("homeHelping").textContent=rows.filter(r=>r.status==="กำลังช่วยเหลือ").length;$("homeDone").textContent=rows.filter(r=>r.status==="ได้รับความช่วยเหลือแล้ว").length}
-async function createRequest(){if(!sb)return alert("เชื่อมต่อ Supabase ก่อน");const need=$("need").value.trim(),place=$("place").value.trim(),lat=Number($("lat").value),lng=Number($("lng").value);if(!need)return alert("กรุณาพิมพ์สิ่งที่ต้องการ");if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาเลือกพิกัด");const urgent=/ฉุกเฉิน|ด่วน|ผู้ป่วย|เดินไม่ได้|อพยพ/.test(need);const {data,error}=await sb.from("requests").insert({need,place,urgent,status:"รอความช่วยเหลือ",requester_token:requesterToken,requester_name:citizenName,lat,lng}).select().single();if(error)return alert(error.message);$("sent").classList.remove("hidden");$("sent").innerHTML=`<b>✅ ส่งคำขอที่ ${data.request_no} แล้ว</b><br>คำขอจะแสดงในเมนู 🔴 คำขอ และจะย้ายไป 🟠 กำลังช่วยเหลือ เมื่อมีคนรับไปช่วย`;$("need").value="";$("place").value="";clearAskPoint();await loadRequests();show("requests")}
-async function claim(id){if(!sb)return;if(!confirm("ยืนยันรับคำขอนี้ไปช่วยใช่หรือไม่?"))return;const {data,error}=await sb.rpc("claim_request",{p_id:id,p_helper_token:helperToken});if(error)return alert(error.message);if(!data?.ok)return alert("คำขอนี้มีคนรับไปแล้ว");alert("รับคำขอแล้ว");loadRequests()}
-async function confirmHelp(id){if(!sb||!confirm("ยืนยันว่าช่วยเหลือเคสนี้เสร็จสิ้นแล้วใช่หรือไม่?"))return;const {error}=await sb.from("requests").update({status:"ได้รับความช่วยเหลือแล้ว",completed_at:new Date().toISOString()}).eq("id",id).eq("helper_token",helperToken).eq("status","กำลังช่วยเหลือ");if(error)return alert(error.message);alert("ยืนยันช่วยเหลือเสร็จสิ้นแล้ว");loadRequests()}
-function locationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับ GPS");navigator.geolocation.getCurrentPosition(p=>{setPicker("ask",p.coords.latitude,p.coords.longitude);$("place").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะบนแผนที่"))}
-function clearAskPoint(){if(askPicker){askMap.removeLayer(askPicker);askPicker=null}$("lat").value="";$("lng").value="";$("askCoords").textContent="ยังไม่ได้เลือกพิกัด"}
-function centerLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับ GPS");navigator.geolocation.getCurrentPosition(p=>{setPicker("center",p.coords.latitude,p.coords.longitude);$("centerPlace").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะบนแผนที่"))}
-function clearCenterPoint(){if(centerPicker){centerPickerMap.removeLayer(centerPicker);centerPicker=null}$("centerLat").value="";$("centerLng").value="";$("centerCoords").textContent="ยังไม่ได้เลือกพิกัด"}
-function centerIcon(type){const e=type==="มูลนิธิ"?"🏢":type==="อาสาสมัคร"?"🧑‍🤝‍🧑":"🏘️";return L.divIcon({className:"",html:`<div style="font-size:25px">${e}</div>`,iconSize:[30,30],iconAnchor:[15,28]})}
-function fitCenterMarkers(){if(!centerMarkers.length)return alert("ยังไม่มีจุดบริการ");centerMap.fitBounds(L.latLngBounds(centerMarkers.map(m=>m.getLatLng())),{padding:[25,25]})}
-async function loadCenters(){if(!sb)return;const {data,error}=await sb.from("help_centers").select("*").order("id",{ascending:false}).limit(200);if(error){$("centerFeed").innerHTML=`<div class='empty'>โหลดไม่ได้: ${esc(error.message)}</div>`;return}const rows=data||[];clearMapMarkers(centerMarkers);const bounds=[];rows.forEach(c=>{const lat=Number(c.lat),lng=Number(c.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const m=L.marker([lat,lng],{icon:centerIcon(c.service_type)}).addTo(centerMap);m.bindPopup(`<b>${esc(c.service_type||"จุดช่วยเหลือ")}</b><br><b>${esc(c.name)}</b><br>${esc(c.place||"")}<br>${esc(c.description||"")}<br>${esc(c.phone?"☎️ "+c.phone:"")}<br><br><button onclick="navigateTo(${lat},${lng})">🧭 นำทาง</button>`);centerMarkers.push(m);bounds.push([lat,lng])});if(bounds.length===1)centerMap.setView(bounds[0],15);else if(bounds.length>1)centerMap.fitBounds(bounds,{padding:[25,25]});$("centerFeed").innerHTML=rows.length?rows.map(c=>`<div class="center-card"><div class="top"><div><span class="badge ${c.service_type==="มูลนิธิ"?"foundation":c.service_type==="อาสาสมัคร"?"volunteer":"community"}">${esc(c.service_type||"จุดช่วยเหลือ")}</span> <b>${esc(c.name)}</b></div><button class="danger" onclick="deleteCenter(${c.id})">🗑️ ลบ</button></div><div>📍 ${esc(c.place||"ไม่ได้ระบุ")}</div>${c.phone?`<div>☎️ ${esc(c.phone)}</div>`:""}<div>${esc(c.description||"")}</div><div class="muted coords">พิกัด ${Number(c.lat).toFixed(5)}, ${Number(c.lng).toFixed(5)}</div><div class="actions2"><button class="light" onclick="navigateTo(${Number(c.lat)},${Number(c.lng)})">🧭 นำทาง</button></div></div>`).join(""):"<div class='empty'>ยังไม่มีจุดบริการ</div>"}
-async function createCenter(){if(!sb)return alert("เชื่อมต่อ Supabase ก่อน");const service_type=$("centerType").value,name=$("centerName").value.trim(),place=$("centerPlace").value.trim(),phone=$("centerPhone").value.trim(),description=$("centerDescription").value.trim(),lat=Number($("centerLat").value),lng=Number($("centerLng").value);if(!name)return alert("กรุณาใส่ชื่อจุดบริการ");if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาเลือกพิกัด");const {error}=await sb.from("help_centers").insert({service_type,name,place,phone,description,lat,lng});if(error)return alert(error.message);$("centerName").value="";$("centerPlace").value="";$("centerPhone").value="";$("centerDescription").value="";clearCenterPoint();$("centerMsg").classList.remove("hidden");$("centerMsg").innerHTML="<b>✅ เพิ่มจุดบริการแล้ว</b>";loadCenters()}
-async function deleteCenter(id){if(!sb||!confirm("ยืนยันลบจุดบริการนี้ใช่หรือไม่?"))return;const {error}=await sb.from("help_centers").delete().eq("id",id);if(error)return alert(error.message);loadCenters()}
-function severityColor(s){return s==="เล็กน้อย"?"#22c55e":s==="ปานกลาง"?"#eab308":s==="มาก"?"#f97316":"#ef4444"}
-function severityRadius(s){return s==="เล็กน้อย"?150:s==="ปานกลาง"?300:s==="มาก"?500:800}
-function situationLocationNow(){if(!navigator.geolocation)return alert("อุปกรณ์ไม่รองรับ GPS");navigator.geolocation.getCurrentPosition(p=>{setPicker("situation",p.coords.latitude,p.coords.longitude);$("splace").value=`พิกัด ${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)}`},()=>alert("อ่านตำแหน่งไม่ได้ กรุณาแตะบนแผนที่"))}
-function clearSituationPoint(){if(situationPicker){situationPickerMap.removeLayer(situationPicker);situationPicker=null}$("situationLat").value="";$("situationLng").value="";$("situationCoords").textContent="ยังไม่ได้เลือกพิกัด"}
-async function createSituation(){if(!sb)return alert("เชื่อมต่อ Supabase ก่อน");const text=$("situation").value.trim(),place=$("splace").value.trim(),severity=$("sseverity").value,lat=Number($("situationLat").value),lng=Number($("situationLng").value);if(!text)return alert("กรุณาพิมพ์สถานการณ์");if(!Number.isFinite(lat)||!Number.isFinite(lng))return alert("กรุณาเลือกพิกัด");const {error}=await sb.from("situations").insert({text,place,severity,lat,lng});if(error)return alert(error.message);$("situation").value="";$("splace").value="";clearSituationPoint();$("reportMsg").classList.remove("hidden");$("reportMsg").innerHTML="<b>✅ ส่งสถานการณ์แล้ว</b>";loadSituations()}
-async function loadSituations(){if(!sb)return;const {data,error}=await sb.from("situations").select("*").order("id",{ascending:false}).limit(100);if(error){$("situations").innerHTML=`<div class='empty'>โหลดไม่ได้: ${esc(error.message)}</div>`;return}clearMapMarkers(situationMarkers);const bounds=[];(data||[]).forEach(x=>{const lat=Number(x.lat),lng=Number(x.lng);if(!Number.isFinite(lat)||!Number.isFinite(lng))return;const color=severityColor(x.severity),radius=severityRadius(x.severity);const circle=L.circle([lat,lng],{radius,color,fillColor:color,fillOpacity:.18,weight:2}).addTo(situationMap);const m=L.circleMarker([lat,lng],{radius:8,color:"#fff",weight:2,fillColor:color,fillOpacity:1}).addTo(situationMap);m.bindPopup(`<b>🌊 ${esc(x.severity)}</b><br>${esc(x.place||"ไม่ระบุสถานที่")}<br>${esc(x.text)}<br><span class="muted">พื้นที่วงกลมเป็นการแสดงโดยประมาณ ${radius} เมตร</span>`);situationMarkers.push(circle,m);bounds.push([lat,lng])});if(bounds.length===1)situationMap.setView(bounds[0],15);else if(bounds.length>1)situationMap.fitBounds(bounds,{padding:[25,25]});$("situations").innerHTML=(data||[]).map(x=>`<div class="situation-card"><span class="badge severity-${x.severity==="เล็กน้อย"?"minor":x.severity==="ปานกลาง"?"medium":x.severity==="มาก"?"high":"severe"}">${esc(x.severity)}</span> <b>🌊 ${esc(x.place||"ไม่ระบุสถานที่")}</b><p>${esc(x.text)}</p><div class="muted">${fmtDate(x.created_at)}${x.lat!=null?`<br>พิกัด ${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}`:""}</div></div>`).join("")||"<div class='empty'>ยังไม่มีสถานการณ์</div>"}
-function realtime(){if(!sb)return;sb.channel("public-live-v2").on("postgres_changes",{event:"*",schema:"public",table:"requests"},()=>loadRequests()).on("postgres_changes",{event:"*",schema:"public",table:"help_centers"},()=>loadCenters()).on("postgres_changes",{event:"*",schema:"public",table:"situations"},()=>loadSituations()).subscribe()}
-initMaps();
-updateNameUI();
 
-if(!citizenName){
-  $("nameGate").classList.remove("hidden");
-}else if(!citizenRole){
-  $("roleName").textContent=citizenName;
-  $("nameStep").classList.add("hidden");
-  $("roleStep").classList.remove("hidden");
-  $("nameGate").classList.remove("hidden");
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <div id="nameStep">
+      <h2>👋 ก่อนเริ่มใช้งาน</h2>
+      <p>กรุณาพิมพ์ชื่อของคุณ เพื่อให้แยกได้ว่าเคสไหนเป็นของคุณ</p>
+      <input id="nameInput" maxlength="80" placeholder="เช่น สมชาย">
+      <button class="primary" id="startBtn" style="width:100%;margin-top:12px">เริ่มใช้งาน</button>
+    </div>
+    <div id="roleStep" style="display:none">
+      <h2>สวัสดี <span id="roleName"></span> 👋</h2>
+      <p>วันนี้คุณต้องการทำอะไร?</p>
+      <div class="role-grid">
+        <button class="role-btn requester" id="requesterBtn"><b>🔴 ฉันต้องการความช่วยเหลือ</b><span>แจ้งเหตุหรือส่งคำขอความช่วยเหลือของคุณ</span></button>
+        <button class="role-btn helper" id="helperBtn"><b>🟢 ฉันต้องการช่วยเหลือผู้อื่น</b><span>ดูเคสที่รอความช่วยเหลือและรับเคสไปช่วย</span></button>
+      </div>
+      <p class="muted small">คุณสามารถเปลี่ยนบทบาทภายหลังได้ และสามารถทำได้ทั้งสองอย่าง</p>
+    </div>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+"use strict";
+
+const API="https://atrhbzrxvklqakmgfdmr.supabase.co";
+const KEY="sb_publishable_4dsKQxcYULWMEQPs_zkPA_OhL0dLWn";
+const NAME_KEY="citizen_help_name";
+const ROLE_KEY="citizen_help_role";
+const REQ_TOKEN_KEY="citizen_help_requester_token";
+const HELP_TOKEN_KEY="citizen_help_helper_token";
+
+let name=localStorage.getItem(NAME_KEY)||"";
+let role=localStorage.getItem(ROLE_KEY)||"";
+let reqToken=localStorage.getItem(REQ_TOKEN_KEY)||"";
+let helpToken=localStorage.getItem(HELP_TOKEN_KEY)||"";
+if(!reqToken){reqToken=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();localStorage.setItem(REQ_TOKEN_KEY,reqToken)}
+if(!helpToken){helpToken=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();localStorage.setItem(HELP_TOKEN_KEY,helpToken)}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function headers(extra){return Object.assign({"apikey":KEY,"Authorization":"Bearer "+KEY,"Content-Type":"application/json","Prefer":"return=representation"},extra||{})}
+async function api(path,options={}){
+  const r=await fetch(API+"/rest/v1/"+path,Object.assign({headers:headers()},options));
+  const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){data=text}
+  if(!r.ok)throw new Error(typeof data==="string"?data:(data?.message||data?.hint||"Supabase error "+r.status));
+  return data;
+}
+async function rpc(name,body){
+  const r=await fetch(API+"/rest/v1/rpc/"+name,{method:"POST",headers:headers(),body:JSON.stringify(body)});
+  const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){data=text}
+  if(!r.ok)throw new Error(typeof data==="string"?data:(data?.message||data?.hint||"RPC error "+r.status));
+  return data;
 }
 
-loadRequests();
-loadCenters();
-loadSituations();
-realtime();
-  
+function updateHeader(){ $("helloName").textContent=name?`สวัสดี ${name} 👋`: ""; }
+function openGate(mode){
+  $("gate").classList.add("show");
+  if(mode==="role" && name){
+    $("nameStep").style.display="none";$("roleStep").style.display="block";$("roleName").textContent=name;
+  }else{
+    $("nameStep").style.display="block";$("roleStep").style.display="none";
+  }
+}
+function closeGate(){ $("gate").classList.remove("show") }
+
+function chooseRole(r){
+  role=r;localStorage.setItem(ROLE_KEY,r);closeGate();
+  showPage(r==="requester"?"ask":"all");
+}
+function start(){
+  const v=$("nameInput").value.trim();
+  if(!v){toast("กรุณาพิมพ์ชื่อของคุณ");return}
+  name=v;localStorage.setItem(NAME_KEY,name);updateHeader();
+  $("nameStep").style.display="none";$("roleStep").style.display="block";$("roleName").textContent=name;
+}
+function changeName(){
+  const v=prompt("ชื่อที่ต้องการแสดง",name);
+  if(v===null)return;const n=v.trim();if(!n)return;
+  name=n;localStorage.setItem(NAME_KEY,n);updateHeader();
+  toast("เปลี่ยนชื่อแล้ว");
+}
+function showPage(id){
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const p=$(id);if(!p)return;p.classList.add("active");
+  setTimeout(()=>initMapFor(id),50);
+  if(id==="home")loadSummary();
+  if(id==="all")loadRequests("all");
+  if(id==="mine")loadRequests("mine");
+  if(id==="centers")loadCenters();
+  if(id==="situations")loadSituations();
+  window.scrollTo(0,0);
+}
+
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+$("changeRoleBtn").addEventListener("click",()=>name?openGate("role"):openGate("name"));
+$("changeNameBtn").addEventListener("click",changeName);
+$("startBtn").addEventListener("click",start);
+$("requesterBtn").addEventListener("click",()=>chooseRole("requester"));
+$("helperBtn").addEventListener("click",()=>chooseRole("helper"));
+$("refreshAll").addEventListener("click",()=>loadRequests("all"));
+$("refreshMine").addEventListener("click",()=>loadRequests("mine"));
+
+let maps={},marks={},coords={ask:null,center:null,situation:null};
+function initMapFor(id){
+  if(typeof L==="undefined")return;
+  const cfg={ask:["askMap",13.7563,100.5018],centers:["centerMap",13.7563,100.5018],situations:["sitMap",13.7563,100.5018]};
+  if(!cfg[id])return;
+  const [el,lat,lng]=cfg[id];
+  if(maps[id]){maps[id].invalidateSize();return}
+  if(!$(el))return;
+  const map=L.map(el).setView([lat,lng],12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+  map.on("click",e=>setPoint(id,e.latlng.lat,e.latlng.lng));
+  maps[id]=map;marks[id]=null;
+}
+function setPoint(id,lat,lng){
+  coords[id]={lat,lng};
+  if(marks[id])marks[id].setLatLng([lat,lng]);
+  else if(typeof L!=="undefined")marks[id]=L.marker([lat,lng]).addTo(maps[id]);
+  const out=$(id==="ask"?"askCoords":id==="center"?"centerCoords":"sitCoords");
+  if(out)out.textContent=`ละติจูด ${lat.toFixed(6)} • ลองจิจูด ${lng.toFixed(6)}`;
+}
+function locate(id){
+  if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return}
+  navigator.geolocation.getCurrentPosition(p=>{
+    const {latitude,longitude}=p.coords;setPoint(id,latitude,longitude);maps[id]?.setView([latitude,longitude],16)
+  },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"));
+}
+$("askLocate").addEventListener("click",()=>locate("ask"));
+$("centerLocate").addEventListener("click",()=>locate("center"));
+$("sitLocate").addEventListener("click",()=>locate("situation"));
+$("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง"});
+
+function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":"done"}
+function requestCard(x, mine=false){
+  const canClaim=x.status==="รอความช่วยเหลือ" && x.helper_token==null;
+  const mineByToken=x.requester_token===reqToken;
+  let buttons="";
+  if(canClaim && !mineByToken)buttons+=`<button class="primary claimBtn" data-id="${x.id}">🙋 รับเคสนี้</button>`;
+  return `<div class="case">
+    <div class="between"><h3>${esc(x.need||"ไม่ได้ระบุ")}</h3><span class="status ${statusClass(x.status||"")}">${esc(x.status||"-")}</span></div>
+    <div class="tag">👤 ${esc(x.requester_name||"ไม่ระบุชื่อ")}</div>
+    ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
+    <p>📍 ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    <div class="small muted">${x.created_at?new Date(x.created_at).toLocaleString("th-TH"):""}</div>
+    ${buttons?`<div class="row" style="margin-top:10px">${buttons}</div>`:""}
+  </div>`;
+}
+async function loadRequests(mode){
+  const target=mode==="mine"?$("mineList"):$("allList");if(!target)return;
+  target.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    let q="requests?select=*&order=created_at.desc&limit=100";
+    if(mode==="mine")q+=`&requester_token=eq.${encodeURIComponent(reqToken)}`;
+    const rows=await api(q);
+    const visible=(rows||[]).filter(x=>!x.hidden);
+    target.innerHTML=visible.length?visible.map(x=>requestCard(x,mode==="mine")).join(""):'<div class="empty">ยังไม่มีเคส</div>';
+    target.querySelectorAll(".claimBtn").forEach(b=>b.addEventListener("click",()=>claim(b.dataset.id)));
+    if(mode==="all")updateCounts(visible);
+  }catch(e){target.innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้<br><span class="small">${esc(e.message)}</span></div>`}
+}
+async function loadSummary(){
+  try{
+    const rows=await api("requests?select=status,hidden&order=created_at.desc&limit=1000");
+    const a=(rows||[]).filter(x=>!x.hidden);updateCounts(a);
+    const c=await api("help_centers?select=id&limit=1000");$("countCenter").textContent=(c||[]).length;
+    const s=await api("situations?select=id&limit=1000");$("countSituation").textContent=(s||[]).length;
+  }catch(e){}
+}
+function updateCounts(a){$("countWait").textContent=a.filter(x=>x.status==="รอความช่วยเหลือ").length;$("countHelp").textContent=a.filter(x=>x.status==="กำลังช่วยเหลือ").length}
+
+async function submitRequest(){
+  const need=$("need").value.trim(),place=$("place").value.trim();
+  if(!need){toast("กรุณาระบุสิ่งที่ต้องการ");return}
+  try{
+    await api("requests",{method:"POST",body:JSON.stringify({
+      need,place,urgent:$("urgent").value==="true",status:"รอความช่วยเหลือ",
+      requester_token:reqToken,requester_name:name,submitted:new Date().toISOString(),
+      created_at:new Date().toISOString(),lat:coords.ask?.lat??null,lng:coords.ask?.lng??null,hidden:false
+    })});
+    $("need").value="";$("place").value="";coords.ask=null;
+    if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";
+    toast("ส่งคำขอเรียบร้อยแล้ว");showPage("mine");
+  }catch(e){toast("ส่งคำขอไม่สำเร็จ: "+e.message)}
+}
+$("submitRequest").addEventListener("click",submitRequest);
+
+async function claim(id){
+  try{const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id)});if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว")}else{toast("รับเคสแล้ว");loadRequests("all")}}
+  catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
+}
+
+async function loadCenters(){
+  const box=$("centerList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    const rows=await api("help_centers?select=*&order=created_at.desc&limit=200");
+    $("countCenter").textContent=(rows||[]).length;
+    box.innerHTML=rows?.length?rows.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">ยังไม่มีจุดช่วยเหลือ</div>';
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
+}
+async function addCenter(){
+  const nameV=$("centerName").value.trim();if(!nameV){toast("กรุณาใส่ชื่อจุดช่วยเหลือ");return}
+  if(!coords.center){toast("กรุณาเลือกตำแหน่งบนแผนที่");return}
+  try{
+    await api("help_centers",{method:"POST",body:JSON.stringify({
+      name:nameV,service_type:$("centerType").value,phone:$("centerPhone").value.trim(),
+      description:$("centerDesc").value.trim(),place:$("centerPlace").value.trim(),
+      lat:coords.center.lat,lng:coords.center.lng
+    })});
+    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");toast("เพิ่มจุดช่วยเหลือแล้ว");loadCenters();
+  }catch(e){toast("เพิ่มไม่สำเร็จ: "+e.message)}
+}
+$("addCenter").addEventListener("click",addCenter);
+
+async function loadSituations(){
+  const box=$("situationList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    const rows=await api("situations?select=*&order=created_at.desc&limit=200");$("countSituation").textContent=(rows||[]).length;
+    box.innerHTML=rows?.length?rows.map(x=>`<div class="situation"><h3>🌊 ${esc(x.title||x.name||"สถานการณ์")}</h3><span class="tag">${esc(x.severity||"เล็กน้อย")}</span><p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${x.created_at?new Date(x.created_at).toLocaleString("th-TH"):""}</div></div>`).join(""):'<div class="empty">ยังไม่มีรายงาน</div>';
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
+}
+async function addSituation(){
+  const title=$("sitTitle").value.trim(),desc=$("sitDesc").value.trim();
+  if(!title){toast("กรุณาใส่หัวข้อ");return}
+  try{
+    await api("situations",{method:"POST",body:JSON.stringify({
+      title,description:desc,severity:$("sitSeverity").value,place:$("sitPlace").value.trim(),
+      lat:coords.situation?.lat??null,lng:coords.situation?.lng??null,created_at:new Date().toISOString()
+    })});
+    $("sitTitle").value="";$("sitDesc").value="";$("sitPlace").value="";toast("แจ้งสถานการณ์แล้ว");loadSituations();
+  }catch(e){toast("แจ้งไม่สำเร็จ: "+e.message)}
+}
+$("addSituation").addEventListener("click",addSituation);
+
+async function loadAllInitial(){await loadSummary();if(role==="requester")showPage("ask");else if(role==="helper")showPage("all")}
+let pollTimer=null;
+function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(()=>{loadSummary();const active=document.querySelector(".page.active")?.id;if(active==="all")loadRequests("all");if(active==="mine")loadRequests("mine");if(active==="centers")loadCenters();if(active==="situations")loadSituations()},10000)}
+
+updateHeader();
+if(!name){openGate("name")}
+else if(!role){openGate("role")}
+else{loadAllInitial()}
+startPolling();
+})();
+</script>
+</body>
+</html>
