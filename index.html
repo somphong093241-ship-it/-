@@ -278,7 +278,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
     </div>
     <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 พื้นที่น้ำท่วมจาก GISTDA • 🚧 ถนนผ่านไม่ได้จากรายงานประชาชน</div>
   </div>
-  <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังโหลดข้อมูล...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
+  <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังเตรียมแผนที่พื้นที่น้ำท่วม...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
   <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
 </section>
 
@@ -1327,10 +1327,15 @@ const THAIWATER_API="https://api-v3.thaiwater.net/api/v1/thaiwater30/";
 // GISTDA Disaster Platform: official flood-map TMS. The public service may require an API key.
 // If a key is available, store it locally under GISTDA_FLOOD_API_KEY; never hard-code a secret in this file.
 const GISTDA_FLOOD_TMS_BASE="https://api-gateway.gistda.or.th/api/2.0/resources/maps/flood/";
+const GISTDA_FLOOD_WMS_BASE="https://api-gateway.gistda.or.th/api/2.0/resources/maps/flood/";
 const GISTDA_FLOOD_PORTAL="https://disaster.gistda.or.th/flood";
+// Public client key currently embedded by the GISTDA public dashboard.
+const GISTDA_PUBLIC_MAP_KEY="m4bUUjGDPc3rdxyb8JHcL8SDhgLHPgRjq2NBeibPIucJkpxuoHahMVwXwRjKTOq6";
 let gistdaFloodPeriod="1day";
 let gistdaFloodLayer=null;
 let gistdaFloodTileFailed=false;
+let gistdaFloodErrorCount=0;
+let gistdaFloodUsing="wms";
 let waterLoading=false;
 function initWaterSelectors(){
   const r=$("waterRegion"),p=$("waterProvince"),d=$("waterDistrict"); if(!r||!p||!d)return;
@@ -1378,11 +1383,11 @@ function locateWaterUser(){
     waterMap.setView([lat,lng],15); waterMap.invalidateSize();
   },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
-function gistdaFloodTileUrl(period){
-  let url=GISTDA_FLOOD_TMS_BASE+period+"/tms/{z}/{x}/{y}";
-  let key=""; try{key=localStorage.getItem("GISTDA_FLOOD_API_KEY")||""}catch{}
-  if(key) url += "?api_key="+encodeURIComponent(key);
-  return url;
+function gistdaFloodWmsUrl(period){
+  return GISTDA_FLOOD_WMS_BASE+period+"/wms?api_key="+encodeURIComponent(GISTDA_PUBLIC_MAP_KEY);
+}
+function gistdaFloodTmsUrl(period){
+  return GISTDA_FLOOD_TMS_BASE+period+"/tms/{z}/{x}/{y}?api_key="+encodeURIComponent(GISTDA_PUBLIC_MAP_KEY);
 }
 function setGistdaFloodStatus(text,ok=false){
   const el=$("gistdaFloodStatus"); if(!el)return; el.textContent=text; el.style.background=ok?"#dff6e6":"";
@@ -1392,22 +1397,29 @@ function clearGistdaFloodLayer(){
 }
 function addGistdaFloodLayer(period){
   if(!waterMap || typeof L==="undefined")return;
-  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; clearGistdaFloodLayer();
+  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; gistdaFloodErrorCount=0; gistdaFloodUsing="wms"; clearGistdaFloodLayer();
   const label={"1day":"1 วันล่าสุด","3days":"3 วันล่าสุด","7days":"7 วันล่าสุด","30days":"30 วันล่าสุด"}[gistdaFloodPeriod]||gistdaFloodPeriod;
-  setGistdaFloodStatus("กำลังโหลด "+label+"…");
-  const key=(()=>{try{return localStorage.getItem("GISTDA_FLOOD_API_KEY")||""}catch{return ""}})();
-  gistdaFloodLayer=L.tileLayer(gistdaFloodTileUrl(gistdaFloodPeriod),{
-    tileSize:512,zoomOffset:-1,opacity:0.55,maxZoom:18,
+  setGistdaFloodStatus("กำลังโหลดพื้นที่น้ำท่วม "+label+"…");
+  const wmsUrl=gistdaFloodWmsUrl(gistdaFloodPeriod);
+  gistdaFloodLayer=L.tileLayer.wms(wmsUrl,{
+    layers:"flood",styles:"",format:"image/png",transparent:true,version:"1.1.1",opacity:0.62,zIndex:450,
     attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"
   }).addTo(waterMap);
-  let errorCount=0;
-  gistdaFloodLayer.on("tileerror",()=>{
-    errorCount++;
-    if(errorCount>=2){gistdaFloodTileFailed=true;setGistdaFloodStatus(key?"โหลดชั้นข้อมูลไม่สำเร็จ":"ต้องใช้ API Key");
-      const h=$("gistdaFloodHint"); if(h) h.innerHTML=key?"GISTDA ไม่ส่งชั้นแผนที่กลับมาในขณะนี้":"บริการแผนที่ GISTDA ต้องใช้ API Key จาก API Gateway • กด “เปิดแผนที่น้ำท่วม GISTDA” เพื่อดูข้อมูลทางการได้ทันที";
+  const layerRef=gistdaFloodLayer;
+  layerRef.on("tileload",()=>{if(layerRef!==gistdaFloodLayer)return;gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);const h=$("gistdaFloodHint");if(h)h.textContent="พื้นที่สีบนแผนที่ = ข้อมูลพื้นที่น้ำท่วมจาก GISTDA • เลือกช่วงย้อนหลังได้";});
+  layerRef.on("tileerror",()=>{
+    if(layerRef!==gistdaFloodLayer)return;
+    gistdaFloodErrorCount++;
+    if(gistdaFloodErrorCount>=2 && gistdaFloodUsing==="wms"){
+      gistdaFloodUsing="tms";gistdaFloodErrorCount=0;
+      try{waterMap.removeLayer(layerRef)}catch{}
+      setGistdaFloodStatus("กำลังลองชั้นแผนที่สำรอง…");
+      const tms=L.tileLayer(gistdaFloodTmsUrl(gistdaFloodPeriod),{tms:true,tileSize:256,opacity:0.62,maxZoom:18,zIndex:450,attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"}).addTo(waterMap);
+      gistdaFloodLayer=tms;
+      tms.on("tileload",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);});
+      tms.on("tileerror",()=>{gistdaFloodTileFailed=true;setGistdaFloodStatus("โหลดพื้นที่น้ำท่วมไม่ได้");const h=$("gistdaFloodHint");if(h)h.innerHTML="บริการแผนที่ GISTDA ไม่ส่งชั้นข้อมูลกลับมาในขณะนี้ • สามารถกด “เปิดแผนที่น้ำท่วม GISTDA” เพื่อดูข้อมูลทางการได้";});
     }
   });
-  gistdaFloodLayer.on("load",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงชั้น "+label,true);});
 }
 async function initWaterMap(){
   const el=$("waterMap"); if(!el||typeof L==="undefined")return;
@@ -1417,6 +1429,7 @@ async function initWaterMap(){
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
   addGistdaFloodLayer(gistdaFloodPeriod);
+  waterMap.invalidateSize();
 }
 const THAIWATER_PROVINCE_CODES={
   "กรุงเทพมหานคร":"10","สมุทรปราการ":"11","นนทบุรี":"12","ปทุมธานี":"13","พระนครศรีอยุธยา":"14","อ่างทอง":"15","ลพบุรี":"16","สิงห์บุรี":"17","ชัยนาท":"18","สระบุรี":"19",
@@ -1432,7 +1445,7 @@ function twCacheKey(){return `thaiwater-area-v2:${province||""}`}
 function twNorm(v){return String(v??"").replace(/^จังหวัด\s*/i,"").replace(/^เขต\s*/i,"").replace(/\s+/g,"").trim()}
 async function thaiWaterJson(path,opts={}){
   const controller=new AbortController();
-  const timer=setTimeout(()=>controller.abort(),15000);
+  const timer=setTimeout(()=>controller.abort(),8000);
   try{
     const r=await fetch(THAIWATER_API+path,{headers:{"Accept":"application/json"},signal:controller.signal,cache:"no-store"});
     if(!r.ok){
@@ -1559,8 +1572,10 @@ async function loadThaiWater(){
       if(box && !data.wl.length && !data.rain.length)box.insertAdjacentHTML("afterbegin",`<div class='small muted'>⚠️ ThaiWater ตอบกลับไม่ครบ (${esc(failed||"ชั่วคราว")})</div>`);
     }
   }catch(e){
-    $("waterStationList").innerHTML=`<div class='empty'>เชื่อมต่อข้อมูลน้ำภายนอกไม่สำเร็จในขณะนี้<br><small>${esc(e.message||"")}</small><br><span class='small muted'>ระบบจะไม่แสดงว่า “ไม่มีน้ำ” หากแหล่งข้อมูลภายนอกไม่ตอบกลับ</span></div>`;
-    $("waterDataCount").textContent="เชื่อมต่อข้อมูลภายนอกไม่ได้";
+    $("waterStationList").innerHTML=`<div class='empty'>ข้อมูลระดับน้ำ/ฝนจาก ThaiWater ยังเชื่อมต่อไม่ได้ในขณะนี้<br><small>${esc(e.message||"")}</small><br><span class='small muted'>แต่ชั้นพื้นที่น้ำท่วม GISTDA บนแผนที่ยังใช้ตรวจพื้นที่น้ำท่วมได้</span></div>`;
+    $("waterDataCount").textContent="ThaiWater เชื่อมต่อไม่ได้";
+    const ws=$("waterSummary");
+    if(ws)ws.innerHTML=`<div class="grid"><div class="stat"><b>🛰️ พื้นที่น้ำท่วม</b><strong>ดูจากชั้น GISTDA บนแผนที่</strong></div><div class="stat"><b>📍 พื้นที่</b><strong>${esc(province||"-")}${district?" / "+esc(district):""}</strong></div><div class="stat"><b>💧 ThaiWater</b><strong>รอเชื่อมต่อ</strong></div></div>`;
   }
 }
 async function loadWaterRoadReports(){
@@ -1583,6 +1598,8 @@ async function loadWaterPage(force=false){
     waterSetLabel();initWaterSelectors();await initWaterMap();
     if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
     if(waterMap)focusWaterMapOnSelectedArea();
+    const ws=$("waterSummary");
+    if(ws)ws.innerHTML=`<div class="grid"><div class="stat"><b>🛰️ พื้นที่น้ำท่วม</b><strong>กำลังตรวจสอบแผนที่ GISTDA</strong></div><div class="stat"><b>📍 พื้นที่</b><strong>${esc(province||"-")}${district?" / "+esc(district):""}</strong></div><div class="stat"><b>💧 สถานีระดับน้ำ</b><strong>กำลังโหลดข้อมูลประกอบ</strong></div></div>`;
     $("waterStationList").innerHTML="<div class='empty'>กำลังโหลดข้อมูลระดับน้ำและฝนจาก ThaiWater...</div>";
     $("waterDataCount").textContent="กำลังโหลด ThaiWater...";
     await loadThaiWater();
