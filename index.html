@@ -634,7 +634,8 @@ function renderDetail(x){
       <div>✅ <b>เวลาช่วยเหลือเสร็จ</b><br>${formatTime(x.completed_at)}</div>
     </div>
     ${helperInfo}
-    ${x.lat!=null&&x.lng!=null?`<p style="margin-bottom:6px">🗺️ ตำแหน่งคำขอ</p><div id="detailMap" class="detail-map"></div>${role==="helper"?`<div class="detail-actions"><button class="primary" id="navigateToRequesterBtn">🧭 นำทางไปหาผู้ขอความช่วยเหลือ</button></div><div class="small muted" style="margin-top:6px">เปิด Google Maps เพื่อนำทางไปยังพิกัดของผู้ขอ</div>`:""}`:`<div class="empty">ยังไม่มีตำแหน่งบนแผนที่</div>`}
+    ${Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng))?`<p style="margin-bottom:6px">🗺️ ตำแหน่งคำขอ</p><div id="detailMap" class="detail-map"></div>`:`<div class="empty">⚠️ เคสนี้ยังไม่มีพิกัดของผู้ขอ</div>`}
+    ${role==="helper"?`<div class="detail-actions"><button class="primary" id="navigateToRequesterBtn">🧭 นำทางไปหาผู้ขอความช่วยเหลือ</button></div><div class="small muted" style="margin-top:6px">กดเพื่อเปิด Google Maps ไปยังตำแหน่งของผู้ขอ</div>`:""}
     ${actions?`<div class="detail-actions">${actions}</div>`:""}`;
   $("detailBackdrop").classList.add("show");
   setTimeout(()=>{
@@ -646,9 +647,11 @@ function renderDetail(x){
       detailMap.invalidateSize();
     }
     $("navigateToRequesterBtn")?.addEventListener("click",()=>{
-      if(x.lat==null||x.lng==null)return;
       const lat=Number(x.lat), lng=Number(x.lng);
-      if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+      if(!Number.isFinite(lat)||!Number.isFinite(lng)){
+        toast("เคสนี้ยังไม่มีพิกัดของผู้ขอความช่วยเหลือ");
+        return;
+      }
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
     });
     $("detailClaimBtn")?.addEventListener("click",()=>{closeDetail();claim(x.id)});
