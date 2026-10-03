@@ -188,8 +188,30 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 
 <section id="centers" class="page">
   <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaCenters">📍 พื้นที่: กำลังโหลด</span></div>
+
   <div class="card">
-    <h2>🏥 จุดช่วยเหลือ</h2>
+    <div class="between">
+      <div><h2 style="margin:0">🏥 จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">ดูจุดช่วยเหลือทั้งหมดบนแผนที่ หรือค้นหาจุดที่อยู่ใกล้คุณ</p></div>
+    </div>
+    <div class="center-browse-actions" style="margin-top:12px">
+      <button class="primary" id="findNearbyCenters">🔎 ค้นหาจุดช่วยเหลือใกล้ฉัน</button>
+      <button class="secondary" id="openAddCenterForm">➕ เพิ่มจุดช่วยเหลือ</button>
+    </div>
+  </div>
+
+  <div class="card" id="centerBrowseCard">
+    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><span class="tag" id="centerBrowseCount">กำลังโหลด...</span></div>
+    <div class="center-map-actions row" style="margin-top:10px">
+      <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
+    </div>
+    <div id="centerBrowseMap" class="center-browse-map" style="margin-top:10px"></div>
+    <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
+    <div id="centerNearbyList" class="center-near-list"></div>
+  </div>
+
+  <div class="card" id="addCenterCard" style="display:none">
+    <div class="between"><h2 style="margin:0">➕ เพิ่มจุดช่วยเหลือ</h2><button class="secondary" id="closeAddCenterForm">ปิด</button></div>
     <label>ชื่อจุดช่วยเหลือ</label><input id="centerName" placeholder="เช่น ศูนย์พักพิงชุมชน">
     <label>ประเภทบริการ</label>
     <select id="centerType">
@@ -203,15 +225,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <div id="centerMap" class="map"></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
     <div class="row" style="margin-top:10px"><button class="secondary" id="centerLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addCenter">เพิ่มจุดช่วยเหลือ</button></div>
   </div>
-  <div class="card">
-    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><span class="tag">ดูจุดบนแผนที่</span></div>
-    <p class="muted" style="margin:8px 0 0">กดเพื่อดูจุดช่วยเหลือทั้งหมดบนแผนที่ หรือค้นหาจุดที่อยู่ใกล้คุณ</p>
-    <div class="center-browse-actions">
-      <button class="primary" id="openCenterMap">🗺️ เปิดแผนที่</button>
-      <button class="secondary" id="findNearbyCenters">📍 ค้นหาใกล้ฉัน</button>
-    </div>
-    <div id="nearbyCenterSummary" class="small muted" style="margin-top:8px"></div>
-  </div>
+
   <div class="card"><h2>📍 จุดที่มีอยู่</h2><div id="centerList"></div></div>
 </section>
 
@@ -329,21 +343,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <div id="detailBody"></div>
   </div>
 </div>
-<div id="centerMapBackdrop" class="center-map-backdrop" role="dialog" aria-modal="true" aria-labelledby="centerMapTitle">
-  <div class="center-map-card">
-    <div class="between">
-      <h2 id="centerMapTitle">🗺️ แผนที่จุดช่วยเหลือ</h2>
-      <button class="secondary" id="closeCenterMap">✕ ปิด</button>
-    </div>
-    <div class="center-map-actions row" style="margin-top:8px">
-      <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
-      <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
-    </div>
-    <div id="centerBrowseMap" class="center-browse-map"></div>
-    <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
-    <div id="centerNearbyList" class="center-near-list"></div>
-  </div>
-</div>
+
 <div id="toast" class="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -612,12 +612,12 @@ document.querySelectorAll(".caseFilter").forEach(b=>b.addEventListener("click",(
 $("refreshMine").addEventListener("click",()=>loadRequests("mine"));
 $("waitingStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","รอความช่วยเหลือ"),60)});
 $("helpStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","กำลังช่วยเหลือ"),60)});
-$("centerStat").addEventListener("click",()=>showPage("centers"));$("openCenterMap").addEventListener("click",openCenterMapModal);
-$("findNearbyCenters").addEventListener("click",async()=>{await openCenterMapModal();locateCenterBrowse()});
-$("closeCenterMap").addEventListener("click",closeCenterMapModal);
+$("centerStat").addEventListener("click",()=>showPage("centers"));
+$("findNearbyCenters").addEventListener("click",locateCenterBrowse);
 $("centerMapMyLocation").addEventListener("click",locateCenterBrowse);
 $("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
-$("centerMapBackdrop").addEventListener("click",e=>{if(e.target===$("centerMapBackdrop"))closeCenterMapModal()});
+$("openAddCenterForm").addEventListener("click",()=>{ $("addCenterCard").style.display="block"; setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80); window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'}); });
+$("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
 
 $("situationStat").addEventListener("click",()=>showPage("situations"));
 $("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
@@ -976,21 +976,11 @@ function renderNearbyCenterList(rows){
     return `<div class="center-near-item"><b>${i+1}. 🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><span class="tag">${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}</span> ${d}${x.place?`<div class="small muted">📍 ${esc(x.place)}</div>`:''}</div>`;
   }).join('');
 }
-async function openCenterMapModal(){
-  $('centerMapBackdrop').classList.add('show');
-  const map=ensureCenterBrowseMap();
-  setTimeout(()=>map?.invalidateSize(),80);
-  if(!centerRows.length){
-    try{centerRows=await api('help_centers?select=*&order=created_at.desc&limit=1000');}
-    catch(e){$('centerMapStatus').textContent='โหลดจุดช่วยเหลือไม่ได้: '+e.message;return}
-  }
-  renderCenterBrowseMarkers(centerRows);
-  $('centerMapStatus').textContent=`มีจุดช่วยเหลือ ${centerRows.length} จุด`;
-}
-function closeCenterMapModal(){$('centerMapBackdrop').classList.remove('show')}
 function locateCenterBrowse(){
   if(!navigator.geolocation){toast('อุปกรณ์ไม่รองรับตำแหน่ง');return}
   $('centerMapStatus').textContent='กำลังค้นหาจุดช่วยเหลือใกล้คุณ...';
+  const map=ensureCenterBrowseMap();
+  setTimeout(()=>map?.invalidateSize(),80);
   navigator.geolocation.getCurrentPosition(pos=>{
     const lat=pos.coords.latitude,lng=pos.coords.longitude;
     const map=ensureCenterBrowseMap(lat,lng,15);
@@ -1020,7 +1010,7 @@ function locateCenterBrowse(){
   },()=>{toast('ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง');$('centerMapStatus').textContent='ไม่สามารถใช้ตำแหน่งปัจจุบันได้'}, {enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
 function showAllCenterBrowse(){
-  if(!centerRows.length){openCenterMapModal();return}
+  if(!centerRows.length){loadCenters();return}
   const map=ensureCenterBrowseMap();
   if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
   renderCenterBrowseMarkers(centerRows);
@@ -1034,8 +1024,13 @@ async function loadCenters(){
     const rows=await api("help_centers?select=*&order=created_at.desc&limit=1000");
     centerRows=rows||[];
     $("countCenter").textContent=centerRows.length;
+    if($("centerBrowseCount")) $("centerBrowseCount").textContent=`${centerRows.length} จุด`;
     box.innerHTML=rows?.length?rows.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">ยังไม่มีจุดช่วยเหลือ</div>';
-  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
+    const map=ensureCenterBrowseMap();
+    setTimeout(()=>map?.invalidateSize(),80);
+    renderCenterBrowseMarkers(centerRows);
+    $("centerMapStatus").textContent=centerRows.length?`แสดงจุดช่วยเหลือ ${centerRows.length} จุดบนแผนที่`:'ยังไม่มีจุดช่วยเหลือ';
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`;if($("centerMapStatus"))$("centerMapStatus").textContent='โหลดจุดช่วยเหลือไม่ได้'}
 }
 async function addCenter(){
   const nameV=$("centerName").value.trim();if(!nameV){toast("กรุณาใส่ชื่อจุดช่วยเหลือ");return}
