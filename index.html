@@ -585,7 +585,7 @@ $("centerLocate").addEventListener("click",()=>locate("center"));
 $("sitLocate").addEventListener("click",()=>locate("situation"));
 $("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง"});
 
-function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":"done"}
+function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":s==="ยกเลิกคำขอ"?"cancel":"done"}
 let detailMap=null;
 let detailMarker=null;
 let detailCurrent=null;
@@ -619,6 +619,7 @@ function renderDetail(x){
   if(role==="helper" && status==="รอความช่วยเหลือ" && !helperToken) actions+=`<button class="primary" id="detailClaimBtn">🙋 รับเคสนี้</button>`;
   // ปุ่มจบเคสต้องแสดงเฉพาะผู้ช่วยที่มี helper_token ตรงกับผู้ที่กดรับเคสนี้เท่านั้น
   if(role==="helper" && myClaim && status==="กำลังช่วยเหลือ") actions+=`<button class="primary" id="detailCompleteBtn">✅ จบเคส / ยืนยันช่วยเหลือเสร็จแล้ว</button>`;
+  if(role==="requester" && mineByToken && status==="รอความช่วยเหลือ") actions+=`<button class="secondary" id="detailCancelBtn" style="border-color:#d33;color:#b00020">❌ ยกเลิกคำขอ</button>`;
   if(role==="requester" && mineByToken && status==="กำลังช่วยเหลือ") actions+=`<button class="secondary" id="detailRequesterDoneBtn">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
   const helperInfo=helperToken?`<div class="card" style="margin-top:12px"><b>🟢 ผู้ช่วยเหลือ</b><p style="margin-bottom:4px">ชื่อ: ${esc(x.helper_name||"ไม่ระบุ")}</p><p style="margin:0">สังกัด: ${esc(x.helper_affiliation||"ไม่ระบุ")} • ${esc(x.helper_type||"ไม่ระบุ")}</p></div>`:"";
   $("detailTitle").textContent=`รายละเอียดเคส #${x.request_no||x.id}`;
@@ -656,6 +657,7 @@ function renderDetail(x){
     });
     $("detailClaimBtn")?.addEventListener("click",()=>{closeDetail();claim(x.id)});
     $("detailCompleteBtn")?.addEventListener("click",()=>{closeDetail();completeHelp(x.id)});
+    $("detailCancelBtn")?.addEventListener("click",()=>{closeDetail();cancelRequest(x.id)});
     $("detailRequesterDoneBtn")?.addEventListener("click",()=>{closeDetail();requesterConfirmHelp(x.id)});
   },80);
 }
@@ -739,6 +741,18 @@ async function completeHelp(id){
     toast("ยืนยันการช่วยเหลือสำเร็จแล้ว");
     loadRequests("all");loadRequests("mine");
   }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
+}
+
+async function cancelRequest(id){
+  if(role!=="requester")return;
+  if(!confirm("ยืนยันยกเลิกคำขอนี้ใช่หรือไม่?\n\nคำขอจะถูกนำออกจากรายการรอความช่วยเหลือ"))return;
+  try{
+    await api(`requests?id=eq.${encodeURIComponent(id)}&requester_token=eq.${encodeURIComponent(reqToken)}&status=eq.รอความช่วยเหลือ`,{method:"PATCH",body:JSON.stringify({status:"ยกเลิกคำขอ",hidden:true})});
+    toast("ยกเลิกคำขอแล้ว");
+    loadRequests("mine");
+    loadRequests("all");
+    loadSummary();
+  }catch(e){toast("ยกเลิกคำขอไม่สำเร็จ: "+e.message)}
 }
 
 async function requesterConfirmHelp(id){
