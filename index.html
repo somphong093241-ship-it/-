@@ -1474,7 +1474,8 @@ async function loadWaterPage(force=false){
     waterSetLabel();initWaterSelectors();await initWaterMap();
     if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
     if(waterMap)focusWaterMapOnSelectedArea();
-    try{const features=await queryGistdaStations();renderWaterStations(features);}catch(e){$("waterStationList").innerHTML="<div class='empty'>เชื่อมต่อข้อมูลสถานีน้ำ GISTDA ไม่สำเร็จในขณะนี้</div>";$("waterDataCount").textContent="โหลดข้อมูลไม่ได้";}
+    $("waterStationList").innerHTML="<div class='empty'>กำลังโหลดข้อมูลระดับน้ำและฝนจาก ThaiWater...</div>";
+    $("waterDataCount").textContent="กำลังโหลด ThaiWater...";
     await loadThaiWater();
     await loadWaterRoadReports();
   }finally{waterLoading=false;}
