@@ -326,10 +326,28 @@ async function rpc(name,body){
 
 
 const TH_PROVINCES=["กรุงเทพมหานคร","กระบี่","กาญจนบุรี","กาฬสินธุ์","กำแพงเพชร","ขอนแก่น","จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ชัยนาท","ชัยภูมิ","ชุมพร","ตรัง","ตราด","ตาก","นครนายก","นครปฐม","นครพนม","นครราชสีมา","นครศรีธรรมราช","นครสวรรค์","นนทบุรี","นราธิวาส","น่าน","บึงกาฬ","บุรีรัมย์","ปทุมธานี","ประจวบคีรีขันธ์","ปราจีนบุรี","ปัตตานี","พะเยา","พังงา","พัทลุง","พิจิตร","พิษณุโลก","ภูเก็ต","มหาสารคาม","มุกดาหาร","ยะลา","ยโสธร","ร้อยเอ็ด","ระนอง","ระยอง","ราชบุรี","ลพบุรี","ลำปาง","ลำพูน","ศรีสะเกษ","สกลนคร","สงขลา","สตูล","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระแก้ว","สระบุรี","สิงห์บุรี","สุพรรณบุรี","สุราษฎร์ธานี","สุรินทร์","สุโขทัย","หนองคาย","หนองบัวลำภู","อำนาจเจริญ","อุดรธานี","อุตรดิตถ์","อุทัยธานี","อุบลราชธานี","เชียงราย","เชียงใหม่","เพชรบุรี","เพชรบูรณ์","เลย","แพร่","แม่ฮ่องสอน"];
+const PROVINCE_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province.json";
 const DISTRICT_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/district.json";
+let provinceData=null;
+let provinceLoadingPromise=null;
 let districtData=null;
 let districtLoadingPromise=null;
 
+async function getProvinceData(){
+  if(provinceData)return provinceData;
+  if(provinceLoadingPromise)return provinceLoadingPromise;
+  provinceLoadingPromise=fetch(PROVINCE_DATA_URL).then(r=>{
+    if(!r.ok)throw new Error("โหลดรายชื่อจังหวัดไม่สำเร็จ");
+    return r.json();
+  }).then(x=>{
+    provinceData=Array.isArray(x)?x:[];
+    return provinceData;
+  }).catch(e=>{
+    provinceLoadingPromise=null;
+    throw e;
+  });
+  return provinceLoadingPromise;
+}
 async function getDistrictData(){
   if(districtData)return districtData;
   if(districtLoadingPromise)return districtLoadingPromise;
@@ -359,15 +377,16 @@ async function loadDistrictsForProvince(keepValue=true){
     return;
   }
   try{
-    const all=await getDistrictData();
-    // Dataset province_id follows the province list order in the source.
-    const provinceIndex=TH_PROVINCES.indexOf(selectedProvince)+1;
-    const rows=all.filter(x=>Number(x.province_id)===provinceIndex);
+    const [provinces,all]=await Promise.all([getProvinceData(),getDistrictData()]);
+    const provinceRow=provinces.find(x=>String(x.name_th||"").trim()===selectedProvince);
+    const provinceId=provinceRow?Number(provinceRow.id):null;
+    const rows=provinceId?all.filter(x=>Number(x.province_id)===provinceId):[];
     el.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';
     rows.forEach(x=>{
       const o=document.createElement("option");
       o.value=x.name_th;o.textContent=x.name_th;el.appendChild(o);
     });
+    el.disabled=false;
     if(old && rows.some(x=>x.name_th===old)) el.value=old;
     if(loading)loading.textContent=rows.length?`พบ ${rows.length} อำเภอ / เขต`:"ไม่พบข้อมูลพื้นที่";
   }catch(e){
