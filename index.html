@@ -272,6 +272,17 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
         <button class="secondary gistda-period" data-period="30days">30 วันล่าสุด</button>
       </div>
       <div class="small muted" id="gistdaFloodHint" style="margin-top:8px">ชั้นนี้เป็นพื้นที่น้ำท่วมจากการวิเคราะห์ภาพดาวเทียมของ GISTDA ไม่ใช่ระดับน้ำจากสถานี</div>
+      <div class="card" style="margin:10px 0 0;padding:11px 12px;background:#fff;border:1px solid #d8e8f5">
+        <div class="between" style="gap:8px;align-items:flex-start">
+          <div><b>🔴 Real-time</b><div class="small muted" id="gistdaRealtimeText" style="margin-top:4px">กำลังตรวจสอบการเชื่อมต่อ GISTDA...</div></div>
+          <span class="tag" id="gistdaRealtimeBadge">กำลังตรวจสอบ</span>
+        </div>
+        <div class="grid" style="margin-top:8px;grid-template-columns:1fr 1fr">
+          <div><div class="small muted">ตรวจสอบ GISTDA ล่าสุด</div><b id="gistdaCheckedAt">--:--:-- น.</b></div>
+          <div><div class="small muted">ตรวจสอบครั้งถัดไป</div><b id="gistdaNextCheck">อีก 5:00 นาที</b></div>
+        </div>
+        <div class="small muted" style="margin-top:7px">เวลานี้คือเวลาที่เว็บตรวจสอบ/โหลดชั้นข้อมูล GISTDA สำเร็จ ไม่ใช่เวลาที่ดาวเทียมถ่ายภาพ</div>
+      </div>
       <div class="row" style="margin-top:9px">
         <button class="secondary" id="refreshGistdaNow">↻ อัปเดตแผนที่ตอนนี้</button><button class="secondary" id="openGistdaFlood">🌐 เปิดแผนที่น้ำท่วม GISTDA</button>
       </div>
@@ -1338,6 +1349,8 @@ let gistdaFloodTileFailed=false;
 let gistdaFloodErrorCount=0;
 let gistdaFloodUsing="wms";
 let gistdaAutoRefreshTimer=null;
+let gistdaCountdownTimer=null;
+let gistdaNextCheckAt=0;
 let gistdaLastRefreshAt=null;
 let gistdaRefreshInFlight=false;
 let waterLoading=false;
@@ -1399,15 +1412,38 @@ function setGistdaFloodStatus(text,ok=false){
 function updateGistdaRefreshInfo(){
   const el=$("gistdaFloodHint");
   if(!el)return;
+  const checked=$("gistdaCheckedAt"),badge=$("gistdaRealtimeBadge"),txt=$("gistdaRealtimeText");
   if(gistdaLastRefreshAt){
     const t=new Date(gistdaLastRefreshAt);
     const time=t.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
-    el.textContent=`พื้นที่สีบนแผนที่ = ข้อมูลพื้นที่น้ำท่วมจาก GISTDA • ตรวจสอบล่าสุด ${time} น. • ระบบจะอัปเดตอัตโนมัติทุก 5 นาที`;
+    el.textContent=`พื้นที่สีบนแผนที่ = ข้อมูลพื้นที่น้ำท่วมจาก GISTDA • ตรวจสอบ/โหลดสำเร็จล่าสุด ${time} น. • ระบบตรวจสอบอัตโนมัติทุก 5 นาที`;
+    if(checked)checked.textContent=time+" น.";
   }
+  const label=({"1day":"1 วันล่าสุด","3days":"3 วันล่าสุด","7days":"7 วันล่าสุด","30days":"30 วันล่าสุด"})[gistdaFloodPeriod]||gistdaFloodPeriod;
+  if(badge){badge.textContent="🟢 เชื่อมต่อแล้ว";badge.style.background="#dff6e6";}
+  if(txt)txt.textContent=`GISTDA • ชั้นข้อมูล ${label} • ระบบตรวจสอบอัตโนมัติ`;
+}
+function updateGistdaCountdown(){
+  const el=$("gistdaNextCheck"); if(!el)return;
+  if(!gistdaNextCheckAt){el.textContent="อีก 5:00 นาที";return;}
+  const sec=Math.max(0,Math.ceil((gistdaNextCheckAt-Date.now())/1000));
+  const m=Math.floor(sec/60),s=sec%60;
+  el.textContent=sec<=0?"กำลังตรวจสอบ…":`อีก ${m}:${String(s).padStart(2,"0")} นาที`;
+}
+function setGistdaOfflineState(message){
+  const badge=$("gistdaRealtimeBadge"),txt=$("gistdaRealtimeText");
+  if(badge){badge.textContent="🔴 ตรวจสอบไม่ได้";badge.style.background="#fde7e7";}
+  if(txt)txt.textContent=message||"ยังตรวจสอบชั้นข้อมูล GISTDA ไม่สำเร็จ";
 }
 function scheduleGistdaAutoRefresh(){
   if(gistdaAutoRefreshTimer)clearInterval(gistdaAutoRefreshTimer);
+  if(gistdaCountdownTimer)clearInterval(gistdaCountdownTimer);
+  gistdaNextCheckAt=Date.now()+5*60*1000;
+  updateGistdaCountdown();
+  gistdaCountdownTimer=setInterval(updateGistdaCountdown,1000);
   gistdaAutoRefreshTimer=setInterval(()=>{
+    gistdaNextCheckAt=Date.now()+5*60*1000;
+    updateGistdaCountdown();
     if(document.hidden)return;
     refreshGistdaFloodLayer();
   },5*60*1000);
@@ -1417,8 +1453,8 @@ async function refreshGistdaFloodLayer(){
   gistdaRefreshInFlight=true;
   try{
     addGistdaFloodLayer(gistdaFloodPeriod);
-    gistdaLastRefreshAt=Date.now();
-    updateGistdaRefreshInfo();
+    gistdaNextCheckAt=Date.now()+5*60*1000;
+    updateGistdaCountdown();
   }finally{gistdaRefreshInFlight=false;}
 }
 function clearGistdaFloodLayer(){
@@ -1426,7 +1462,7 @@ function clearGistdaFloodLayer(){
 }
 function addGistdaFloodLayer(period){
   if(!waterMap || typeof L==="undefined")return;
-  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; gistdaFloodErrorCount=0; gistdaFloodUsing="wms"; clearGistdaFloodLayer();
+  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; gistdaFloodErrorCount=0; gistdaFloodUsing="wms"; gistdaNextCheckAt=Date.now()+5*60*1000; updateGistdaCountdown(); clearGistdaFloodLayer();
   const label={"1day":"1 วันล่าสุด","3days":"3 วันล่าสุด","7days":"7 วันล่าสุด","30days":"30 วันล่าสุด"}[gistdaFloodPeriod]||gistdaFloodPeriod;
   setGistdaFloodStatus("กำลังโหลดพื้นที่น้ำท่วม "+label+"…");
   const wmsUrl=gistdaFloodWmsUrl(gistdaFloodPeriod);
@@ -1435,7 +1471,7 @@ function addGistdaFloodLayer(period){
     attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"
   }).addTo(waterMap);
   const layerRef=gistdaFloodLayer;
-  layerRef.on("tileload",()=>{if(layerRef!==gistdaFloodLayer)return;gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();updateGistdaRefreshInfo();});
+  layerRef.on("tileload",()=>{if(layerRef!==gistdaFloodLayer)return;gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();gistdaNextCheckAt=Date.now()+5*60*1000;updateGistdaRefreshInfo();updateGistdaCountdown();});
   layerRef.on("tileerror",()=>{
     if(layerRef!==gistdaFloodLayer)return;
     gistdaFloodErrorCount++;
@@ -1445,8 +1481,8 @@ function addGistdaFloodLayer(period){
       setGistdaFloodStatus("กำลังลองชั้นแผนที่สำรอง…");
       const tms=L.tileLayer(gistdaFloodTmsUrl(gistdaFloodPeriod),{tms:true,tileSize:256,opacity:0.62,maxZoom:18,zIndex:450,attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"}).addTo(waterMap);
       gistdaFloodLayer=tms;
-      tms.on("tileload",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();updateGistdaRefreshInfo();});
-      tms.on("tileerror",()=>{gistdaFloodTileFailed=true;setGistdaFloodStatus("โหลดพื้นที่น้ำท่วมไม่ได้");const h=$("gistdaFloodHint");if(h)h.innerHTML="บริการแผนที่ GISTDA ไม่ส่งชั้นข้อมูลกลับมาในขณะนี้ • สามารถกด “เปิดแผนที่น้ำท่วม GISTDA” เพื่อดูข้อมูลทางการได้";});
+      tms.on("tileload",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();gistdaNextCheckAt=Date.now()+5*60*1000;updateGistdaRefreshInfo();updateGistdaCountdown();});
+      tms.on("tileerror",()=>{gistdaFloodTileFailed=true;setGistdaFloodStatus("โหลดพื้นที่น้ำท่วมไม่ได้");setGistdaOfflineState("GISTDA ไม่ส่งชั้นข้อมูลกลับมาในครั้งนี้ • ระบบจะลองใหม่อัตโนมัติ");const h=$("gistdaFloodHint");if(h)h.innerHTML="บริการแผนที่ GISTDA ไม่ส่งชั้นข้อมูลกลับมาในขณะนี้ • ระบบจะลองใหม่อัตโนมัติ หรือกด “อัปเดตแผนที่ตอนนี้”";});
     }
   });
 }
