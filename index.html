@@ -53,6 +53,11 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 }
  .center-browse-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.center-browse-actions button{flex:1;min-width:180px}.center-map-wrap{position:relative}.center-browse-map{height:min(62vh,520px);min-height:320px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.center-map-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10600;display:none;align-items:flex-end;justify-content:center;padding:12px}.center-map-backdrop.show{display:flex}.center-map-card{width:min(820px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.center-map-card h2{margin-top:0}.center-near-list{display:grid;gap:8px;margin-top:10px}.center-near-item{background:#f6fafc;border:1px solid #dbe7ed;border-radius:14px;padding:11px}.center-near-item b{display:block;margin-bottom:3px}.center-distance{font-weight:800;color:#087a43}.center-user-dot{width:20px;height:20px;border-radius:50%;background:#1976d2;border:4px solid #fff;box-shadow:0 1px 7px rgba(0,0,0,.35)}
 </style>
+
+<style>
+  .center-browse-actions-card{margin-top:12px}
+  .center-browse-actions-card .center-browse-actions{margin-top:0}
+</style>
 </head>
 <body>
 
@@ -189,25 +194,26 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 <section id="centers" class="page">
   <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaCenters">📍 พื้นที่: กำลังโหลด</span></div>
 
-  <div class="card">
+  <div class="card" id="centerBrowseCard">
     <div class="between">
       <div><h2 style="margin:0">🏥 จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">ดูจุดช่วยเหลือทั้งหมดบนแผนที่ หรือค้นหาจุดที่อยู่ใกล้คุณ</p></div>
+      <span class="tag" id="centerBrowseCount">กำลังโหลด...</span>
     </div>
-    <div class="center-browse-actions" style="margin-top:12px">
-      <button class="primary" id="findNearbyCenters">🔎 ค้นหาจุดช่วยเหลือใกล้ฉัน</button>
-      <button class="secondary" id="openAddCenterForm">➕ เพิ่มจุดช่วยเหลือ</button>
-    </div>
-  </div>
-
-  <div class="card" id="centerBrowseCard">
-    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><span class="tag" id="centerBrowseCount">กำลังโหลด...</span></div>
+    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2></div>
     <div class="center-map-actions row" style="margin-top:10px">
       <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
     </div>
-    <div id="centerBrowseMap" class="center-browse-map" style="margin-top:10px"></div>
+    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
     <div id="centerNearbyList" class="center-near-list"></div>
+  </div>
+
+  <div class="card center-browse-actions-card">
+    <div class="center-browse-actions">
+      <button class="primary" id="findNearbyCenters">🔎 ค้นหาจุดช่วยเหลือใกล้ฉัน</button>
+      <button class="secondary" id="openAddCenterForm">➕ เพิ่มจุดช่วยเหลือ</button>
+    </div>
   </div>
 
   <div class="card" id="addCenterCard" style="display:none">
@@ -222,7 +228,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <label>รายละเอียด</label><textarea id="centerDesc" placeholder="เปิดให้บริการอะไรบ้าง"></textarea>
     <label>สถานที่</label><input id="centerPlace" placeholder="ที่อยู่ / จุดสังเกต">
     <label>📍 ตำแหน่งบนแผนที่</label>
-    <div id="centerMap" class="map"></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="location-map-wrap"><div id="centerMap" class="map"></div><button type="button" class="map-my-location-btn" id="centerMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
     <div class="row" style="margin-top:10px"><button class="secondary" id="centerLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addCenter">เพิ่มจุดช่วยเหลือ</button></div>
   </div>
 
@@ -615,6 +621,8 @@ $("helpStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadR
 $("centerStat").addEventListener("click",()=>showPage("centers"));
 $("findNearbyCenters").addEventListener("click",locateCenterBrowse);
 $("centerMapMyLocation").addEventListener("click",locateCenterBrowse);
+$("centerBrowseMapMyLocationFloating").addEventListener("click",locateCenterBrowse);
+$("centerMapMyLocationFloating").addEventListener("click",()=>locate("center"));
 $("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
 $("openAddCenterForm").addEventListener("click",()=>{ $("addCenterCard").style.display="block"; setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80); window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'}); });
 $("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
