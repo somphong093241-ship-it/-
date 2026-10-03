@@ -812,6 +812,45 @@ async function requesterConfirmHelp(id){
   }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
 }
 
+async function loadNationwide(){
+  try{
+    const rows=await api("requests?select=status,province,district,place,helper_type,helper_affiliation&status=eq.%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B9%88%E0%B8%A7%E0%B8%A2%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B8%B7%E0%B8%AD%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7&limit=1000");
+    const done=Array.isArray(rows)?rows:[];
+    const total=done.length;
+    $("nationCompleted") && ($("nationCompleted").textContent=String(total));
+    $("nationCompletedPage") && ($("nationCompletedPage").textContent=String(total));
+
+    const byProvince={};
+    const byAffiliation={};
+    done.forEach(x=>{
+      const pv=String(x.province||"ไม่ระบุจังหวัด").trim()||"ไม่ระบุจังหวัด";
+      const af=String(x.helper_affiliation||x.helper_type||"ไม่ระบุสังกัด").trim()||"ไม่ระบุสังกัด";
+      byProvince[pv]=(byProvince[pv]||0)+1;
+      byAffiliation[af]=(byAffiliation[af]||0)+1;
+    });
+
+    const provinceEntries=Object.entries(byProvince).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"th"));
+    const affiliationEntries=Object.entries(byAffiliation).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"th"));
+    const provinceBox=$("nationProvinceList");
+    const affiliationBox=$("nationAffiliationList");
+    if(provinceBox){
+      provinceBox.innerHTML=provinceEntries.length
+        ? provinceEntries.map(([k,v])=>`<div class="row-item" style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb"><span>📍 ${esc(k)}</span><b>${v} เคส</b></div>`).join("")
+        : '<div class="empty">ยังไม่มีเคสที่ช่วยเหลือสำเร็จ</div>';
+    }
+    if(affiliationBox){
+      affiliationBox.innerHTML=affiliationEntries.length
+        ? affiliationEntries.map(([k,v])=>`<div class="row-item" style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb"><span>🏢 ${esc(k)}</span><b>${v} เคส</b></div>`).join("")
+        : '<div class="empty">ยังไม่มีข้อมูลสังกัด</div>';
+    }
+  }catch(e){
+    if($("nationCompleted")) $("nationCompleted").textContent="0";
+    if($("nationCompletedPage")) $("nationCompletedPage").textContent="0";
+    if($("nationProvinceList")) $("nationProvinceList").innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้<br><span class="small">${esc(e.message)}</span></div>`;
+    if($("nationAffiliationList")) $("nationAffiliationList").innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้</div>`;
+  }
+}
+
 async function loadCenters(){
   const box=$("centerList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
   try{
