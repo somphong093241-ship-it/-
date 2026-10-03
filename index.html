@@ -55,6 +55,9 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
 }
  .center-browse-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.center-browse-actions button{flex:1;min-width:180px}.center-map-wrap{position:relative}.center-browse-map{height:min(62vh,520px);min-height:320px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.center-map-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10600;display:none;align-items:flex-end;justify-content:center;padding:12px}.center-map-backdrop.show{display:flex}.center-map-card{width:min(820px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.center-map-card h2{margin-top:0}.center-near-list{display:grid;gap:8px;margin-top:10px}.center-near-item{background:#f6fafc;border:1px solid #dbe7ed;border-radius:14px;padding:11px}.center-near-item b{display:block;margin-bottom:3px}.center-distance{font-weight:800;color:#087a43}.center-nav-btn{display:block;width:100%;box-sizing:border-box;margin-top:9px;min-height:46px;border:0;border-radius:12px;background:#0f6f91;color:#fff;font-weight:800;font-size:16px;padding:10px 12px;text-decoration:none;text-align:center}.center-nav-btn:active{transform:scale(.99)}.center-user-dot{width:20px;height:20px;border-radius:50%;background:#1976d2;border:4px solid #fff;box-shadow:0 1px 7px rgba(0,0,0,.35)}
 .water-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.water-legend span{padding:6px 10px;border-radius:999px;background:#eef5f8;font-size:13px}.water-danger{color:#b42318;font-weight:800}.water-warn{color:#a15c00;font-weight:800}.water-ok{color:#18794e;font-weight:800}.water-station{background:#f8fbfc;border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0}.water-station h3{margin:0 0 6px}.water-road{background:#fff7f5;border:1px solid #ffd4cc;border-radius:16px;padding:12px;margin:8px 0}.water-source{font-size:12px;color:#667085;margin-top:5px}
+
+.flood-legend-dot{display:inline-block;width:16px;height:16px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.18);}
+.flood-severity-area{pointer-events:auto;}
 </style>
 
 <style>
@@ -274,18 +277,24 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
       <div class="small" id="gistdaFloodLastCheck" style="margin-top:9px;font-weight:700">🕒 ตรวจสอบข้อมูลล่าสุด: กำลังโหลด...</div>
       <div class="small muted" id="gistdaFloodSourceTime" style="margin-top:4px">📡 แหล่งข้อมูล: GISTDA • ระบบตรวจสอบชั้นข้อมูลอัตโนมัติทุก 5 นาที</div>
       <div style="margin-top:10px;padding:10px;border:1px solid #d8e8f5;border-radius:10px;background:#fff">
-        <div style="font-weight:800;margin-bottom:6px">อ่านแผนที่อย่างไร</div>
-        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap">
-          <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:22px;height:13px;border-radius:4px;background:rgba(0,115,255,.72);border:1px solid #0067d9"></span><b>พื้นที่ที่ชั้น GISTDA แสดงเป็นน้ำท่วม</b></span>
-          <span class="small muted">ส่วนที่ไม่มีสีของชั้นนี้ = ไม่มีพื้นที่น้ำท่วมที่ชั้นข้อมูลแสดงในบริเวณนั้น แต่ไม่ใช่การยืนยันว่าไม่มีน้ำท่วมทุกจุด</span>
+        <div style="font-weight:800;margin-bottom:7px">🎨 ระดับน้ำ / ความรุนแรงบนแผนที่</div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <span style="display:inline-flex;align-items:center;gap:6px"><i class="flood-legend-dot" style="background:#22c55e"></i><b>เขียว</b> ปกติ / เล็กน้อย</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><i class="flood-legend-dot" style="background:#eab308"></i><b>เหลือง</b> เฝ้าระวัง / ปานกลาง</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><i class="flood-legend-dot" style="background:#f97316"></i><b>ส้ม</b> เตือนภัย / มาก</span>
+          <span style="display:inline-flex;align-items:center;gap:6px"><i class="flood-legend-dot" style="background:#ef4444"></i><b>แดง</b> วิกฤต / รุนแรง</span>
+        </div>
+        <div style="display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-top:8px">
+          <span style="display:inline-flex;align-items:center;gap:6px"><span style="display:inline-block;width:22px;height:13px;border-radius:4px;background:rgba(0,115,255,.72);border:1px solid #0067d9"></span><b>น้ำท่วมจาก GISTDA</b></span>
+          <span class="small muted">สีเขียว/เหลือง/ส้ม/แดงใช้กับระดับจากสถานีน้ำและรายงานสถานการณ์ที่มีระดับจริง ส่วนสีน้ำเงินคือขอบเขตน้ำท่วมจาก GISTDA</span>
         </div>
       </div>
-      <div class="small muted" id="gistdaFloodHint" style="margin-top:8px">ชั้นนี้เป็นพื้นที่น้ำท่วมจากการวิเคราะห์ภาพดาวเทียมของ GISTDA ไม่ใช่ระดับน้ำจากสถานี</div>
+      <div class="small muted" id="gistdaFloodHint" style="margin-top:8px">ชั้นนี้เป็นขอบเขตพื้นที่น้ำท่วมจากการวิเคราะห์ภาพดาวเทียมของ GISTDA • สีระดับน้ำด้านบนมาจากสถานีน้ำ/รายงานสถานการณ์</div>
       <div class="row" style="margin-top:9px">
         <button class="secondary" id="openGistdaFlood">🌐 เปิดแผนที่น้ำท่วม GISTDA</button>
       </div>
     </div>
-    <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 พื้นที่น้ำท่วมจาก GISTDA • 🚧 ถนนผ่านไม่ได้จากรายงานประชาชน</div>
+    <div class="small muted" style="margin-top:8px">🟩 ปกติ/เล็กน้อย • 🟨 เฝ้าระวัง • 🟧 เตือนภัย • 🟥 วิกฤต • 🟦 ขอบเขตน้ำท่วม GISTDA</div>
   </div>
   <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังเตรียมแผนที่พื้นที่น้ำท่วม...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
   <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
@@ -1392,6 +1401,43 @@ function locateWaterUser(){
     waterMap.setView([lat,lng],15); waterMap.invalidateSize();
   },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
+let waterSeverityLayers=[];
+let waterSituationRefreshTimer=null;
+function floodSeverityStyle(severity){
+  const s=String(severity||'').trim();
+  if(s==='รุนแรง' || s==='วิกฤต' || s==='น้ำล้นตลิ่ง') return {color:'#ef4444',fillColor:'#ef4444',fillOpacity:.22,weight:2.5};
+  if(s==='มาก' || s==='เตือนภัย' || s==='วิกฤต / เสี่ยงน้ำท่วม') return {color:'#f97316',fillColor:'#f97316',fillOpacity:.22,weight:2.5};
+  if(s==='ปานกลาง' || s==='เฝ้าระวัง' || s==='เตือนภัย') return {color:'#eab308',fillColor:'#eab308',fillOpacity:.20,weight:2.2};
+  return {color:'#22c55e',fillColor:'#22c55e',fillOpacity:.18,weight:2};
+}
+function clearWaterSeverityLayers(){
+  waterSeverityLayers.forEach(x=>{try{x.remove()}catch{}});
+  waterSeverityLayers=[];
+}
+async function loadWaterSeverityOverlay(){
+  if(!waterMap)return;
+  clearWaterSeverityLayers();
+  try{
+    const rows=await api('situations?select=*&order=created_at.desc&limit=200');
+    (rows||[]).forEach(x=>{
+      const lat=Number(x.lat),lng=Number(x.lng);
+      if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+      const style=floodSeverityStyle(x.severity);
+      const radius=x.severity==='รุนแรง'||x.severity==='วิกฤต'?1200:x.severity==='มาก'?900:x.severity==='ปานกลาง'?650:450;
+      const circle=L.circle([lat,lng],{...style,radius,className:'flood-severity-area'}).addTo(waterMap);
+      circle.bindPopup(`<b>🌊 ระดับ: ${esc(x.severity||'เล็กน้อย')}</b><br>${esc(x.place||'ไม่ระบุสถานที่')}<br>${esc(x.description||x.text||'')}<br><span class="small muted">วงสีเป็นพื้นที่ประมาณการจากรายงานสถานการณ์ ไม่ใช่ขอบเขตดาวเทียม</span>`);
+      waterSeverityLayers.push(circle);
+    });
+  }catch(e){console.warn('โหลดระดับความรุนแรงไม่ได้',e)}
+}
+function waterStationSeverityColor(status){
+  const s=String(status||'');
+  if(s.includes('ล้นตลิ่ง')||s.includes('วิกฤต'))return '#ef4444';
+  if(s.includes('เตือนภัย'))return '#f97316';
+  if(s.includes('เฝ้าระวัง'))return '#eab308';
+  return '#22c55e';
+}
+
 function gistdaFloodWmsUrl(period){
   return GISTDA_FLOOD_WMS_BASE+period+"/wms?api_key="+encodeURIComponent(GISTDA_PUBLIC_MAP_KEY);
 }
@@ -1453,13 +1499,16 @@ function startGistdaAutoRefresh(){
 }
 async function initWaterMap(){
   const el=$("waterMap"); if(!el||typeof L==="undefined")return;
-  if(waterMap){waterMap.invalidateSize();if(!gistdaFloodLayer)addGistdaFloodLayer(gistdaFloodPeriod);return;}
+  if(waterMap){waterMap.invalidateSize();if(!gistdaFloodLayer)addGistdaFloodLayer(gistdaFloodPeriod);loadWaterSeverityOverlay();return;}
   waterMap=L.map(el).setView(centerAreaMapPoint(),district?13:11);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(waterMap);
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
   addGistdaFloodLayer(gistdaFloodPeriod);
+  await loadWaterSeverityOverlay();
   startGistdaAutoRefresh();
+  if(waterSituationRefreshTimer)clearInterval(waterSituationRefreshTimer);
+  waterSituationRefreshTimer=setInterval(()=>{if(waterMap&&document.visibilityState!=="hidden")loadWaterSeverityOverlay()},5*60*1000);
   waterMap.invalidateSize();
 }
 const THAIWATER_PROVINCE_CODES={
@@ -1571,7 +1620,8 @@ function renderWaterStations(waterData){
   const wl=waterData.wl||[], rain=waterData.rain||[];
   wl.forEach(r=>{
     const lat=twLat(r),lng=twLng(r); if(lat===null||lng===null)return;
-    const marker=L.circleMarker([lat,lng],{radius:8,weight:2}).addTo(waterMap).bindPopup(waterStationPopup(r)); waterStationMarkers.push(marker);
+    const stationColor=waterStationSeverityColor(twSituation(r));
+    const marker=L.circleMarker([lat,lng],{radius:9,weight:2,color:'#fff',fillColor:stationColor,fillOpacity:1}).addTo(waterMap).bindPopup(waterStationPopup(r)); waterStationMarkers.push(marker);
     const status=twSituation(r), level=twPick(r,["waterlevel_m","waterlevel_msl"]),dis=twPick(r,["discharge"]);
     rows.push(`<div class="water-station"><h3>💧 ${esc(twStationName(r))}</h3><div>${esc(twDistrict(r))}${twTambon(r)?" / "+esc(twTambon(r)):""}</div><div>🌊 ระดับน้ำ: <b>${esc(fmtM(level))}</b> • 💦 อัตราการไหล: ${esc(fmtCms(dis))}</div><div>🚦 สถานะ: <b>${esc(status||"ไม่มีสถานะ")}</b></div><div class="water-source">${twTime(r)?"อัปเดต "+esc(twTime(r)):""} • ThaiWater</div></div>`);
   });
@@ -1592,6 +1642,7 @@ async function loadThaiWater(){
   try{
     const data=await queryThaiWater();
     renderWaterStations(data);
+    loadWaterSeverityOverlay();
     const note=$("waterDataCount");
     if(note){
       const base=`ระดับน้ำ ${data.wl.length} จุด • ฝน ${data.rain.length} จุด`;
