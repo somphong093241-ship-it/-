@@ -617,7 +617,8 @@ function renderDetail(x){
   const myClaim=helperToken===String(helpToken).trim();
   let actions="";
   if(role==="helper" && status==="รอความช่วยเหลือ" && !helperToken) actions+=`<button class="primary" id="detailClaimBtn">🙋 รับเคสนี้</button>`;
-  if(role==="helper" && myClaim && status==="กำลังช่วยเหลือ") actions+=`<button class="primary" id="detailCompleteBtn">✅ ยืนยันช่วยเหลือเสร็จแล้ว</button>`;
+  // ปุ่มจบเคสต้องแสดงเฉพาะผู้ช่วยที่มี helper_token ตรงกับผู้ที่กดรับเคสนี้เท่านั้น
+  if(role==="helper" && myClaim && status==="กำลังช่วยเหลือ") actions+=`<button class="primary" id="detailCompleteBtn">✅ จบเคส / ยืนยันช่วยเหลือเสร็จแล้ว</button>`;
   if(role==="requester" && mineByToken && status==="กำลังช่วยเหลือ") actions+=`<button class="secondary" id="detailRequesterDoneBtn">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
   const helperInfo=helperToken?`<div class="card" style="margin-top:12px"><b>🟢 ผู้ช่วยเหลือ</b><p style="margin-bottom:4px">ชื่อ: ${esc(x.helper_name||"ไม่ระบุ")}</p><p style="margin:0">สังกัด: ${esc(x.helper_affiliation||"ไม่ระบุ")} • ${esc(x.helper_type||"ไม่ระบุ")}</p></div>`:"";
   $("detailTitle").textContent=`รายละเอียดเคส #${x.request_no||x.id}`;
@@ -633,7 +634,7 @@ function renderDetail(x){
       <div>✅ <b>เวลาช่วยเหลือเสร็จ</b><br>${formatTime(x.completed_at)}</div>
     </div>
     ${helperInfo}
-    ${x.lat!=null&&x.lng!=null?`<p style="margin-bottom:6px">🗺️ ตำแหน่งคำขอ</p><div id="detailMap" class="detail-map"></div>`:`<div class="empty">ยังไม่มีตำแหน่งบนแผนที่</div>`}
+    ${x.lat!=null&&x.lng!=null?`<p style="margin-bottom:6px">🗺️ ตำแหน่งคำขอ</p><div id="detailMap" class="detail-map"></div>${role==="helper"?`<div class="detail-actions"><button class="primary" id="navigateToRequesterBtn">🧭 นำทางไปหาผู้ขอความช่วยเหลือ</button></div><div class="small muted" style="margin-top:6px">เปิด Google Maps เพื่อนำทางไปยังพิกัดของผู้ขอ</div>`:""}`:`<div class="empty">ยังไม่มีตำแหน่งบนแผนที่</div>`}
     ${actions?`<div class="detail-actions">${actions}</div>`:""}`;
   $("detailBackdrop").classList.add("show");
   setTimeout(()=>{
@@ -644,6 +645,12 @@ function renderDetail(x){
       detailMarker=L.marker([Number(x.lat),Number(x.lng)]).addTo(detailMap);
       detailMap.invalidateSize();
     }
+    $("navigateToRequesterBtn")?.addEventListener("click",()=>{
+      if(x.lat==null||x.lng==null)return;
+      const lat=Number(x.lat), lng=Number(x.lng);
+      if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
+    });
     $("detailClaimBtn")?.addEventListener("click",()=>{closeDetail();claim(x.id)});
     $("detailCompleteBtn")?.addEventListener("click",()=>{closeDetail();completeHelp(x.id)});
     $("detailRequesterDoneBtn")?.addEventListener("click",()=>{closeDetail();requesterConfirmHelp(x.id)});
@@ -720,7 +727,8 @@ async function claim(id){
 }
 
 async function completeHelp(id){
-  if(role!=="helper")return;
+  // ฝั่งผู้ช่วยเท่านั้น และ RPC จะตรวจ helper_token ของผู้ที่กดรับเคสอีกชั้นหนึ่ง
+  if(role!=="helper" || !String(helpToken||"").trim())return;
   if(!confirm("ยืนยันว่าช่วยเหลือเคสนี้เสร็จแล้วใช่หรือไม่?\n\nเมื่อยืนยัน สถานะจะเป็น “ได้รับความช่วยเหลือแล้ว”"))return;
   try{
     const r=await rpc("complete_request",{p_helper_token:helpToken,p_id:Number(id)});
