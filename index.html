@@ -216,9 +216,15 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
       <p>ต้องเลือกพื้นที่ก่อน แล้วจึงเลือกบทบาท</p>
       <div class="area-grid">
         <div class="area-box">
+          <label>ภาค <span class="area-required">*</span></label>
+          <select id="regionInput">
+            <option value="">-- เลือกภาค --</option>
+          </select>
+        </div>
+        <div class="area-box">
           <label>จังหวัด <span class="area-required">*</span></label>
           <select id="provinceInput">
-            <option value="">-- เลือกจังหวัด --</option>
+            <option value="">-- เลือกภาคก่อน --</option>
           </select>
         </div>
         <div class="area-box">
@@ -285,6 +291,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 
 const API="https://atrhbzrxvklqakmgfdmr.supabase.co";
 const KEY="sb_publishable_X8KN29r3NRz4An1fxUQy7A_FYe_vTh3";
+const REGION_KEY="citizen_help_region";
 const PROVINCE_KEY="citizen_help_province";
 const DISTRICT_KEY="citizen_help_district";
 const SUBDISTRICT_KEY="citizen_help_subdistrict";
@@ -295,6 +302,7 @@ const HELP_TOKEN_KEY="citizen_help_helper_token";
 const HELPER_TYPE_KEY="citizen_help_helper_type";
 const HELPER_AFFILIATION_KEY="citizen_help_helper_affiliation";
 
+let region=localStorage.getItem(REGION_KEY)||"";
 let province=localStorage.getItem(PROVINCE_KEY)||"";
 let district=localStorage.getItem(DISTRICT_KEY)||"";
 let subdistrict=localStorage.getItem(SUBDISTRICT_KEY)||"";
@@ -325,7 +333,17 @@ async function rpc(name,body){
 }
 
 
-const TH_PROVINCES=["กรุงเทพมหานคร","กระบี่","กาญจนบุรี","กาฬสินธุ์","กำแพงเพชร","ขอนแก่น","จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ชัยนาท","ชัยภูมิ","ชุมพร","ตรัง","ตราด","ตาก","นครนายก","นครปฐม","นครพนม","นครราชสีมา","นครศรีธรรมราช","นครสวรรค์","นนทบุรี","นราธิวาส","น่าน","บึงกาฬ","บุรีรัมย์","ปทุมธานี","ประจวบคีรีขันธ์","ปราจีนบุรี","ปัตตานี","พะเยา","พังงา","พัทลุง","พิจิตร","พิษณุโลก","ภูเก็ต","มหาสารคาม","มุกดาหาร","ยะลา","ยโสธร","ร้อยเอ็ด","ระนอง","ระยอง","ราชบุรี","ลพบุรี","ลำปาง","ลำพูน","ศรีสะเกษ","สกลนคร","สงขลา","สตูล","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระแก้ว","สระบุรี","สิงห์บุรี","สุพรรณบุรี","สุราษฎร์ธานี","สุรินทร์","สุโขทัย","หนองคาย","หนองบัวลำภู","อำนาจเจริญ","อุดรธานี","อุตรดิตถ์","อุทัยธานี","อุบลราชธานี","เชียงราย","เชียงใหม่","เพชรบุรี","เพชรบูรณ์","เลย","แพร่","แม่ฮ่องสอน"];
+const TH_REGIONS={
+  "ภาคเหนือ":["กำแพงเพชร","เชียงราย","เชียงใหม่","ตาก","น่าน","พะเยา","พิจิตร","พิษณุโลก","เพชรบูรณ์","แพร่","แม่ฮ่องสอน","ลำปาง","ลำพูน","สุโขทัย","อุตรดิตถ์","นครสวรรค์","อุทัยธานี"],
+  "ภาคตะวันออกเฉียงเหนือ":["กาฬสินธุ์","ขอนแก่น","ชัยภูมิ","นครพนม","นครราชสีมา","บึงกาฬ","บุรีรัมย์","มหาสารคาม","มุกดาหาร","ยโสธร","ร้อยเอ็ด","เลย","ศรีสะเกษ","สกลนคร","สุรินทร์","หนองคาย","หนองบัวลำภู","อำนาจเจริญ","อุดรธานี","อุบลราชธานี"],
+  "ภาคกลาง":["กรุงเทพมหานคร","ชัยนาท","นครนายก","นครปฐม","นนทบุรี","ปทุมธานี","พระนครศรีอยุธยา","ลพบุรี","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระบุรี","สิงห์บุรี","สุพรรณบุรี","อ่างทอง","อุทัยธานี"],
+  "ภาคตะวันออก":["จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ตราด","นครนายก","ปราจีนบุรี","ระยอง","สระแก้ว"],
+  "ภาคตะวันตก":["กาญจนบุรี","เพชรบุรี","ประจวบคีรีขันธ์","ราชบุรี"],
+  "ภาคใต้":["กระบี่","ชุมพร","ตรัง","นครศรีธรรมราช","นราธิวาส","ปัตตานี","พังงา","พัทลุง","ภูเก็ต","ระนอง","สงขลา","สตูล","สุราษฎร์ธานี","ยะลา"]
+};
+// นครนายกอยู่ในภาคกลางเพื่อไม่ให้ซ้ำในภาคตะวันออก
+TH_REGIONS["ภาคตะวันออก"]=TH_REGIONS["ภาคตะวันออก"].filter(x=>x!=="นครนายก");
+const TH_PROVINCES=[...new Set(Object.values(TH_REGIONS).flat())];
 const PROVINCE_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province.json";
 const DISTRICT_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/district.json";
 let provinceData=null;
@@ -339,13 +357,7 @@ async function getProvinceData(){
   provinceLoadingPromise=fetch(PROVINCE_DATA_URL).then(r=>{
     if(!r.ok)throw new Error("โหลดรายชื่อจังหวัดไม่สำเร็จ");
     return r.json();
-  }).then(x=>{
-    provinceData=Array.isArray(x)?x:[];
-    return provinceData;
-  }).catch(e=>{
-    provinceLoadingPromise=null;
-    throw e;
-  });
+  }).then(x=>{provinceData=Array.isArray(x)?x:[];return provinceData;}).catch(e=>{provinceLoadingPromise=null;throw e;});
   return provinceLoadingPromise;
 }
 async function getDistrictData(){
@@ -354,14 +366,34 @@ async function getDistrictData(){
   districtLoadingPromise=fetch(DISTRICT_DATA_URL).then(r=>{
     if(!r.ok)throw new Error("โหลดรายชื่ออำเภอไม่สำเร็จ");
     return r.json();
-  }).then(x=>{
-    districtData=Array.isArray(x)?x:[];
-    return districtData;
-  }).catch(e=>{
-    districtLoadingPromise=null;
-    throw e;
-  });
+  }).then(x=>{districtData=Array.isArray(x)?x:[];return districtData;}).catch(e=>{districtLoadingPromise=null;throw e;});
   return districtLoadingPromise;
+}
+function inferRegionFromProvince(){
+  if(region)return;
+  if(!province)return;
+  const found=Object.entries(TH_REGIONS).find(([r,list])=>list.includes(province));
+  if(found)region=found[0];
+}
+function initRegionSelect(){
+  const el=$("regionInput"); if(!el)return;
+  el.innerHTML='<option value="">-- เลือกภาค --</option>';
+  Object.keys(TH_REGIONS).forEach(r=>{
+    const o=document.createElement("option");o.value=r;o.textContent=r;el.appendChild(o);
+  });
+  el.value=region||"";
+}
+function populateProvinceSelect(keepValue=true){
+  const el=$("provinceInput"); if(!el)return;
+  const old=keepValue?province:"";
+  const list=TH_REGIONS[region]||[];
+  el.innerHTML='<option value="">-- เลือกจังหวัด --</option>';
+  list.forEach(p=>{
+    const o=document.createElement("option");o.value=p;o.textContent=p;el.appendChild(o);
+  });
+  el.value=list.includes(old)?old:"";
+  if(!el.value)province="";
+  updateAreaPreview();
 }
 async function loadDistrictsForProvince(keepValue=true){
   const el=$("districtInput"), loading=$("districtLoading");
@@ -371,30 +403,19 @@ async function loadDistrictsForProvince(keepValue=true){
   el.innerHTML='<option value="">-- กำลังโหลดอำเภอ / เขต --</option>';
   el.disabled=true;
   if(loading)loading.textContent=selectedProvince?"กำลังโหลดรายชื่อพื้นที่...":"";
-  if(!selectedProvince){
-    el.innerHTML='<option value="">-- เลือกจังหวัดก่อน --</option>';
-    if(loading)loading.textContent="";
-    return;
-  }
+  if(!selectedProvince){el.innerHTML='<option value="">-- เลือกจังหวัดก่อน --</option>';if(loading)loading.textContent="";updateAreaPreview();return;}
   try{
     const [provinces,all]=await Promise.all([getProvinceData(),getDistrictData()]);
-    // รองรับทั้งข้อมูลรุ่นเก่าและรุ่นใหม่ของชุดข้อมูล
-    const provinceRow=provinces.find(x=>{
-      const n=x.name_th ?? x.name?.th ?? "";
-      return String(n).trim()===selectedProvince;
-    });
+    const provinceRow=provinces.find(x=>String(x.name_th??x.name?.th??"").trim()===selectedProvince);
     const provinceId=provinceRow?Number(provinceRow.id):null;
     const rows=provinceId?all.filter(x=>Number(x.province_id)===provinceId):[];
     el.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';
     rows.forEach(x=>{
-      const name=String(x.name_th ?? x.name?.th ?? "").trim();
-      if(!name)return;
-      const o=document.createElement("option");
-      o.value=name;o.textContent=name;el.appendChild(o);
+      const name=String(x.name_th??x.name?.th??"").trim();if(!name)return;
+      const o=document.createElement("option");o.value=name;o.textContent=name;el.appendChild(o);
     });
-    // ต้องเปิดช่องเลือกอำเภอทุกครั้งที่โหลดสำเร็จ
     el.disabled=false;
-    if(old && rows.some(x=>String(x.name_th ?? x.name?.th ?? "").trim()===old)) el.value=old;
+    if(old && rows.some(x=>String(x.name_th??x.name?.th??"").trim()===old))el.value=old;
     if(loading)loading.textContent=rows.length?`พบ ${rows.length} อำเภอ / เขต`:"ไม่พบข้อมูลพื้นที่";
   }catch(e){
     el.innerHTML='<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>';
@@ -402,21 +423,8 @@ async function loadDistrictsForProvince(keepValue=true){
   }
   updateAreaPreview();
 }
-function initProvinceSelect(){
-  const el=$("provinceInput"); if(!el)return;
-  if(el.options.length<=1){
-    const seen=new Set();
-    TH_PROVINCES.forEach(p=>{
-      if(seen.has(p))return;
-      seen.add(p);
-      const o=document.createElement("option");o.value=p;o.textContent=p;el.appendChild(o);
-    });
-  }
-  el.value=province||"";
-  loadDistrictsForProvince(true);
-  updateAreaPreview();
-}
-function areaLabel(){return province?(province+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
+function initProvinceSelect(){populateProvinceSelect(true);loadDistrictsForProvince(true);}
+function areaLabel(){return region?(region+(province?` / ${province}`:"")+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
 function updateAreaPreview(){
   const t=areaLabel();
   ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation"].forEach(id=>{
@@ -424,10 +432,13 @@ function updateAreaPreview(){
   });
 }
 function saveArea(){
+  region=String($("regionInput")?.value||"").trim();
   province=String($("provinceInput")?.value||"").trim();
   district=String($("districtInput")?.value||"").trim();
+  if(!region){toast("กรุณาเลือกภาค");return false}
   if(!province){toast("กรุณาเลือกจังหวัด");return false}
   if(!district){toast("กรุณาระบุอำเภอ / เขต");return false}
+  localStorage.setItem(REGION_KEY,region);
   localStorage.setItem(PROVINCE_KEY,province);
   localStorage.setItem(DISTRICT_KEY,district);
   updateAreaPreview();
@@ -439,6 +450,9 @@ function openArea(){
   $("roleStep").style.display="none";
   $("nameStep").style.display="none";
   $("helperStep").style.display="none";
+  initRegionSelect();
+  $("regionInput").value=region||"";
+  populateProvinceSelect(true);
   $("provinceInput").value=province||"";
   loadDistrictsForProvince(true);
   updateAreaPreview();
@@ -453,7 +467,7 @@ function openGate(mode){
 }
 function closeGate(){ $("gate").classList.remove("show") }
 function chooseRole(r){
-  if(!province || !district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  if(!region || !province || !district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   role=r;localStorage.setItem(ROLE_KEY,r);
   if(r==="requester"){
     $("roleStep").style.display="none";$("helperStep").style.display="none";$("nameStep").style.display="block";
@@ -466,13 +480,13 @@ function chooseRole(r){
   $("helperNameInput").value=name;
 }
 function start(){
-  if(!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  if(!region||!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   const v=$("nameInput").value.trim();
   if(!v){toast("กรุณาพิมพ์ชื่อของคุณ");return}
   name=v;localStorage.setItem(NAME_KEY,name);updateHeader();closeGate();showPage("ask");
 }
 function startHelper(){
-  if(!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  if(!region||!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   const n=$("helperNameInput").value.trim();
   const t=$("helperTypeInput").value;
   const a=$("helperAffiliationInput").value.trim();
@@ -507,6 +521,14 @@ document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()
 $("changeAreaBtn").addEventListener("click",openArea);
 $("changeRoleBtn").addEventListener("click",()=>{openArea();$("areaStep").style.display="none";$("roleStep").style.display="block";});
 $("changeNameBtn").addEventListener("click",changeName);
+$("regionInput").addEventListener("change",async()=>{
+  region=String($("regionInput").value||"").trim();
+  province="";district="";
+  $("districtInput").innerHTML='<option value="">-- เลือกจังหวัดก่อน --</option>';
+  $("districtInput").disabled=true;
+  populateProvinceSelect(false);
+  updateAreaPreview();
+});
 $("provinceInput").addEventListener("change",async()=>{
   province=String($("provinceInput").value||"").trim();
   district="";
@@ -765,10 +787,12 @@ let pollTimer=null;
 function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(()=>{loadSummary();const active=document.querySelector(".page.active")?.id;if(active==="all")loadRequests("all");if(active==="mine")loadRequests("mine");if(active==="centers")loadCenters();if(active==="situations")loadSituations()},10000)}
 
 updateHeader();
+inferRegionFromProvince();
+initRegionSelect();
 initProvinceSelect();
 updateAreaPreview();
 loadAllInitial();
-if(!province||!district){
+if(!region||!province||!district){
   role="";
   localStorage.removeItem(ROLE_KEY);
   openArea();
