@@ -32,7 +32,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#17313f;color:white;padding:12px 16px;border-radius:13px;z-index:11000;display:none;max-width:90%;text-align:center}.toast.show{display:block}
 .empty{text-align:center;padding:25px;color:var(--muted)}
 .small{font-size:13px}.right{text-align:right}
-.case.clickable{cursor:pointer}.case.clickable:hover{border-color:#8fc9e4}.detail-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10500;display:none;align-items:flex-end;justify-content:center;padding:12px}.detail-backdrop.show{display:flex}.detail-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 15px 50px #0005}.detail-card h2{margin-top:0}.detail-map{height:280px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.timeline{display:grid;gap:8px;margin:12px 0}.timeline div{background:#f5f8fa;border-radius:12px;padding:10px}.detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+.case.clickable{cursor:pointer}.case.clickable:hover{border-color:#8fc9e4}.detail-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10500;display:none;align-items:flex-end;justify-content:center;padding:12px}.detail-backdrop.show{display:flex}.detail-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 15px 50px #0005}.detail-card h2{margin-top:0}.detail-map{height:280px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.location-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10400;display:none;align-items:flex-end;justify-content:center;padding:12px}.location-backdrop.show{display:flex}.location-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.location-card h2{margin-top:0}.location-map{height:min(58vh,430px);min-height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.location-hint{background:#f5f8fa;border-radius:12px;padding:10px;margin-top:10px}.timeline{display:grid;gap:8px;margin:12px 0}.timeline div{background:#f5f8fa;border-radius:12px;padding:10px}.detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 @media(max-width:600px){.brand{font-size:23px}main{padding:12px}.hero h1{font-size:27px}nav button{font-size:15px;padding:10px 4px}}
 
 .area-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.area-box{background:#f6fbfd;border:1px solid #d5e8ee;border-radius:14px;padding:12px}.area-box label{margin-top:0}.area-current{font-size:14px;color:#17677b;margin-top:8px}.area-required{color:#b42318;font-size:13px}.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.filter-bar button{min-height:44px}.area-pill{display:inline-block;background:#e8f7ee;color:#087a43;padding:7px 11px;border-radius:999px;font-size:14px;font-weight:700}.success-list{margin-top:10px}.table-wrap{overflow:auto}.table-wrap table{width:100%;border-collapse:collapse}.table-wrap th,.table-wrap td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.table-wrap th{font-weight:800}
@@ -134,15 +134,12 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <label>ต้องการความช่วยเหลือเรื่องอะไร?</label>
     <textarea id="need" placeholder="เช่น ต้องการเรือรับผู้สูงอายุ 2 คน"></textarea>
     <label>สถานที่ / จุดสังเกต</label>
-    <input id="place" placeholder="เช่น ซอย... ใกล้...">
+    <input id="place" placeholder="แตะช่องนี้เพื่อเลือกตำแหน่งบนแผนที่" readonly>
     <label>ระดับความเร่งด่วน</label>
     <select id="urgent"><option value="false">ทั่วไป</option><option value="true">🔴 เร่งด่วน</option></select>
-    <label>📍 เลือกตำแหน่งบนแผนที่</label>
-    <div id="askMap" class="map"></div>
-    <div id="askCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <label>รายละเอียดเพิ่มเติม / จุดสังเกต</label>
+    <textarea id="requestDetails" placeholder="เช่น บ้านเลขที่ ซอย อาคาร สีบ้าน หรือข้อมูลที่ช่วยให้ผู้ช่วยหาเจอ"></textarea>
     <div class="row" style="margin-top:10px">
-      <button class="secondary" id="askLocate">📍 ใช้ตำแหน่งปัจจุบัน</button>
-      <button class="secondary" id="askClear">ล้างจุด</button>
       <button class="primary" id="submitRequest">ส่งคำขอ</button>
     </div>
   </div>
@@ -208,6 +205,24 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   <div class="card"><h2>📢 สถานการณ์ล่าสุด</h2><div id="situationList"></div></div>
 </section>
 </main>
+
+<div id="locationBackdrop" class="location-backdrop">
+  <div class="location-card">
+    <div class="between">
+      <h2>📍 เลือกตำแหน่งของผู้ขอ</h2>
+      <button class="secondary" id="closeLocation">ปิด</button>
+    </div>
+    <p class="muted" style="margin:0 0 8px">เลือกได้ 2 แบบ: ใช้ตำแหน่งปัจจุบัน หรือแตะบนแผนที่เพื่อปักหมุดเอง</p>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="askLocate">📍 ใช้ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="askManual">📌 ปักหมุดเอง</button>
+      <button class="secondary" id="askClear">ล้างจุด</button>
+    </div>
+    <div id="askMap" class="location-map"></div>
+    <div id="askCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="location-hint small muted">💡 ถ้าเลือก “ปักหมุดเอง” ให้แตะบนแผนที่ตรงตำแหน่งที่ต้องการ</div>
+  </div>
+</div>
 
 <div id="gate" class="gate show">
   <div class="gate-card">
@@ -573,6 +588,7 @@ function setPoint(id,lat,lng){
   else if(typeof L!=="undefined")marks[id]=L.marker([lat,lng]).addTo(maps[id]);
   const out=$(id==="ask"?"askCoords":id==="center"?"centerCoords":"sitCoords");
   if(out)out.textContent=`ละติจูด ${lat.toFixed(6)} • ลองจิจูด ${lng.toFixed(6)}`;
+  if(id==="ask" && $("place")) $("place").value=`พิกัด ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 }
 function locate(id){
   if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return}
@@ -580,10 +596,19 @@ function locate(id){
     const {latitude,longitude}=p.coords;setPoint(id,latitude,longitude);maps[id]?.setView([latitude,longitude],16)
   },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"));
 }
+function openLocationPicker(){
+  $("locationBackdrop").classList.add("show");
+  setTimeout(()=>{initMapFor("ask");maps.ask?.invalidateSize();},80);
+}
+function closeLocationPicker(){ $("locationBackdrop").classList.remove("show"); }
+$("place").addEventListener("click",openLocationPicker);
+$("closeLocation").addEventListener("click",closeLocationPicker);
+$("locationBackdrop").addEventListener("click",e=>{if(e.target===$("locationBackdrop"))closeLocationPicker()});
 $("askLocate").addEventListener("click",()=>locate("ask"));
+$("askManual").addEventListener("click",()=>toast("แตะบนแผนที่เพื่อปักหมุดเอง"));
 $("centerLocate").addEventListener("click",()=>locate("center"));
 $("sitLocate").addEventListener("click",()=>locate("situation"));
-$("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง"});
+$("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";$("place").value=""});
 
 function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":s==="ยกเลิกคำขอ"?"cancel":"done"}
 let detailMap=null;
@@ -605,6 +630,7 @@ function requestCard(x, mine=false){
     ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
     ${note}
     <p>📍 ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    ${x.details?`<p class="small">📝 ${esc(x.details)}</p>`:""}
     <div class="small muted">🕒 แจ้งเมื่อ ${formatTime(x.submitted||x.created_at)}</div>
     <div class="small muted" style="margin-top:6px">แตะเพื่อดูรายละเอียด</div>
   </div>`;
@@ -629,6 +655,7 @@ function renderDetail(x){
     <h3>${esc(x.need||"ไม่ได้ระบุความต้องการ")}</h3>
     <p>👤 ผู้ขอ: ${esc(x.requester_name||"ไม่ระบุชื่อ")}</p>
     <p>📍 พื้นที่: ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>📍 สถานที่: ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    ${x.details?`<div class="card" style="margin:10px 0 0;padding:12px 14px"><b>📝 รายละเอียดเพิ่มเติม</b><p style="margin:6px 0 0;white-space:pre-wrap">${esc(x.details)}</p></div>`:""}
     <div class="timeline">
       <div>🕒 <b>เวลาขอความช่วยเหลือ</b><br>${formatTime(x.submitted||x.created_at)}</div>
       <div>🙋 <b>เวลารับเคส / เริ่มช่วยเหลือ</b><br>${formatTime(x.accepted_at)}</div>
@@ -705,16 +732,19 @@ async function loadSummary(){
 function updateCounts(a){$("countWait").textContent=a.filter(x=>x.status==="รอความช่วยเหลือ").length;$("countHelp").textContent=a.filter(x=>x.status==="กำลังช่วยเหลือ").length}
 
 async function submitRequest(){
-  const need=$("need").value.trim(),place=$("place").value.trim();
+  const need=$("need").value.trim(),place=$("place").value.trim(),details=$("requestDetails").value.trim();
   if(!need){toast("กรุณาระบุสิ่งที่ต้องการ");return}
+  if(!coords.ask){toast("กรุณาแตะช่องสถานที่แล้วเลือกตำแหน่งบนแผนที่ก่อน");openLocationPicker();return}
   try{
     await api("requests",{method:"POST",body:JSON.stringify({
-      need,place,urgent:$("urgent").value==="true",status:"รอความช่วยเหลือ",
+      need,place,details,urgent:$("urgent").value==="true",status:"รอความช่วยเหลือ",
       requester_token:reqToken,requester_name:name,province,district,submitted:new Date().toISOString(),
       created_at:new Date().toISOString(),lat:coords.ask?.lat??null,lng:coords.ask?.lng??null,hidden:false
     })});
-    $("need").value="";$("place").value="";coords.ask=null;
-    if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";
+    $("need").value="";$("place").value="";$("requestDetails").value="";coords.ask=null;
+    if(marks.ask){marks.ask.remove();marks.ask=null}
+    $("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";
+    closeLocationPicker();
     toast("ส่งคำขอเรียบร้อยแล้ว");showPage("mine");
   }catch(e){toast("ส่งคำขอไม่สำเร็จ: "+e.message)}
 }
