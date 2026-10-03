@@ -220,7 +220,10 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     </div>
     <div id="askMap" class="location-map"></div>
     <div id="askCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
-    <div class="location-hint small muted">💡 ถ้าเลือก “ปักหมุดเอง” ให้แตะบนแผนที่ตรงตำแหน่งที่ต้องการ</div>
+    <div class="location-hint small muted">💡 กด “ใช้ตำแหน่งปัจจุบัน” หรือ “ปักหมุดเอง” แล้วกด “ยืนยันตำแหน่ง”</div>
+    <div class="row" style="margin-top:12px;justify-content:flex-end">
+      <button class="primary" id="confirmLocation">✅ ยืนยันตำแหน่ง</button>
+    </div>
   </div>
 </div>
 
@@ -605,7 +608,12 @@ $("place").addEventListener("click",openLocationPicker);
 $("closeLocation").addEventListener("click",closeLocationPicker);
 $("locationBackdrop").addEventListener("click",e=>{if(e.target===$("locationBackdrop"))closeLocationPicker()});
 $("askLocate").addEventListener("click",()=>locate("ask"));
-$("askManual").addEventListener("click",()=>toast("แตะบนแผนที่เพื่อปักหมุดเอง"));
+$("askManual").addEventListener("click",()=>toast("แตะบนแผนที่ตรงตำแหน่งที่ต้องการเพื่อปักหมุด"));
+$("confirmLocation").addEventListener("click",()=>{
+  if(!coords.ask){toast("กรุณาเลือกตำแหน่งก่อน");return}
+  closeLocationPicker();
+  toast("ยืนยันตำแหน่งเรียบร้อยแล้ว");
+});
 $("centerLocate").addEventListener("click",()=>locate("center"));
 $("sitLocate").addEventListener("click",()=>locate("situation"));
 $("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";$("place").value=""});
