@@ -263,7 +263,20 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
       <button class="secondary" id="waterMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="waterShowArea">🎯 กลับพื้นที่ที่เลือก</button>
     </div>
-    <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 ชั้นพื้นที่น้ำท่วมจากบริการแผนที่ GISTDA • 🚧 ถนนผ่านไม่ได้จะแสดงเฉพาะเมื่อมีรายงานที่ระบุสถานะโดยตรง</div>
+    <div class="card" style="margin:10px 0 0;padding:12px;background:#f7fbff;border:1px solid #d8e8f5">
+      <div class="between"><b>🛰️ พื้นที่น้ำท่วมจาก GISTDA</b><span class="tag" id="gistdaFloodStatus">กำลังเตรียมชั้นข้อมูล</span></div>
+      <div class="row" style="margin-top:9px">
+        <button class="secondary gistda-period" data-period="1day">1 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="3days">3 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="7days">7 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="30days">30 วันล่าสุด</button>
+      </div>
+      <div class="small muted" id="gistdaFloodHint" style="margin-top:8px">ชั้นนี้เป็นพื้นที่น้ำท่วมจากการวิเคราะห์ภาพดาวเทียมของ GISTDA ไม่ใช่ระดับน้ำจากสถานี</div>
+      <div class="row" style="margin-top:9px">
+        <button class="secondary" id="openGistdaFlood">🌐 เปิดแผนที่น้ำท่วม GISTDA</button>
+      </div>
+    </div>
+    <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 พื้นที่น้ำท่วมจาก GISTDA • 🚧 ถนนผ่านไม่ได้จากรายงานประชาชน</div>
   </div>
   <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังโหลดข้อมูล...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
   <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
@@ -699,6 +712,8 @@ $("waterApplyArea").addEventListener("click",()=>loadWaterPage(true));
 $("waterRefresh").addEventListener("click",()=>loadWaterPage(true));
 $("waterShowArea").addEventListener("click",()=>focusWaterMapOnSelectedArea());
 $("waterMyLocation").addEventListener("click",()=>locateWaterUser());
+document.querySelectorAll(".gistda-period").forEach(b=>b.addEventListener("click",()=>{addGistdaFloodLayer(b.dataset.period||"1day")}));
+$("openGistdaFlood")?.addEventListener("click",()=>window.open(GISTDA_FLOOD_PORTAL,"_blank","noopener"));
 $("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
 
 let maps={},marks={},coords={ask:null,center:null,situation:null};
@@ -1309,7 +1324,13 @@ async function loadAllInitial(){await loadSummary();if(role==="requester")showPa
 let pollTimer=null;
 
 const THAIWATER_API="https://api-v3.thaiwater.net/api/v1/thaiwater30/";
-const GISTDA_FLOOD_MAP="https://gistdaportal.gistda.or.th/arcgis/rest/services/app/GISTDA_flood/MapServer";
+// GISTDA Disaster Platform: official flood-map TMS. The public service may require an API key.
+// If a key is available, store it locally under GISTDA_FLOOD_API_KEY; never hard-code a secret in this file.
+const GISTDA_FLOOD_TMS_BASE="https://api-gateway.gistda.or.th/api/2.0/resources/maps/flood/";
+const GISTDA_FLOOD_PORTAL="https://disaster.gistda.or.th/flood";
+let gistdaFloodPeriod="1day";
+let gistdaFloodLayer=null;
+let gistdaFloodTileFailed=false;
 let waterLoading=false;
 function initWaterSelectors(){
   const r=$("waterRegion"),p=$("waterProvince"),d=$("waterDistrict"); if(!r||!p||!d)return;
@@ -1357,16 +1378,45 @@ function locateWaterUser(){
     waterMap.setView([lat,lng],15); waterMap.invalidateSize();
   },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
+function gistdaFloodTileUrl(period){
+  let url=GISTDA_FLOOD_TMS_BASE+period+"/tms/{z}/{x}/{y}";
+  let key=""; try{key=localStorage.getItem("GISTDA_FLOOD_API_KEY")||""}catch{}
+  if(key) url += "?api_key="+encodeURIComponent(key);
+  return url;
+}
+function setGistdaFloodStatus(text,ok=false){
+  const el=$("gistdaFloodStatus"); if(!el)return; el.textContent=text; el.style.background=ok?"#dff6e6":"";
+}
+function clearGistdaFloodLayer(){
+  if(gistdaFloodLayer && waterMap){waterMap.removeLayer(gistdaFloodLayer);gistdaFloodLayer=null;}
+}
+function addGistdaFloodLayer(period){
+  if(!waterMap || typeof L==="undefined")return;
+  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; clearGistdaFloodLayer();
+  const label={"1day":"1 วันล่าสุด","3days":"3 วันล่าสุด","7days":"7 วันล่าสุด","30days":"30 วันล่าสุด"}[gistdaFloodPeriod]||gistdaFloodPeriod;
+  setGistdaFloodStatus("กำลังโหลด "+label+"…");
+  const key=(()=>{try{return localStorage.getItem("GISTDA_FLOOD_API_KEY")||""}catch{return ""}})();
+  gistdaFloodLayer=L.tileLayer(gistdaFloodTileUrl(gistdaFloodPeriod),{
+    tileSize:512,zoomOffset:-1,opacity:0.55,maxZoom:18,
+    attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"
+  }).addTo(waterMap);
+  let errorCount=0;
+  gistdaFloodLayer.on("tileerror",()=>{
+    errorCount++;
+    if(errorCount>=2){gistdaFloodTileFailed=true;setGistdaFloodStatus(key?"โหลดชั้นข้อมูลไม่สำเร็จ":"ต้องใช้ API Key");
+      const h=$("gistdaFloodHint"); if(h) h.innerHTML=key?"GISTDA ไม่ส่งชั้นแผนที่กลับมาในขณะนี้":"บริการแผนที่ GISTDA ต้องใช้ API Key จาก API Gateway • กด “เปิดแผนที่น้ำท่วม GISTDA” เพื่อดูข้อมูลทางการได้ทันที";
+    }
+  });
+  gistdaFloodLayer.on("load",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงชั้น "+label,true);});
+}
 async function initWaterMap(){
   const el=$("waterMap"); if(!el||typeof L==="undefined")return;
-  if(waterMap){waterMap.invalidateSize();return;}
+  if(waterMap){waterMap.invalidateSize();if(!gistdaFloodLayer)addGistdaFloodLayer(gistdaFloodPeriod);return;}
   waterMap=L.map(el).setView(centerAreaMapPoint(),district?13:11);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(waterMap);
-  if(window.L && L.esri && L.esri.dynamicMapLayer){
-    waterFloodLayer=L.esri.dynamicMapLayer({url:GISTDA_FLOOD_MAP,layers:[0],opacity:0.38,useCors:true}).addTo(waterMap);
-  }
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
+  addGistdaFloodLayer(gistdaFloodPeriod);
 }
 const THAIWATER_PROVINCE_CODES={
   "กรุงเทพมหานคร":"10","สมุทรปราการ":"11","นนทบุรี":"12","ปทุมธานี":"13","พระนครศรีอยุธยา":"14","อ่างทอง":"15","ลพบุรี":"16","สิงห์บุรี":"17","ชัยนาท":"18","สระบุรี":"19",
