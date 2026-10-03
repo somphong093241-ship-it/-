@@ -209,11 +209,11 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 </section>
 </main>
 
-<div id="gate" class="gate">
+<div id="gate" class="gate show">
   <div class="gate-card">
     <div id="areaStep">
-      <h2>📍 เลือกพื้นที่ก่อน</h2>
-      <p>เลือกจังหวัดและอำเภอ/เขตที่คุณอยู่หรือกำลังช่วยเหลือ</p>
+      <h2>📍 ขั้นตอนที่ 1: เลือกพื้นที่</h2>
+      <p>ต้องเลือกพื้นที่ก่อน แล้วจึงเลือกบทบาท</p>
       <div class="area-grid">
         <div class="area-box">
           <label>จังหวัด <span class="area-required">*</span></label>
@@ -231,7 +231,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     </div>
 
     <div id="roleStep" style="display:none">
-      <h2>👋 เลือกบทบาท</h2>
+      <h2>👋 ขั้นตอนที่ 2: เลือกบทบาท</h2>
       <p id="roleAreaText" class="area-current"></p>
       <p>วันนี้คุณเข้ามาเพื่ออะไร?</p>
       <div class="role-grid">
@@ -672,7 +672,13 @@ updateHeader();
 initProvinceSelect();
 updateAreaPreview();
 loadAllInitial();
-if(!province||!district){openArea()}else{closeGate()}
+if(!province||!district){
+  role="";
+  localStorage.removeItem(ROLE_KEY);
+  openArea();
+}else{
+  closeGate();
+}
 startPolling();
 })();
 </script>
