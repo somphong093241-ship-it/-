@@ -690,7 +690,7 @@ function renderDetail(x){
       }
       window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
     });
-    $("detailClaimBtn")?.addEventListener("click",()=>{closeDetail();claim(x.id)});
+    $("detailClaimBtn")?.addEventListener("click",()=>claim(x.id));
     $("detailCompleteBtn")?.addEventListener("click",()=>{closeDetail();completeHelp(x.id)});
     $("detailCancelBtn")?.addEventListener("click",()=>{closeDetail();cancelRequest(x.id)});
     $("detailRequesterDoneBtn")?.addEventListener("click",()=>{closeDetail();requesterConfirmHelp(x.id)});
@@ -765,7 +765,8 @@ async function claim(id){
     const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id),p_helper_name:name,p_helper_type:helperType,p_helper_affiliation:helperAffiliation});
     if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว");return}
     toast("รับเคสแล้ว");
-    loadRequests("all");loadRequests("mine");
+    await Promise.all([loadRequests("all"), loadRequests("mine")]);
+    await openCase(id);
   }catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
 }
 
