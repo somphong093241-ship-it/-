@@ -1,0 +1,1659 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>จากประชาชนสู่ประชาชน</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--blue:#075f88;--blue2:#0b729f;--bg:#f4f7f9;--card:#fff;--text:#10202b;--muted:#64727d;--green:#18a957;--red:#e53935;--line:#d9e2e8}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Noto Sans Thai",sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--blue);color:#fff;padding:18px 18px 20px;position:relative}
+.brand{font-size:25px;font-weight:800}.sub{margin-top:4px;color:#d9f2ff}.hello{margin-top:12px;font-size:15px}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+button{font:inherit;border:0;cursor:pointer;touch-action:manipulation}
+.chip{background:#dff4ff;color:#075f88;border-radius:24px;padding:10px 15px;font-weight:700}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:12px 16px;background:var(--blue)}
+nav button{background:#287ca2;color:white;border-radius:15px;padding:12px 6px;font-weight:750;min-height:54px}
+main{max-width:900px;margin:auto;padding:16px}.page{display:none}.page.active{display:block}
+.hero,.card,.case,.center,.situation{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:18px;margin-bottom:14px}
+.hero{background:#e2f4ff;border-color:#b9e5f8}.hero h1{margin:0 0 10px;font-size:30px}.hero p{font-size:18px;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.stat{padding:18px;border:2px solid #eee;border-radius:20px;background:#fff}
+.stat b{font-size:34px;display:block}.red{border-color:#ffc9c9}.green{border-color:#bce8cc}.blue{border-color:#bfe1f3}
+h2{margin:4px 0 14px}.muted{color:var(--muted)}label{display:block;font-weight:700;margin:12px 0 6px}
+input,textarea,select{width:100%;padding:13px 14px;border:1px solid #cbd7de;border-radius:13px;font:inherit;background:#fff}
+textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:#fff;padding:13px 17px;border-radius:13px;font-weight:800}.secondary{background:#e9f0f4;color:#17313f;padding:12px 15px;border-radius:13px;font-weight:750}.danger{background:#ffe5e5;color:#a71919;padding:11px 14px;border-radius:12px;font-weight:750}
+.row{display:flex;gap:9px;flex-wrap:wrap}.between{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.map{height:300px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.coords{font-size:13px;color:var(--muted);margin-top:6px}
+.case h3,.center h3,.situation h3{margin:0 0 8px}.tag{display:inline-block;padding:5px 9px;border-radius:999px;background:#edf3f6;margin:3px 4px 3px 0;font-size:13px}
+.status{font-weight:800}.status.wait{color:#d44b00}.status.help{color:#087a43}.status.done{color:#315d79}
+.gate{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10000;display:none;align-items:center;justify-content:center;padding:18px}.gate.show{display:flex}
+.gate-card{width:min(520px,100%);background:#fff;border-radius:24px;padding:22px;box-shadow:0 15px 50px #0004}.gate-card h2{font-size:25px}.role-grid{display:grid;gap:10px}.role-btn{text-align:left;padding:17px;border-radius:17px;border:2px solid #ddd;background:#fff}.role-btn b{display:block;font-size:17px}.role-btn span{display:block;margin-top:5px;color:var(--muted)}.requester{border-color:#ffc4c4}.helper{border-color:#bce7ca}
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:#17313f;color:white;padding:12px 16px;border-radius:13px;z-index:11000;display:none;max-width:90%;text-align:center}.toast.show{display:block}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+.small{font-size:13px}.right{text-align:right}
+.case.clickable{cursor:pointer}.case.clickable:hover{border-color:#8fc9e4}.detail-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10500;display:none;align-items:flex-end;justify-content:center;padding:12px}.detail-backdrop.show{display:flex}.detail-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 15px 50px #0005}.detail-card h2{margin-top:0}.detail-map{height:280px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.location-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10400;display:none;align-items:flex-end;justify-content:center;padding:12px}.location-backdrop.show{display:flex}.location-card{width:min(760px,100%);max-height:88vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.location-card h2{margin-top:0}.location-map{height:min(46vh,340px);min-height:260px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.location-hint{background:#f5f8fa;border-radius:12px;padding:10px;margin-top:10px}.location-confirm-bar{position:sticky;bottom:0;background:#fff;padding:10px 0 2px;margin-top:8px;z-index:20;width:100%}.location-confirm-btn,.location-cancel-btn{display:block;width:100%;box-sizing:border-box;min-height:52px;font-size:18px;margin:0;border-radius:14px}.location-cancel-btn{margin-top:8px}.timeline{display:grid;gap:8px;margin:12px 0}.timeline div{background:#f5f8fa;border-radius:12px;padding:10px}.detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+@media(max-width:600px){.brand{font-size:23px}main{padding:12px}.hero h1{font-size:27px}nav button{font-size:15px;padding:10px 4px}}
+
+.area-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.area-box{background:#f6fbfd;border:1px solid #d5e8ee;border-radius:14px;padding:12px}.area-box label{margin-top:0}.area-current{font-size:14px;color:#17677b;margin-top:8px}.area-required{color:#b42318;font-size:13px}.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.filter-bar button{min-height:44px}.area-pill{display:inline-block;background:#e8f7ee;color:#087a43;padding:7px 11px;border-radius:999px;font-size:14px;font-weight:700}.success-list{margin-top:10px}.table-wrap{overflow:auto}.table-wrap table{width:100%;border-collapse:collapse}.table-wrap th,.table-wrap td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.table-wrap th{font-weight:800}
+
+.map-my-location-btn{
+  position:absolute;right:12px;bottom:12px;z-index:1000;
+  width:48px;height:48px;border:0;border-radius:50%;
+  background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.22);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;
+}
+.map-my-location-btn:active{transform:scale(.96)}
+.location-map-wrap{position:relative}.map-area-overlay{cursor:pointer;user-select:none;}
+.map-area-overlay:active{transform:scale(.99)}
+position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;color:#167a4a;border:1px solid #ccebd8;border-radius:14px;padding:9px 12px;font-weight:800;font-size:15px;line-height:1.35;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none;text-align:center}.map-area-overlay b{font-weight:900}
+.current-location-dot{
+  width:20px;height:20px;border-radius:50%;
+  background:#1976d2;border:4px solid #fff;
+  box-shadow:0 1px 6px rgba(0,0,0,.35);
+}
+ .center-browse-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.center-browse-actions button{flex:1;min-width:180px}.center-map-wrap{position:relative}.center-browse-map{height:min(62vh,520px);min-height:320px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.center-map-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10600;display:none;align-items:flex-end;justify-content:center;padding:12px}.center-map-backdrop.show{display:flex}.center-map-card{width:min(820px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.center-map-card h2{margin-top:0}.center-near-list{display:grid;gap:8px;margin-top:10px}.center-near-item{background:#f6fafc;border:1px solid #dbe7ed;border-radius:14px;padding:11px}.center-near-item b{display:block;margin-bottom:3px}.center-distance{font-weight:800;color:#087a43}.center-nav-btn{display:block;width:100%;box-sizing:border-box;margin-top:9px;min-height:46px;border:0;border-radius:12px;background:#0f6f91;color:#fff;font-weight:800;font-size:16px;padding:10px 12px;text-decoration:none;text-align:center}.center-nav-btn:active{transform:scale(.99)}.center-user-dot{width:20px;height:20px;border-radius:50%;background:#1976d2;border:4px solid #fff;box-shadow:0 1px 7px rgba(0,0,0,.35)}
+.water-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.water-legend span{padding:6px 10px;border-radius:999px;background:#eef5f8;font-size:13px}.water-danger{color:#b42318;font-weight:800}.water-warn{color:#a15c00;font-weight:800}.water-ok{color:#18794e;font-weight:800}.water-station{background:#f8fbfc;border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0}.water-station h3{margin:0 0 6px}.water-road{background:#fff7f5;border:1px solid #ffd4cc;border-radius:16px;padding:12px;margin:8px 0}.water-source{font-size:12px;color:#667085;margin-top:5px}
+</style>
+
+<style>
+  .center-browse-actions-card{margin-top:12px}
+  .center-browse-actions-card .center-browse-actions{margin-top:0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🌊 จากประชาชนสู่ประชาชน</div>
+  <div class="sub">ประชาชนขอ • ประชาชนช่วย • ประชาชนแจ้งสถานการณ์</div>
+  <div class="hello" id="helloName"></div>
+  <div class="header-actions">
+    <button class="chip" id="changeAreaBtn">📍 เปลี่ยนพื้นที่</button>
+    <button class="chip" id="changeRoleBtn">🔄 เปลี่ยนบทบาท</button>
+    <button class="chip" id="changeNameBtn">✏️ เปลี่ยนชื่อ</button>
+  </div>
+</header>
+
+<nav>
+  <button data-page="home">🏠 หน้าแรก</button>
+  <button data-page="ask">🆘 ขอความช่วยเหลือ</button>
+  <button data-page="all">🌍 เคสทั้งหมด</button>
+  <button data-page="mine">👤 เคสของฉัน</button>
+  <button data-page="centers">🏥 จุดช่วยเหลือ</button>
+  <button data-page="water">🌊 ระดับน้ำ / น้ำท่วม</button>
+  <button data-page="situations">🌊 สถานการณ์น้ำ</button>
+</nav>
+
+<main>
+<section id="home" class="page active">
+  <div class="area-banner" style="margin-bottom:12px"><span class="area-pill" id="activeAreaHome">📍 พื้นที่: ยังไม่ได้เลือก</span></div>
+
+  <div class="hero">
+    <h1>🌊 จากประชาชนสู่ประชาชน</h1>
+    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์น้ำจากประชาชน</p>
+    <b style="color:#18864d">● ระบบอัปเดตแบบ Real Time</b>
+  </div>
+  <div class="card">
+    <h2>📊 สรุปตอนนี้</h2>
+    <div class="grid">
+      <button class="stat red" id="waitingStat" type="button" style="text-align:left;width:100%">
+        <span>🔴 คำขอรอความช่วยเหลือ</span><b id="countWait">0</b><span>เคส • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat green" id="helpStat" type="button" style="text-align:left;width:100%">
+        <span>🟢 กำลังช่วยเหลือ</span><b id="countHelp">0</b><span>เคส • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat blue" id="centerStat" type="button" style="text-align:left;width:100%">
+        <span>🏥 จุดช่วยเหลือ</span><b id="countCenter">0</b><span>จุด • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat" id="waterStat" type="button" style="text-align:left;width:100%">
+        <span>🌊 ระดับน้ำ / น้ำท่วม</span><b id="countWater">0</b><span>สถานี/จุดข้อมูล • กดเพื่อดูแผนที่</span>
+      </button>
+      <button class="stat" id="situationStat" type="button" style="text-align:left;width:100%">
+        <span>🌊 สถานการณ์น้ำจากประชาชน</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="stat green" id="nationwideStat" type="button" style="text-align:left;width:100%">
+      <span>🇹🇭 การช่วยเหลือสำเร็จทั่วประเทศ</span>
+      <b id="nationCompleted">0</b>
+      <span>เคส • กดเพื่อดูยอดรวมทั่วประเทศ</span>
+    </button>
+  </div>
+</section>
+
+<section id="nationwide" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaNation">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="hero">
+    <h1>🇹🇭 การช่วยเหลือทั่วประเทศ</h1>
+    <p>ดูเฉพาะเคสที่ช่วยเหลือสำเร็จแล้วทั่วประเทศ</p>
+  </div>
+  <div class="card">
+    <h2>🤝 ช่วยเหลือสำเร็จทั้งหมด</h2>
+    <div class="stat green" style="max-width:320px">
+      <span>🇹🇭 รวมทั่วประเทศ</span>
+      <b id="nationCompletedPage">0</b>
+      <span>เคส</span>
+    </div>
+  </div>
+  <div class="card">
+    <h2>📍 แยกตามจังหวัด</h2>
+    <div id="nationProvinceList"></div>
+  </div>
+  <div class="card">
+    <h2>🏢 แยกตามสังกัด</h2>
+    <div id="nationAffiliationList"></div>
+  </div>
+</section>
+
+<section id="ask" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaAsk">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card">
+    <h2>📍 พื้นที่คำขอ</h2>
+    <p class="muted">พื้นที่ถูกเลือกตั้งแต่ตอนเริ่มใช้งาน เพื่อไม่ให้เคสต่างจังหวัดปะปนกัน</p>
+    <div class="area-pill" id="requestAreaText">📍 ยังไม่ได้เลือกพื้นที่</div>
+  </div>
+  
+  <div class="card">
+    <h2>🆘 ขอความช่วยเหลือ</h2>
+    <p class="muted">กรอกสิ่งที่ต้องการและจุดที่ต้องการความช่วยเหลือ</p>
+    <label>ต้องการความช่วยเหลือเรื่องอะไร?</label>
+    <textarea id="need" placeholder="เช่น ต้องการเรือรับผู้สูงอายุ 2 คน"></textarea>
+    <label>สถานที่ / จุดสังเกต</label>
+    <input id="place" placeholder="แตะช่องนี้เพื่อเลือกตำแหน่งบนแผนที่" readonly>
+    <label>ระดับความเร่งด่วน</label>
+    <select id="urgent"><option value="false">ทั่วไป</option><option value="true">🔴 เร่งด่วน</option></select>
+    <label>รายละเอียดเพิ่มเติม / จุดสังเกต</label>
+    <textarea id="requestDetails" placeholder="เช่น บ้านเลขที่ ซอย อาคาร สีบ้าน หรือข้อมูลที่ช่วยให้ผู้ช่วยหาเจอ"></textarea>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="submitRequest">ส่งคำขอ</button>
+    </div>
+  </div>
+</section>
+
+<section id="all" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaAll">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card" id="allRoleHint">
+    <p class="muted" style="margin:0">👀 ทุกคนดูรายละเอียดเคสได้ • 🟢 ผู้ช่วยเหลือเท่านั้นที่รับเคสได้</p>
+  </div>
+  <div class="card">
+    <div class="between"><h2>🌍 เคสในพื้นที่</h2><button class="secondary" id="refreshAll">↻ รีเฟรช</button></div>
+    <div class="filter-bar">
+      <button class="secondary caseFilter" data-status="">ทั้งหมด</button>
+      <button class="secondary caseFilter" data-status="รอความช่วยเหลือ">🔴 รอความช่วยเหลือ</button>
+      <button class="secondary caseFilter" data-status="กำลังช่วยเหลือ">🟢 กำลังช่วยเหลือ</button>
+      <button class="secondary caseFilter" data-status="ได้รับความช่วยเหลือแล้ว">✅ ช่วยเหลือสำเร็จ</button>
+    </div>
+    <div id="allList"></div>
+  </div>
+</section>
+
+<section id="mine" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaMine">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card">
+    <div class="between"><h2>👤 เคสของฉัน</h2><button class="secondary" id="refreshMine">↻ รีเฟรช</button></div>
+    <div id="mineList"></div>
+  </div>
+</section>
+
+<section id="centers" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaCenters">📍 พื้นที่: กำลังโหลด</span></div>
+
+  <div class="card" id="centerBrowseCard">
+    <div class="between">
+      <div><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">แสดงจุดช่วยเหลือทั้งหมดบนแผนที่</p></div>
+      <span class="tag" id="centerBrowseCount">กำลังโหลด...</span>
+    </div>
+    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><div class="map-area-overlay" id="centerBrowseMapAreaLabel" role="button" tabindex="0" title="กดเพื่อให้แผนที่ไปยังพื้นที่ที่เลือก">📍 พื้นที่: กำลังโหลด</div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
+    <div class="center-map-actions row" style="margin-top:10px">
+      <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="centerMapShowAll">🌍 แสดงในพื้นที่</button>
+    </div>
+    <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
+    <div class="small muted" style="margin-top:6px">แผนที่จะแสดงเฉพาะจุดช่วยเหลือในจังหวัด/อำเภอที่เลือก แม้พื้นที่นั้นจะมี 0 จุดก็ตาม</div>
+    <div id="centerNearbyList" class="center-near-list"></div>
+  </div>
+
+  <div class="card center-browse-actions-card">
+    <div class="center-browse-actions">
+      <button class="primary" id="findNearbyCenters">🔎 ค้นหาจุดช่วยเหลือใกล้ฉัน</button>
+      <button class="secondary" id="openAddCenterForm">➕ เพิ่มจุดช่วยเหลือ</button>
+    </div>
+  </div>
+
+  <div class="card" id="addCenterCard" style="display:none">
+    <div class="between"><h2 style="margin:0">➕ เพิ่มจุดช่วยเหลือ</h2><button class="secondary" id="closeAddCenterForm">ปิด</button></div>
+    <label>ชื่อจุดช่วยเหลือ</label><input id="centerName" placeholder="เช่น ศูนย์พักพิงชุมชน">
+    <label>ประเภทบริการ</label>
+    <select id="centerType">
+      <option>ศูนย์ชุมชน/อื่นๆ</option><option>อาหารและน้ำ</option><option>ที่พักพิง</option>
+      <option>การแพทย์</option><option>เรือ/การเดินทาง</option><option>สิ่งของจำเป็น</option>
+    </select>
+    <label>เบอร์โทร</label><input id="centerPhone" placeholder="ถ้ามี">
+    <label>รายละเอียด</label><textarea id="centerDesc" placeholder="เปิดให้บริการอะไรบ้าง"></textarea>
+    <label>สถานที่</label><input id="centerPlace" placeholder="ที่อยู่ / จุดสังเกต">
+    <label>📍 ตำแหน่งบนแผนที่</label>
+    <div class="location-map-wrap"><div id="centerMap" class="map"></div><button type="button" class="map-my-location-btn" id="centerMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="row" style="margin-top:10px"><button class="secondary" id="centerLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addCenter">เพิ่มจุดช่วยเหลือ</button></div>
+  </div>
+
+  <div class="card"><h2>📍 จุดที่มีอยู่</h2><div id="centerList"></div></div>
+</section>
+
+<section id="water" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaWater">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card">
+    <div class="between"><div><h2 style="margin:0">🌊 ระดับน้ำ / น้ำท่วม</h2><p class="muted" style="margin:6px 0 0">เลือกพื้นที่เพื่อดูข้อมูลน้ำและชั้นแผนที่น้ำท่วม • 🛰️ GISTDA ตรวจสอบอัตโนมัติทุก 5 นาที</p></div><span class="tag" id="waterDataCount">กำลังโหลด...</span></div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>ภาค</label><select id="waterRegion"></select></div>
+      <div><label>จังหวัด</label><select id="waterProvince"></select></div>
+      <div><label>อำเภอ / เขต</label><select id="waterDistrict"></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="waterApplyArea">🌍 แสดงพื้นที่ที่เลือก</button>
+      <button class="secondary" id="waterRefresh">↻ รีเฟรชข้อมูลน้ำ</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="between"><div><h2 style="margin:0">🗺️ แผนที่น้ำ</h2><p class="muted" style="margin:6px 0 0">แผนที่จะย้ายไปยังจังหวัด/อำเภอที่เลือก ไม่ใช้ GPS เป็นศูนย์กลาง</p></div><span class="tag" id="waterMapStatus">กำลังโหลด...</span></div>
+    <div class="location-map-wrap" style="margin-top:10px;position:relative"><div id="waterMap" class="center-browse-map" style="height:520px"></div><div class="map-area-overlay" id="waterMapAreaLabel">📍 พื้นที่: กำลังโหลด</div></div>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="waterMyLocation">📍 ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="waterShowArea">🎯 กลับพื้นที่ที่เลือก</button>
+    </div>
+    <div class="card" style="margin:10px 0 0;padding:12px;background:#f7fbff;border:1px solid #d8e8f5">
+      <div class="between"><b>🛰️ พื้นที่น้ำท่วมจาก GISTDA</b><span class="tag" id="gistdaFloodStatus">กำลังเตรียมชั้นข้อมูล</span></div>
+      <div class="row" style="margin-top:9px">
+        <button class="secondary gistda-period" data-period="1day">1 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="3days">3 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="7days">7 วันล่าสุด</button>
+        <button class="secondary gistda-period" data-period="30days">30 วันล่าสุด</button>
+      </div>
+      <div class="small muted" id="gistdaFloodHint" style="margin-top:8px">ชั้นนี้เป็นพื้นที่น้ำท่วมจากการวิเคราะห์ภาพดาวเทียมของ GISTDA ไม่ใช่ระดับน้ำจากสถานี</div>
+      <div class="row" style="margin-top:9px">
+        <button class="secondary" id="refreshGistdaNow">↻ อัปเดตแผนที่ตอนนี้</button><button class="secondary" id="openGistdaFlood">🌐 เปิดแผนที่น้ำท่วม GISTDA</button>
+      </div>
+    </div>
+    <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 พื้นที่น้ำท่วมจาก GISTDA • 🚧 ถนนผ่านไม่ได้จากรายงานประชาชน</div>
+  </div>
+  <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังเตรียมแผนที่พื้นที่น้ำท่วม...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
+  <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
+</section>
+
+<section id="situations" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaSituations">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card">
+    <h2>🌊 แจ้งสถานการณ์น้ำ</h2>
+    <label>หัวข้อ</label><input id="sitTitle" placeholder="เช่น น้ำเริ่มท่วมถนน">
+    <label>รายละเอียด</label><textarea id="sitDesc" placeholder="เกิดอะไรขึ้น"></textarea>
+    <label>ระดับ</label>
+    <select id="sitSeverity"><option>เล็กน้อย</option><option>ปานกลาง</option><option>มาก</option><option>รุนแรง</option></select>
+    <label>สถานที่</label><input id="sitPlace" placeholder="บริเวณ / จุดสังเกต">
+    <label>📍 ตำแหน่ง</label><div id="sitMap" class="map"></div><div id="sitCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="row" style="margin-top:10px"><button class="secondary" id="sitLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addSituation">แจ้งสถานการณ์น้ำ</button></div>
+  </div>
+  <div class="card"><h2>🌊 สถานการณ์น้ำล่าสุด</h2><div id="situationList"></div></div>
+</section>
+</main>
+
+<div id="locationBackdrop" class="location-backdrop">
+  <div class="location-card">
+    <div class="between">
+      <h2>📍 เลือกตำแหน่งของผู้ขอ</h2>
+      <button class="secondary" id="closeLocation">ปิด</button>
+    </div>
+    <p class="muted" style="margin:0 0 8px">เลือกได้ 2 แบบ: ใช้ตำแหน่งปัจจุบัน หรือแตะบนแผนที่เพื่อปักหมุดเอง</p>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="askLocate">📍 ใช้ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="askManual">📌 ปักหมุดเอง</button>
+      <button class="secondary" id="askClear">ล้างจุด</button>
+    </div>
+    <div class="location-map-wrap">
+      <div id="askMap" class="location-map"></div>
+      <button type="button" class="map-my-location-btn" id="askMapMyLocation" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">🎯</button>
+    </div>
+    <div id="askCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
+    <div class="location-hint small muted">💡 กด “ใช้ตำแหน่งปัจจุบัน” หรือ “ปักหมุดเอง” แล้วกด “ยืนยันตำแหน่ง”</div>
+    <div class="location-confirm-bar">
+      <button class="primary location-confirm-btn" id="confirmLocation">✅ ยืนยันตำแหน่ง</button>
+      <button class="secondary location-cancel-btn" id="cancelLocation">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<div id="gate" class="gate show">
+  <div class="gate-card">
+    <div id="areaStep">
+      <h2>📍 ขั้นตอนที่ 1: เลือกพื้นที่</h2>
+      <p>ต้องเลือกพื้นที่ก่อน แล้วจึงเลือกบทบาท</p>
+      <div class="area-grid">
+        <div class="area-box">
+          <label>ภาค <span class="area-required">*</span></label>
+          <select id="regionInput">
+            <option value="">-- เลือกภาค --</option>
+          </select>
+        </div>
+        <div class="area-box">
+          <label>จังหวัด <span class="area-required">*</span></label>
+          <select id="provinceInput">
+            <option value="">-- เลือกภาคก่อน --</option>
+          </select>
+        </div>
+        <div class="area-box">
+          <label>อำเภอ / เขต <span class="area-required">*</span></label>
+          <select id="districtInput">
+            <option value="">-- เลือกจังหวัดก่อน --</option>
+          </select>
+          <div class="small muted" id="districtLoading" style="margin-top:6px"></div>
+        </div>
+      </div>
+      <div class="area-current" id="areaPreview">ยังไม่ได้เลือกพื้นที่</div>
+      <button class="primary" id="areaNextBtn" style="width:100%;margin-top:12px">ไปเลือกบทบาท</button>
+    </div>
+
+    <div id="roleStep" style="display:none">
+      <h2>👋 ขั้นตอนที่ 2: เลือกบทบาท</h2>
+      <p id="roleAreaText" class="area-current"></p>
+      <p>วันนี้คุณเข้ามาเพื่ออะไร?</p>
+      <div class="role-grid">
+        <button class="role-btn requester" id="requesterBtn"><b>🔴 มาขอความช่วยเหลือ</b><span>แจ้งเหตุหรือส่งคำขอความช่วยเหลือของคุณ</span></button>
+        <button class="role-btn helper" id="helperBtn"><b>🟢 มาช่วยเหลือผู้อื่น</b><span>ดูเคสที่รอความช่วยเหลือและรับเคสไปช่วย</span></button>
+      </div>
+    </div>
+
+    <div id="nameStep" style="display:none">
+      <h2>🔴 ข้อมูลผู้ขอความช่วยเหลือ</h2>
+      <p>กรุณาพิมพ์ชื่อของคุณ</p>
+      <input id="nameInput" maxlength="80" placeholder="เช่น สมชาย">
+      <button class="primary" id="startBtn" style="width:100%;margin-top:12px">เริ่มใช้งาน</button>
+    </div>
+
+    <div id="helperStep" style="display:none">
+      <h2>🟢 ข้อมูลผู้ช่วยเหลือ</h2>
+      <p>เลือกประเภทและระบุชื่อสังกัดของคุณ</p>
+      <label>ประเภท</label>
+      <select id="helperTypeInput">
+        <option value="มูลนิธิ">🏢 มูลนิธิ</option>
+        <option value="อาสา">🟢 อาสา</option>
+        <option value="ภาคประชาชน">👥 ภาคประชาชน</option>
+      </select>
+      <label>ชื่อสังกัด</label>
+      <input id="helperAffiliationInput" maxlength="120" placeholder="เช่น มูลนิธิร่วมกตัญญู / อาสาชุมชนบางนา">
+      <label>ชื่อผู้ช่วยเหลือ</label>
+      <input id="helperNameInput" maxlength="80" placeholder="เช่น สมชาย">
+      <button class="primary" id="helperStartBtn" style="width:100%;margin-top:12px">เริ่มใช้งาน</button>
+    </div>
+  </div>
+</div>
+<div id="detailBackdrop" class="detail-backdrop" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+  <div class="detail-card">
+    <div class="between">
+      <h2 id="detailTitle">รายละเอียดเคส</h2>
+      <button class="secondary" id="closeDetail">✕ ปิด</button>
+    </div>
+    <div id="detailBody"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.16/dist/esri-leaflet.js"></script>
+<script>
+(function(){
+"use strict";
+
+const API="https://atrhbzrxvklqakmgfdmr.supabase.co";
+const KEY="sb_publishable_X8KN29r3NRz4An1fxUQy7A_FYe_vTh3";
+const REGION_KEY="citizen_help_region";
+const PROVINCE_KEY="citizen_help_province";
+const DISTRICT_KEY="citizen_help_district";
+const SUBDISTRICT_KEY="citizen_help_subdistrict";
+const NAME_KEY="citizen_help_name";
+const ROLE_KEY="citizen_help_role";
+const REQ_TOKEN_KEY="citizen_help_requester_token";
+const HELP_TOKEN_KEY="citizen_help_helper_token";
+const HELPER_TYPE_KEY="citizen_help_helper_type";
+const HELPER_AFFILIATION_KEY="citizen_help_helper_affiliation";
+
+let region=localStorage.getItem(REGION_KEY)||"";
+let province=localStorage.getItem(PROVINCE_KEY)||"";
+let district=localStorage.getItem(DISTRICT_KEY)||"";
+let subdistrict=localStorage.getItem(SUBDISTRICT_KEY)||"";
+let name=localStorage.getItem(NAME_KEY)||"";
+let role=localStorage.getItem(ROLE_KEY)||"";
+let reqToken=localStorage.getItem(REQ_TOKEN_KEY)||"";
+let helpToken=localStorage.getItem(HELP_TOKEN_KEY)||"";
+let helperType=localStorage.getItem(HELPER_TYPE_KEY)||"";
+let helperAffiliation=localStorage.getItem(HELPER_AFFILIATION_KEY)||"";
+if(!reqToken){reqToken=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();localStorage.setItem(REQ_TOKEN_KEY,reqToken)}
+if(!helpToken){helpToken=crypto.randomUUID?crypto.randomUUID():String(Date.now())+Math.random();localStorage.setItem(HELP_TOKEN_KEY,helpToken)}
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+function toast(msg){$("toast").textContent=msg;$("toast").classList.add("show");setTimeout(()=>$("toast").classList.remove("show"),2600)}
+function headers(extra){return Object.assign({"apikey":KEY,"Content-Type":"application/json","Prefer":"return=representation"},extra||{})}
+async function api(path,options={}){
+  const r=await fetch(API+"/rest/v1/"+path,Object.assign({headers:headers()},options));
+  const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){data=text}
+  if(!r.ok)throw new Error(typeof data==="string"?data:(data?.message||data?.hint||"Supabase error "+r.status));
+  return data;
+}
+async function rpc(name,body){
+  const r=await fetch(API+"/rest/v1/rpc/"+name,{method:"POST",headers:headers(),body:JSON.stringify(body)});
+  const text=await r.text();let data=null;try{data=text?JSON.parse(text):null}catch(e){data=text}
+  if(!r.ok)throw new Error(typeof data==="string"?data:(data?.message||data?.hint||"RPC error "+r.status));
+  return data;
+}
+
+
+const TH_REGIONS={
+  "ภาคเหนือ":["กำแพงเพชร","เชียงราย","เชียงใหม่","ตาก","น่าน","พะเยา","พิจิตร","พิษณุโลก","เพชรบูรณ์","แพร่","แม่ฮ่องสอน","ลำปาง","ลำพูน","สุโขทัย","อุตรดิตถ์","นครสวรรค์","อุทัยธานี"],
+  "ภาคตะวันออกเฉียงเหนือ":["กาฬสินธุ์","ขอนแก่น","ชัยภูมิ","นครพนม","นครราชสีมา","บึงกาฬ","บุรีรัมย์","มหาสารคาม","มุกดาหาร","ยโสธร","ร้อยเอ็ด","เลย","ศรีสะเกษ","สกลนคร","สุรินทร์","หนองคาย","หนองบัวลำภู","อำนาจเจริญ","อุดรธานี","อุบลราชธานี"],
+  "ภาคกลาง":["กรุงเทพมหานคร","ชัยนาท","นครนายก","นครปฐม","นนทบุรี","ปทุมธานี","พระนครศรีอยุธยา","ลพบุรี","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระบุรี","สิงห์บุรี","สุพรรณบุรี","อ่างทอง","อุทัยธานี"],
+  "ภาคตะวันออก":["จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ตราด","นครนายก","ปราจีนบุรี","ระยอง","สระแก้ว"],
+  "ภาคตะวันตก":["กาญจนบุรี","เพชรบุรี","ประจวบคีรีขันธ์","ราชบุรี"],
+  "ภาคใต้":["กระบี่","ชุมพร","ตรัง","นครศรีธรรมราช","นราธิวาส","ปัตตานี","พังงา","พัทลุง","ภูเก็ต","ระนอง","สงขลา","สตูล","สุราษฎร์ธานี","ยะลา"]
+};
+// นครนายกอยู่ในภาคกลางเพื่อไม่ให้ซ้ำในภาคตะวันออก
+TH_REGIONS["ภาคตะวันออก"]=TH_REGIONS["ภาคตะวันออก"].filter(x=>x!=="นครนายก");
+const TH_PROVINCES=[...new Set(Object.values(TH_REGIONS).flat())];
+const PROVINCE_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/province.json";
+const DISTRICT_DATA_URL="https://raw.githubusercontent.com/kongvut/thai-province-data/refs/heads/master/api/latest/district.json";
+let provinceData=null;
+let provinceLoadingPromise=null;
+let districtData=null;
+let districtLoadingPromise=null;
+
+async function getProvinceData(){
+  if(provinceData)return provinceData;
+  if(provinceLoadingPromise)return provinceLoadingPromise;
+  provinceLoadingPromise=fetch(PROVINCE_DATA_URL).then(r=>{
+    if(!r.ok)throw new Error("โหลดรายชื่อจังหวัดไม่สำเร็จ");
+    return r.json();
+  }).then(x=>{provinceData=Array.isArray(x)?x:[];return provinceData;}).catch(e=>{provinceLoadingPromise=null;throw e;});
+  return provinceLoadingPromise;
+}
+async function getDistrictData(){
+  if(districtData)return districtData;
+  if(districtLoadingPromise)return districtLoadingPromise;
+  districtLoadingPromise=fetch(DISTRICT_DATA_URL).then(r=>{
+    if(!r.ok)throw new Error("โหลดรายชื่ออำเภอไม่สำเร็จ");
+    return r.json();
+  }).then(x=>{districtData=Array.isArray(x)?x:[];return districtData;}).catch(e=>{districtLoadingPromise=null;throw e;});
+  return districtLoadingPromise;
+}
+function inferRegionFromProvince(){
+  if(region)return;
+  if(!province)return;
+  const found=Object.entries(TH_REGIONS).find(([r,list])=>list.includes(province));
+  if(found)region=found[0];
+}
+function initRegionSelect(){
+  const el=$("regionInput"); if(!el)return;
+  el.innerHTML='<option value="">-- เลือกภาค --</option>';
+  Object.keys(TH_REGIONS).forEach(r=>{
+    const o=document.createElement("option");o.value=r;o.textContent=r;el.appendChild(o);
+  });
+  el.value=region||"";
+}
+function populateProvinceSelect(keepValue=true){
+  const el=$("provinceInput"); if(!el)return;
+  const old=keepValue?province:"";
+  const list=TH_REGIONS[region]||[];
+  el.innerHTML='<option value="">-- เลือกจังหวัด --</option>';
+  list.forEach(p=>{
+    const o=document.createElement("option");o.value=p;o.textContent=p;el.appendChild(o);
+  });
+  el.value=list.includes(old)?old:"";
+  if(!el.value)province="";
+  updateAreaPreview();
+}
+async function loadDistrictsForProvince(keepValue=true){
+  const el=$("districtInput"), loading=$("districtLoading");
+  if(!el)return;
+  const selectedProvince=String($("provinceInput")?.value||"").trim();
+  const old=keepValue?district:"";
+  el.innerHTML='<option value="">-- กำลังโหลดอำเภอ / เขต --</option>';
+  el.disabled=true;
+  if(loading)loading.textContent=selectedProvince?"กำลังโหลดรายชื่อพื้นที่...":"";
+  if(!selectedProvince){el.innerHTML='<option value="">-- เลือกจังหวัดก่อน --</option>';if(loading)loading.textContent="";updateAreaPreview();return;}
+  try{
+    const [provinces,all]=await Promise.all([getProvinceData(),getDistrictData()]);
+    const provinceRow=provinces.find(x=>String(x.name_th??x.name?.th??"").trim()===selectedProvince);
+    const provinceId=provinceRow?Number(provinceRow.id):null;
+    const rows=provinceId?all.filter(x=>Number(x.province_id)===provinceId):[];
+    el.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';
+    rows.forEach(x=>{
+      const name=String(x.name_th??x.name?.th??"").trim();if(!name)return;
+      const o=document.createElement("option");o.value=name;o.textContent=name;el.appendChild(o);
+    });
+    el.disabled=false;
+    if(old && rows.some(x=>String(x.name_th??x.name?.th??"").trim()===old))el.value=old;
+    if(loading)loading.textContent=rows.length?`พบ ${rows.length} อำเภอ / เขต`:"ไม่พบข้อมูลพื้นที่";
+  }catch(e){
+    el.innerHTML='<option value="">-- โหลดข้อมูลไม่สำเร็จ --</option>';
+    if(loading)loading.textContent="กรุณาลองใหม่อีกครั้ง";
+  }
+  updateAreaPreview();
+}
+function initProvinceSelect(){populateProvinceSelect(true);loadDistrictsForProvince(true);}
+function areaLabel(){return region?(region+(province?` / ${province}`:"")+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
+function updateAreaPreview(){
+  const t=areaLabel();
+  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation","activeAreaWater","centerBrowseMapAreaLabel"].forEach(id=>{
+    const el=$(id);if(el)el.textContent=`📍 พื้นที่: ${t}`;
+  });
+}
+function saveArea(){
+  region=String($("regionInput")?.value||"").trim();
+  province=String($("provinceInput")?.value||"").trim();
+  district=String($("districtInput")?.value||"").trim();
+  if(!region){toast("กรุณาเลือกภาค");return false}
+  if(!province){toast("กรุณาเลือกจังหวัด");return false}
+  if(!district){toast("กรุณาระบุอำเภอ / เขต");return false}
+  localStorage.setItem(REGION_KEY,region);
+  localStorage.setItem(PROVINCE_KEY,province);
+  localStorage.setItem(DISTRICT_KEY,district);
+  updateAreaPreview();
+  const active=document.querySelector('.page.active')?.id;
+  if(active==='centers'){
+    centerRows=[];
+    loadCenters().then(()=>{
+      setTimeout(()=>{
+        focusCenterBrowseOnSelectedArea();
+        const m=ensureCenterBrowseMap();
+        m?.invalidateSize();
+      },60);
+    });
+  }
+  return true;
+}
+function openArea(){
+  $("gate").classList.add("show");
+  $("areaStep").style.display="block";
+  $("roleStep").style.display="none";
+  $("nameStep").style.display="none";
+  $("helperStep").style.display="none";
+  initRegionSelect();
+  $("regionInput").value=region||"";
+  populateProvinceSelect(true);
+  $("provinceInput").value=province||"";
+  loadDistrictsForProvince(true);
+  updateAreaPreview();
+}
+
+function updateHeader(){
+  $("helloName").textContent=name?`สวัสดี ${name} 👋`: "";
+  $("changeRoleBtn").textContent=role==="helper"?"🟢 บทบาท: ช่วยเหลือผู้อื่น":"🔴 บทบาท: ขอความช่วยเหลือ";
+}
+function openGate(mode){
+  openArea();
+}
+function closeGate(){ $("gate").classList.remove("show") }
+function chooseRole(r){
+  if(!region || !province || !district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  role=r;localStorage.setItem(ROLE_KEY,r);
+  if(r==="requester"){
+    $("roleStep").style.display="none";$("helperStep").style.display="none";$("nameStep").style.display="block";
+    $("nameInput").value=name;
+    return;
+  }
+  $("roleStep").style.display="none";$("nameStep").style.display="none";$("helperStep").style.display="block";
+  $("helperTypeInput").value=helperType||"อาสา";
+  $("helperAffiliationInput").value=helperAffiliation;
+  $("helperNameInput").value=name;
+}
+function start(){
+  if(!region||!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  const v=$("nameInput").value.trim();
+  if(!v){toast("กรุณาพิมพ์ชื่อของคุณ");return}
+  name=v;localStorage.setItem(NAME_KEY,name);updateHeader();closeGate();showPage("ask");
+}
+function startHelper(){
+  if(!region||!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
+  const n=$("helperNameInput").value.trim();
+  const t=$("helperTypeInput").value;
+  const a=$("helperAffiliationInput").value.trim();
+  if(!n){toast("กรุณาพิมพ์ชื่อของคุณ");return}
+  if(!a){toast("กรุณาระบุชื่อสังกัด");return}
+  name=n;helperType=t;helperAffiliation=a;
+  localStorage.setItem(NAME_KEY,name);
+  localStorage.setItem(HELPER_TYPE_KEY,helperType);
+  localStorage.setItem(HELPER_AFFILIATION_KEY,helperAffiliation);
+  updateHeader();closeGate();showPage("all");
+}
+function changeName(){
+  const v=prompt("ชื่อที่ต้องการแสดง",name);
+  if(v===null)return;const n=v.trim();if(!n)return;
+  name=n;localStorage.setItem(NAME_KEY,n);updateHeader();
+  toast("เปลี่ยนชื่อแล้ว");
+}
+function showPage(id){
+  if(id==="nationwide") loadNationwide();
+  document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+  const p=$(id);if(!p)return;p.classList.add("active");
+  if(id!=="centers") setTimeout(()=>initMapFor(id),50);
+  if(id==="home")loadSummary();
+  if(id==="all")loadRequests("all");
+  if(id==="mine")loadRequests("mine");
+  if(id==="centers"){
+    loadCenters().then(()=>{
+      setTimeout(()=>focusCenterBrowseOnSelectedArea(),80);
+    });
+  }
+  if(id==="water")loadWaterPage();
+  if(id==="situations")loadSituations();
+  window.scrollTo(0,0);
+}
+
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
+$("changeAreaBtn").addEventListener("click",openArea);
+$("changeRoleBtn").addEventListener("click",()=>{openArea();$("areaStep").style.display="none";$("roleStep").style.display="block";});
+$("changeNameBtn").addEventListener("click",changeName);
+$("regionInput").addEventListener("change",async()=>{
+  region=String($("regionInput").value||"").trim();
+  province="";district="";
+  $("districtInput").innerHTML='<option value="">-- เลือกจังหวัดก่อน --</option>';
+  $("districtInput").disabled=true;
+  populateProvinceSelect(false);
+  updateAreaPreview();
+});
+$("provinceInput").addEventListener("change",async()=>{
+  province=String($("provinceInput").value||"").trim();
+  district="";
+  $("districtInput").value="";
+  updateAreaPreview();
+  await loadDistrictsForProvince(false);
+});
+$("districtInput").addEventListener("change",()=>{
+  district=String($("districtInput").value||"").trim();
+  updateAreaPreview();
+});
+$("areaNextBtn").addEventListener("click",()=>{if(saveArea()){$("areaStep").style.display="none";$("roleStep").style.display="block";updateAreaPreview()}});
+$("startBtn").addEventListener("click",start);
+$("requesterBtn").addEventListener("click",()=>chooseRole("requester"));
+$("helperBtn").addEventListener("click",()=>chooseRole("helper"));
+$("helperStartBtn").addEventListener("click",startHelper);
+$("refreshAll").addEventListener("click",()=>loadRequests("all"));
+document.querySelectorAll(".caseFilter").forEach(b=>b.addEventListener("click",()=>loadRequests("all",b.dataset.status||"")));
+$("refreshMine").addEventListener("click",()=>loadRequests("mine"));
+$("waitingStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","รอความช่วยเหลือ"),60)});
+$("helpStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","กำลังช่วยเหลือ"),60)});
+$("centerStat").addEventListener("click",()=>showPage("centers"));
+$("findNearbyCenters").addEventListener("click",locateCenterBrowse);
+$("centerMapMyLocation").addEventListener("click",locateCenterBrowse);
+$("centerBrowseMapMyLocationFloating").addEventListener("click",locateCenterBrowse);
+$("centerMapMyLocationFloating").addEventListener("click",()=>locate("center"));
+$("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
+$("centerBrowseMapAreaLabel").addEventListener("click",()=>focusCenterBrowseOnSelectedArea());
+$("centerBrowseMapAreaLabel").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();focusCenterBrowseOnSelectedArea()}});
+$("openAddCenterForm").addEventListener("click",()=>{
+  // เปิดฟอร์มใหม่ทุกครั้ง ต้องเริ่มจากยังไม่เลือกพิกัด เพื่อไม่ให้พิกัดเดิม/พิกัด GPS ถูกนำมาใช้ซ้ำ
+  coords.center=null;
+  if(marks.center){marks.center.remove();marks.center=null}
+  $("centerCoords").textContent="ยังไม่ได้เลือกตำแหน่ง • แตะบนแผนที่เพื่อปักหมุด";
+  $("addCenterCard").style.display="block";
+  setTimeout(async()=>{
+    const centerAddMap=initMapFor("center");
+    centerAddMap?.invalidateSize();
+    await focusCenterAddMapOnSelectedArea();
+    centerAddMap?.invalidateSize();
+  },80);
+  window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'});
+});
+$("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
+
+$("situationStat").addEventListener("click",()=>showPage("situations"));
+$("waterStat").addEventListener("click",()=>showPage("water"));
+$("waterApplyArea").addEventListener("click",()=>loadWaterPage(true));
+$("waterRefresh").addEventListener("click",()=>{loadWaterPage(true);setTimeout(()=>refreshGistdaFloodLayer(),300);});
+$("waterShowArea").addEventListener("click",()=>focusWaterMapOnSelectedArea());
+$("waterMyLocation").addEventListener("click",()=>locateWaterUser());
+document.querySelectorAll(".gistda-period").forEach(b=>b.addEventListener("click",()=>{addGistdaFloodLayer(b.dataset.period||"1day")}));
+$("openGistdaFlood")?.addEventListener("click",()=>window.open(GISTDA_FLOOD_PORTAL,"_blank","noopener"));
+$("refreshGistdaNow")?.addEventListener("click",()=>refreshGistdaFloodLayer());
+$("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
+
+let maps={},marks={},coords={ask:null,center:null,situation:null};
+let waterMap=null,waterFloodLayer=null,waterStationMarkers=[],waterRoadMarkers=[],waterAreaUserMarker=null;
+let centerBrowseMap=null, centerBrowseMarkers=[], centerUserMarker=null, centerRows=[];
+let locationPickerBackup={ask:null,place:""};
+function initMapFor(id){
+  if(typeof L==="undefined")return null;
+  const cfg={ask:["askMap",13.7563,100.5018],center:["centerMap",13.7563,100.5018],situations:["sitMap",13.7563,100.5018]};
+  if(!cfg[id])return null;
+  const [elId,lat,lng]=cfg[id];
+  const el=$(elId);
+  if(!el)return null;
+  // ป้องกัน Leaflet error: “Map container is already initialized”
+  // รองรับกรณีหน้าเดิมถูกเปิดซ้ำ/โหลดข้อมูลซ้ำ แต่ใช้ container เดิม
+  if(maps[id]){
+    try{maps[id].invalidateSize();return maps[id]}catch(e){maps[id]=null}
+  }
+  if(el.__leafletMap){
+    maps[id]=el.__leafletMap;
+    try{maps[id].invalidateSize();return maps[id]}catch(e){el.__leafletMap=null;maps[id]=null}
+  }
+  if(el._leaflet_id){
+    // มี Leaflet ผูกกับ container แล้ว แต่ตัวแปรในแอปอาจหายไป
+    // ล้าง instance เดิมก่อนสร้างใหม่ เพื่อไม่ให้เกิด error ซ้ำ
+    try{
+      const oldId=el._leaflet_id;
+      const oldMap=el.__leafletMap;
+      if(oldMap) oldMap.remove();
+    }catch(e){}
+    el._leaflet_id=null;
+    el.__leafletMap=null;
+  }
+  const map=L.map(el).setView([lat,lng],12);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
+  map.on("click",e=>setPoint(id,e.latlng.lat,e.latlng.lng));
+  maps[id]=map;marks[id]=null;el.__leafletMap=map;
+  return map;
+}
+function setPoint(id,lat,lng){
+  coords[id]={lat:Number(lat),lng:Number(lng)};
+  if(marks[id])marks[id].setLatLng([lat,lng]);
+  else if(typeof L!=="undefined" && maps[id])marks[id]=L.marker([lat,lng]).addTo(maps[id]);
+  const out=$(id==="ask"?"askCoords":id==="center"?"centerCoords":"sitCoords");
+  if(out)out.textContent=`📌 จุดที่เลือก: ละติจูด ${Number(lat).toFixed(6)} • ลองจิจูด ${Number(lng).toFixed(6)}`;
+  if(id==="ask" && $("place")) $("place").value=`พิกัด ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
+}
+function locate(id){
+  if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return}
+  navigator.geolocation.getCurrentPosition(p=>{
+    const {latitude,longitude}=p.coords;
+    setPoint(id,latitude,longitude);
+    maps[id]?.setView([latitude,longitude],16);
+    if(id==="ask" && maps.ask){
+      if(marks.ask){marks.ask.remove();marks.ask=null}
+      const icon=L.divIcon({className:"",html:'<div class="current-location-dot"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+      marks.ask=L.marker([latitude,longitude],{icon}).addTo(maps.ask);
+    }
+  },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+}
+function openLocationPicker(){
+  locationPickerBackup={
+    ask:coords.ask?{...coords.ask}:null,
+    place:$("place")?.value||""
+  };
+  $("locationBackdrop").classList.add("show");
+  setTimeout(()=>{
+    initMapFor("ask");
+    if(coords.ask && maps.ask){
+      maps.ask.setView([coords.ask.lat,coords.ask.lng],16);
+      setPoint("ask",coords.ask.lat,coords.ask.lng);
+    }
+    maps.ask?.invalidateSize();
+  },80);
+}
+function closeLocationPicker(){ $("locationBackdrop").classList.remove("show"); }
+function cancelLocationPicker(){
+  coords.ask=locationPickerBackup.ask?{...locationPickerBackup.ask}:null;
+  if(marks.ask){marks.ask.remove();marks.ask=null}
+  if(coords.ask && maps.ask){
+    marks.ask=L.marker([coords.ask.lat,coords.ask.lng]).addTo(maps.ask);
+    maps.ask.setView([coords.ask.lat,coords.ask.lng],16);
+    $("askCoords").textContent=`ละติจูด ${coords.ask.lat.toFixed(6)} • ลองจิจูด ${coords.ask.lng.toFixed(6)}`;
+  }else{
+    $("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";
+  }
+  $("place").value=locationPickerBackup.place||"";
+  closeLocationPicker();
+}
+$("place").addEventListener("click",openLocationPicker);
+$("closeLocation").addEventListener("click",cancelLocationPicker);
+$("cancelLocation").addEventListener("click",cancelLocationPicker);
+$("locationBackdrop").addEventListener("click",e=>{if(e.target===$("locationBackdrop"))cancelLocationPicker()});
+$("askLocate").addEventListener("click",()=>locate("ask"));
+$("askMapMyLocation").addEventListener("click",()=>locate("ask"));
+$("askManual").addEventListener("click",()=>toast("แตะบนแผนที่ตรงตำแหน่งที่ต้องการเพื่อปักหมุด"));
+$("confirmLocation").addEventListener("click",()=>{
+  if(!coords.ask){toast("กรุณาเลือกตำแหน่งก่อน");return}
+  closeLocationPicker();
+  toast("ยืนยันตำแหน่งเรียบร้อยแล้ว");
+});
+$("centerLocate").addEventListener("click",()=>locate("center"));
+$("sitLocate").addEventListener("click",()=>locate("situation"));
+$("askClear").addEventListener("click",()=>{coords.ask=null;if(marks.ask){marks.ask.remove();marks.ask=null}$("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";$("place").value=""});
+
+function statusClass(s){return s==="รอความช่วยเหลือ"?"wait":s==="กำลังช่วยเหลือ"?"help":s==="ยกเลิกคำขอ"?"cancel":"done"}
+let detailMap=null;
+let detailMarker=null;
+let detailCurrent=null;
+function formatTime(v){return v?new Date(v).toLocaleString("th-TH"):"-"}
+function requestCard(x, mine=false){
+  const status=String(x.status||"").trim();
+  const helperToken=String(x.helper_token||"").trim();
+  const mineByToken=x.requester_token===reqToken;
+  const myClaim=helperToken===String(helpToken).trim();
+  let note="";
+  if(role==="helper" && status==="รอความช่วยเหลือ" && !helperToken)note='<span class="tag" style="background:#e8f7ee;color:#087a43">🟢 กดดูรายละเอียดเพื่อรับเคส</span>';
+  if(role==="helper" && myClaim && status==="กำลังช่วยเหลือ")note='<span class="tag" style="background:#e8f7ee;color:#087a43">🙋 เคสที่คุณรับแล้ว</span>';
+  if(role==="requester" && mineByToken)note='<span class="tag">👤 เคสของคุณ</span>';
+  return `<div class="case clickable" data-case-id="${x.id}">
+    <div class="between"><h3>${esc(x.need||"ไม่ได้ระบุ")}</h3><span class="status ${statusClass(status)}">${esc(status||"-")}</span></div>
+    <div class="tag">👤 ${esc(x.requester_name||"ไม่ระบุชื่อ")}</div>
+    ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
+    ${note}
+    <p>📍 ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    ${x.details?`<p class="small">📝 ${esc(x.details)}</p>`:""}
+    <div class="small muted">🕒 แจ้งเมื่อ ${formatTime(x.submitted||x.created_at)}</div>
+    <div class="small muted" style="margin-top:6px">แตะเพื่อดูรายละเอียด</div>
+  </div>`;
+}
+function renderDetail(x){
+  detailCurrent=x;
+  const status=String(x.status||"").trim();
+  const helperToken=String(x.helper_token||"").trim();
+  const mineByToken=x.requester_token===reqToken;
+  const myClaim=helperToken===String(helpToken).trim();
+  let actions="";
+  if(role==="helper" && status==="รอความช่วยเหลือ" && !helperToken) actions+=`<button class="primary" id="detailClaimBtn">🙋 รับเคสนี้</button>`;
+  // ปุ่มจบเคสต้องแสดงเฉพาะผู้ช่วยที่มี helper_token ตรงกับผู้ที่กดรับเคสนี้เท่านั้น
+  if(role==="helper" && myClaim && status==="กำลังช่วยเหลือ") actions+=`<button class="primary" id="detailCompleteBtn">✅ จบเคส / ยืนยันช่วยเหลือเสร็จแล้ว</button>`;
+  if(role==="requester" && mineByToken && status==="รอความช่วยเหลือ") actions+=`<button class="secondary" id="detailCancelBtn" style="border-color:#d33;color:#b00020">❌ ยกเลิกคำขอ</button>`;
+  if(role==="requester" && mineByToken && status==="กำลังช่วยเหลือ") actions+=`<button class="secondary" id="detailRequesterDoneBtn">✅ ยืนยันว่าได้รับความช่วยเหลือแล้ว</button>`;
+  const helperInfo=helperToken?`<div class="card" style="margin-top:12px"><b>🟢 ผู้ช่วยเหลือ</b><p style="margin-bottom:4px">ชื่อ: ${esc(x.helper_name||"ไม่ระบุ")}</p><p style="margin:0">สังกัด: ${esc(x.helper_affiliation||"ไม่ระบุ")} • ${esc(x.helper_type||"ไม่ระบุ")}</p></div>`:"";
+  $("detailTitle").textContent=`รายละเอียดเคส #${x.request_no||x.id}`;
+  $("detailBody").innerHTML=`
+    <div class="tag">สถานะ: ${esc(status||"-")}</div>
+    ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
+    <h3>${esc(x.need||"ไม่ได้ระบุความต้องการ")}</h3>
+    <p>👤 ผู้ขอ: ${esc(x.requester_name||"ไม่ระบุชื่อ")}</p>
+    <p>📍 พื้นที่: ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>📍 สถานที่: ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    ${x.details?`<div class="card" style="margin:10px 0 0;padding:12px 14px"><b>📝 รายละเอียดเพิ่มเติม</b><p style="margin:6px 0 0;white-space:pre-wrap">${esc(x.details)}</p></div>`:""}
+    <div class="timeline">
+      <div>🕒 <b>เวลาขอความช่วยเหลือ</b><br>${formatTime(x.submitted||x.created_at)}</div>
+      <div>🙋 <b>เวลารับเคส / เริ่มช่วยเหลือ</b><br>${formatTime(x.accepted_at)}</div>
+      <div>✅ <b>เวลาช่วยเหลือเสร็จ</b><br>${formatTime(x.completed_at)}</div>
+    </div>
+    ${helperInfo}
+    ${Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng))?`<p style="margin-bottom:6px">🗺️ ตำแหน่งคำขอ</p><div id="detailMap" class="detail-map"></div>`:`<div class="empty">⚠️ เคสนี้ยังไม่มีพิกัดของผู้ขอ</div>`}
+    ${role==="helper"?`<div class="detail-actions"><button class="primary" id="navigateToRequesterBtn">🧭 นำทางไปหาผู้ขอความช่วยเหลือ</button></div><div class="small muted" style="margin-top:6px">กดเพื่อเปิด Google Maps ไปยังตำแหน่งของผู้ขอ</div>`:""}
+    ${actions?`<div class="detail-actions">${actions}</div>`:""}`;
+  $("detailBackdrop").classList.add("show");
+  setTimeout(()=>{
+    if(detailMap){detailMap.remove();detailMap=null;detailMarker=null}
+    if(x.lat!=null&&x.lng!=null&&typeof L!=="undefined"){
+      detailMap=L.map("detailMap").setView([Number(x.lat),Number(x.lng)],16);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(detailMap);
+      detailMarker=L.marker([Number(x.lat),Number(x.lng)]).addTo(detailMap);
+      detailMap.invalidateSize();
+    }
+    $("navigateToRequesterBtn")?.addEventListener("click",()=>{
+      const lat=Number(x.lat), lng=Number(x.lng);
+      if(!Number.isFinite(lat)||!Number.isFinite(lng)){
+        toast("เคสนี้ยังไม่มีพิกัดของผู้ขอความช่วยเหลือ");
+        return;
+      }
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,"_blank");
+    });
+    $("detailClaimBtn")?.addEventListener("click",()=>claim(x.id));
+    $("detailCompleteBtn")?.addEventListener("click",()=>{closeDetail();completeHelp(x.id)});
+    $("detailCancelBtn")?.addEventListener("click",()=>{closeDetail();cancelRequest(x.id)});
+    $("detailRequesterDoneBtn")?.addEventListener("click",()=>{closeDetail();requesterConfirmHelp(x.id)});
+  },80);
+}
+function closeDetail(){
+  $("detailBackdrop").classList.remove("show");
+  if(detailMap){detailMap.remove();detailMap=null;detailMarker=null}
+  detailCurrent=null;
+}
+$("closeDetail").addEventListener("click",closeDetail);
+$("detailBackdrop").addEventListener("click",e=>{if(e.target===$("detailBackdrop"))closeDetail()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail()});
+async function openCase(id){
+  try{
+    const rows=await api(`requests?select=*&id=eq.${encodeURIComponent(id)}&limit=1`);
+    const x=(rows||[])[0];
+    if(!x){toast("ไม่พบเคสนี้");return}
+    if(x.hidden){toast("เคสนี้ไม่พร้อมให้ดู");return}
+    renderDetail(x);
+  }catch(e){toast("เปิดรายละเอียดไม่ได้: "+e.message)}
+}
+async function loadRequests(mode, filterStatus=""){
+  const target=mode==="mine"?$("mineList"):$ ("allList");if(!target)return;
+  target.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    let q="requests?select=*&order=created_at.desc&limit=100";
+    if(mode==="mine")q+=`&requester_token=eq.${encodeURIComponent(reqToken)}`;
+    if(province)q+=`&province=eq.${encodeURIComponent(province)}`;
+    if(filterStatus)q+=`&status=eq.${encodeURIComponent(filterStatus)}`;
+    const rows=await api(q);
+    const visible=(rows||[]).filter(x=>!x.hidden);
+    target.innerHTML=visible.length?visible.map(x=>requestCard(x,mode==="mine")).join(""):'<div class="empty">ยังไม่มีเคส</div>';
+    target.querySelectorAll("[data-case-id]").forEach(b=>b.addEventListener("click",()=>openCase(b.dataset.caseId)));
+    if(mode==="all")updateCounts(visible);
+  }catch(e){target.innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้<br><span class="small">${esc(e.message)}</span></div>`}
+}
+
+async function loadSummary(){
+  try{
+    const rows=await api(`requests?select=status,hidden,province&province=eq.${encodeURIComponent(province)}&order=created_at.desc&limit=1000`);
+    const a=(rows||[]).filter(x=>!x.hidden);updateCounts(a);loadNationwide();
+    const c=await api("help_centers?select=id&limit=1000");$("countCenter").textContent=(c||[]).length;
+    const s=await api("situations?select=id&limit=1000");$("countSituation").textContent=(s||[]).length;
+  }catch(e){}
+}
+function updateCounts(a){$("countWait").textContent=a.filter(x=>x.status==="รอความช่วยเหลือ").length;$("countHelp").textContent=a.filter(x=>x.status==="กำลังช่วยเหลือ").length}
+
+async function submitRequest(){
+  const need=$("need").value.trim(),place=$("place").value.trim(),details=$("requestDetails").value.trim();
+  if(!need){toast("กรุณาระบุสิ่งที่ต้องการ");return}
+  if(!coords.ask){toast("กรุณาแตะช่องสถานที่แล้วเลือกตำแหน่งบนแผนที่ก่อน");openLocationPicker();return}
+  try{
+    await api("requests",{method:"POST",body:JSON.stringify({
+      need,place,details,urgent:$("urgent").value==="true",status:"รอความช่วยเหลือ",
+      requester_token:reqToken,requester_name:name,province,district,submitted:new Date().toISOString(),
+      created_at:new Date().toISOString(),lat:coords.ask?.lat??null,lng:coords.ask?.lng??null,hidden:false
+    })});
+    $("need").value="";$("place").value="";$("requestDetails").value="";coords.ask=null;
+    if(marks.ask){marks.ask.remove();marks.ask=null}
+    $("askCoords").textContent="ยังไม่ได้เลือกตำแหน่ง";
+    closeLocationPicker();
+    toast("ส่งคำขอเรียบร้อยแล้ว");showPage("mine");
+  }catch(e){toast("ส่งคำขอไม่สำเร็จ: "+e.message)}
+}
+$("submitRequest").addEventListener("click",submitRequest);
+
+async function claim(id){
+  if(role!=="helper"){toast("กรุณาเปลี่ยนบทบาทเป็นผู้ช่วยเหลือก่อน");return}
+  if(!confirm("ยืนยันรับเคสนี้ไปช่วยใช่หรือไม่?\n\nหลังจากรับแล้ว ปุ่มยืนยันการช่วยเหลือจะปรากฏในเคสนี้"))return;
+  try{
+    const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id),p_helper_name:name,p_helper_type:helperType,p_helper_affiliation:helperAffiliation});
+    if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว");return}
+
+    // หลังรับเคส ให้เปิด/คงหน้า “รายละเอียดเคส” ไว้ทันที
+    // ไม่โหลดรายการเคสก่อน เพราะอาจทำให้หน้ารายละเอียดถูกแทนด้วยหน้ารายการบนมือถือ
+    toast("รับเคสแล้ว");
+    await openCase(id);
+
+    // ค่อยอัปเดตรายการด้านหลังโดยไม่เปลี่ยนหน้า
+    setTimeout(()=>{
+      loadRequests("all");
+      loadRequests("mine");
+    },150);
+  }catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
+}
+
+async function completeHelp(id){
+  // ฝั่งผู้ช่วยเท่านั้น และ RPC จะตรวจ helper_token ของผู้ที่กดรับเคสอีกชั้นหนึ่ง
+  if(role!=="helper" || !String(helpToken||"").trim())return;
+  if(!confirm("ยืนยันว่าช่วยเหลือเคสนี้เสร็จแล้วใช่หรือไม่?\n\nเมื่อยืนยัน สถานะจะเป็น “ได้รับความช่วยเหลือแล้ว”"))return;
+  try{
+    const r=await rpc("complete_request",{p_helper_token:helpToken,p_id:Number(id)});
+    if(r?.ok===false){toast("ไม่สามารถยืนยันได้ อาจมีการเปลี่ยนสถานะแล้ว");return}
+    toast("ยืนยันการช่วยเหลือสำเร็จแล้ว");
+    loadRequests("all");loadRequests("mine");
+  }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
+}
+
+async function cancelRequest(id){
+  if(role!=="requester")return;
+  if(!confirm("ยืนยันยกเลิกคำขอนี้ใช่หรือไม่?\n\nคำขอจะถูกนำออกจากรายการรอความช่วยเหลือ"))return;
+  try{
+    await api(`requests?id=eq.${encodeURIComponent(id)}&requester_token=eq.${encodeURIComponent(reqToken)}&status=eq.รอความช่วยเหลือ`,{method:"PATCH",body:JSON.stringify({status:"ยกเลิกคำขอ",hidden:true})});
+    toast("ยกเลิกคำขอแล้ว");
+    loadRequests("mine");
+    loadRequests("all");
+    loadSummary();
+  }catch(e){toast("ยกเลิกคำขอไม่สำเร็จ: "+e.message)}
+}
+
+async function requesterConfirmHelp(id){
+  if(role!=="requester")return;
+  if(!confirm("ยืนยันว่าได้รับความช่วยเหลือแล้วใช่หรือไม่?"))return;
+  try{
+    await api(`requests?id=eq.${encodeURIComponent(id)}&requester_token=eq.${encodeURIComponent(reqToken)}&status=eq.กำลังช่วยเหลือ`,{method:"PATCH",body:JSON.stringify({status:"ได้รับความช่วยเหลือแล้ว",completed_at:new Date().toISOString()})});
+    toast("ยืนยันได้รับความช่วยเหลือแล้ว");
+    loadRequests("mine");
+  }catch(e){toast("ยืนยันไม่สำเร็จ: "+e.message)}
+}
+
+async function loadNationwide(){
+  try{
+    const rows=await api("requests?select=status,province,district,place,helper_type,helper_affiliation&status=eq.%E0%B9%84%E0%B8%94%E0%B9%89%E0%B8%A3%E0%B8%B1%E0%B8%9A%E0%B8%84%E0%B8%A7%E0%B8%B2%E0%B8%A1%E0%B8%8A%E0%B9%88%E0%B8%A7%E0%B8%A2%E0%B9%80%E0%B8%AB%E0%B8%A5%E0%B8%B7%E0%B8%AD%E0%B9%81%E0%B8%A5%E0%B9%89%E0%B8%A7&limit=1000");
+    const done=Array.isArray(rows)?rows:[];
+    const total=done.length;
+    $("nationCompleted") && ($("nationCompleted").textContent=String(total));
+    $("nationCompletedPage") && ($("nationCompletedPage").textContent=String(total));
+
+    const byProvince={};
+    const byAffiliation={};
+    done.forEach(x=>{
+      const pv=String(x.province||"ไม่ระบุจังหวัด").trim()||"ไม่ระบุจังหวัด";
+      const af=String(x.helper_affiliation||x.helper_type||"ไม่ระบุสังกัด").trim()||"ไม่ระบุสังกัด";
+      byProvince[pv]=(byProvince[pv]||0)+1;
+      byAffiliation[af]=(byAffiliation[af]||0)+1;
+    });
+
+    const provinceEntries=Object.entries(byProvince).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"th"));
+    const affiliationEntries=Object.entries(byAffiliation).sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],"th"));
+    const provinceBox=$("nationProvinceList");
+    const affiliationBox=$("nationAffiliationList");
+    if(provinceBox){
+      provinceBox.innerHTML=provinceEntries.length
+        ? provinceEntries.map(([k,v])=>`<div class="row-item" style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb"><span>📍 ${esc(k)}</span><b>${v} เคส</b></div>`).join("")
+        : '<div class="empty">ยังไม่มีเคสที่ช่วยเหลือสำเร็จ</div>';
+    }
+    if(affiliationBox){
+      affiliationBox.innerHTML=affiliationEntries.length
+        ? affiliationEntries.map(([k,v])=>`<div class="row-item" style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #e5e7eb"><span>🏢 ${esc(k)}</span><b>${v} เคส</b></div>`).join("")
+        : '<div class="empty">ยังไม่มีข้อมูลสังกัด</div>';
+    }
+  }catch(e){
+    if($("nationCompleted")) $("nationCompleted").textContent="0";
+    if($("nationCompletedPage")) $("nationCompletedPage").textContent="0";
+    if($("nationProvinceList")) $("nationProvinceList").innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้<br><span class="small">${esc(e.message)}</span></div>`;
+    if($("nationAffiliationList")) $("nationAffiliationList").innerHTML=`<div class="empty">โหลดข้อมูลไม่ได้</div>`;
+  }
+}
+
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,rad=Math.PI/180;
+  const dLat=(lat2-lat1)*rad,dLng=(lng2-lng1)*rad;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function clearCenterBrowseMarkers(){
+  centerBrowseMarkers.forEach(m=>m.remove());centerBrowseMarkers=[];
+}
+function ensureCenterBrowseMap(lat=13.7563,lng=100.5018,zoom=12){
+  if(typeof L==='undefined')return null;
+  const el=$('centerBrowseMap');
+  if(!el)return null;
+  if(centerBrowseMap){
+    try{centerBrowseMap.invalidateSize();return centerBrowseMap}catch(e){centerBrowseMap=null}
+  }
+  if(el.__leafletMap){
+    centerBrowseMap=el.__leafletMap;
+    try{centerBrowseMap.invalidateSize();return centerBrowseMap}catch(e){el.__leafletMap=null;centerBrowseMap=null}
+  }
+  if(el._leaflet_id){
+    try{if(el.__leafletMap)el.__leafletMap.remove()}catch(e){}
+    el._leaflet_id=null;
+    el.__leafletMap=null;
+  }
+  centerBrowseMap=L.map(el).setView([lat,lng],zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(centerBrowseMap);
+  el.__leafletMap=centerBrowseMap;
+  return centerBrowseMap;
+}
+function centerAreaMatches(x){
+  const xp=String(x?.province||'').trim();
+  const xd=String(x?.district||'').trim();
+  if(!province || !xp) return false;
+  if(xp!==province) return false;
+  if(district && xd!==district) return false;
+  return true;
+}
+function selectedCenterRows(){ return (centerRows||[]).filter(centerAreaMatches); }
+const TH_PROVINCE_MAP_POINTS={
+  'กรุงเทพมหานคร':[13.7563,100.5018],
+  'กระบี่':[8.0863,98.9063],'กาญจนบุรี':[14.0228,99.5328],'กาฬสินธุ์':[16.4322,103.5061],
+  'กำแพงเพชร':[16.4828,99.5227],'ขอนแก่น':[16.4322,102.8236],'จันทบุรี':[12.6113,102.1039],
+  'ฉะเชิงเทรา':[13.6904,101.0779],'ชลบุรี':[13.3611,100.9847],'ชัยนาท':[15.1852,100.1251],
+  'ชัยภูมิ':[15.8068,102.0315],'ชุมพร':[10.4930,99.1800],'ตรัง':[7.5594,99.6110],
+  'ตราด':[12.2428,102.5175],'ตาก':[16.8839,99.1259],'นครนายก':[14.2069,101.2131],
+  'นครปฐม':[13.8199,100.0622],'นครพนม':[17.4016,104.7696],'นครราชสีมา':[14.9799,102.0977],
+  'นครศรีธรรมราช':[8.4304,99.9631],'นครสวรรค์':[15.7047,100.1372],'นนทบุรี':[13.8621,100.5144],
+  'นราธิวาส':[6.4255,101.8253],'น่าน':[18.7756,100.7730],'บึงกาฬ':[18.3609,103.6464],
+  'บุรีรัมย์':[14.9930,103.1029],'ปทุมธานี':[14.0208,100.5250],'ประจวบคีรีขันธ์':[11.8124,99.7973],
+  'ปราจีนบุรี':[14.0500,101.3680],'ปัตตานี':[6.8695,101.2505],'พะเยา':[19.1666,99.9022],
+  'พังงา':[8.4510,98.5250],'พัทลุง':[7.6167,100.0740],'พิจิตร':[16.4419,100.3488],
+  'พิษณุโลก':[16.8211,100.2659],'ภูเก็ต':[7.8804,98.3923],'มหาสารคาม':[16.1846,103.3009],
+  'มุกดาหาร':[16.5453,104.7235],'ยะลา':[6.5411,101.2804],'ยโสธร':[15.7922,104.1453],
+  'ร้อยเอ็ด':[16.0538,103.6520],'ระนอง':[9.9529,98.6085],'ระยอง':[12.6814,101.2816],
+  'ราชบุรี':[13.5283,99.8134],'ลพบุรี':[14.7995,100.6534],'ลำปาง':[18.2888,99.4909],
+  'ลำพูน':[18.5745,99.0087],'ศรีสะเกษ':[15.1186,104.3220],'สกลนคร':[17.1546,104.1486],
+  'สงขลา':[7.1898,100.5954],'สตูล':[6.6238,100.0674],'สมุทรปราการ':[13.5991,100.5998],
+  'สมุทรสงคราม':[13.4098,99.9996],'สมุทรสาคร':[13.5475,100.2744],'สระแก้ว':[13.8240,102.0646],
+  'สระบุรี':[14.5289,100.9101],'สิงห์บุรี':[14.8936,100.4042],'สุพรรณบุรี':[14.4745,100.1177],
+  'สุราษฎร์ธานี':[9.1382,99.3217],'สุรินทร์':[14.8818,103.4936],'สุโขทัย':[17.0078,99.8265],
+  'หนองคาย':[17.8783,102.7413],'หนองบัวลำภู':[17.2041,102.4407],'อ่างทอง':[14.5896,100.4551],
+  'อำนาจเจริญ':[15.8657,104.6258],'อุดรธานี':[17.4138,102.7875],'อุตรดิตถ์':[17.6201,100.0993],
+  'อุทัยธานี':[15.3835,100.0246],'อุบลราชธานี':[15.2287,104.8564],'เพชรบุรี':[13.1119,99.9398],
+  'เพชรบูรณ์':[16.4189,101.1606],'เลย':[17.4860,101.7223],'แพร่':[18.1446,100.1403],
+  'แม่ฮ่องสอน':[19.3010,97.9654],'เชียงราย':[19.9105,99.8406],'เชียงใหม่':[18.7883,98.9853],
+  'เพชรบุรี':[13.1119,99.9398],'พระนครศรีอยุธยา':[14.3532,100.5683],'สมุทรสงคราม':[13.4098,99.9996]
+};
+
+function centerAreaMapPoint(){
+  const key=String(province||'').trim();
+  return TH_PROVINCE_MAP_POINTS[key]||[13.7563,100.5018];
+}
+async function focusCenterAddMapOnSelectedArea(){
+  const map=maps.center || ensureCenterBrowseMap();
+  if(!map)return;
+  const [lat,lng]=centerAreaMapPoint();
+  // แผนที่เพิ่มจุดช่วยเหลือเริ่มจากพื้นที่ที่ผู้ใช้เลือก
+  // ไม่ใช้ตำแหน่ง GPS ปัจจุบันเป็นจุดเริ่มต้น
+  map.setView([lat,lng],district?14:11,{animate:false});
+  await geocodeSelectedArea(map);
+}
+async function geocodeSelectedArea(map){
+  if(!province)return false;
+  const queries=[];
+  if(district)queries.push(`${district}, ${province}, Thailand`);
+  queries.push(`${province}, Thailand`);
+  for(const text of queries){
+    try{
+      const q=encodeURIComponent(text);
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&q=${q}`,{headers:{Accept:'application/json'}});
+      if(!r.ok)continue;
+      const a=await r.json();
+      if(a[0] && Number.isFinite(Number(a[0].lat)) && Number.isFinite(Number(a[0].lon))){
+        map.setView([Number(a[0].lat),Number(a[0].lon)],district?13:11);
+        return true;
+      }
+    }catch(e){}
+  }
+  return false;
+}
+async function focusCenterBrowseOnSelectedArea(){
+  const map=ensureCenterBrowseMap();
+  if(!map)return;
+  if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
+  const selected=selectedCenterRows();
+  clearCenterBrowseMarkers();
+  if(selected.length){
+    renderCenterBrowseMarkers(selected);
+    const valid=selected.filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
+    if(valid.length){
+      const bounds=L.latLngBounds(valid.map(x=>[Number(x.lat),Number(x.lng)]));
+      map.fitBounds(bounds.pad(0.25),{maxZoom:15});
+      if($('centerMapStatus')) $('centerMapStatus').textContent=`แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`;
+      return;
+    }
+  }
+  const [fallbackLat,fallbackLng]=centerAreaMapPoint();
+  map.setView([fallbackLat,fallbackLng],district?14:11);
+  if($('centerMapStatus')) $('centerMapStatus').textContent=`แสดงพื้นที่ ${province}${district?' / '+district:''} — ${selected.length?'มีจุดช่วยเหลือ':'ยังไม่มีจุดช่วยเหลือ'}`;
+  await geocodeSelectedArea(map);
+}
+async function setCenterBrowseToSelectedArea(){
+  const map=ensureCenterBrowseMap();if(!map)return;
+  if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
+  const [lat,lng]=centerAreaMapPoint();
+  map.setView([lat,lng],district?14:11,{animate:false});
+  map.invalidateSize();
+  await geocodeSelectedArea(map);
+  map.invalidateSize();
+}
+function renderCenterBrowseMarkers(rows){
+  const map=ensureCenterBrowseMap();if(!map)return;
+  clearCenterBrowseMarkers();
+  const valid=(rows||[]).filter(x=>centerAreaMatches(x)&&Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
+  valid.forEach(x=>{
+    const marker=L.marker([Number(x.lat),Number(x.lng)]).addTo(map);
+    const phone=x.phone?`<br>☎️ ${esc(x.phone)}`:'';
+    const place=x.place?`<br>📍 ${esc(x.place)}`:'';
+    marker.bindPopup(`<b>🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><br>${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}${phone}${place}${centerNavigationLink(x)}`);
+    centerBrowseMarkers.push(marker);
+  });
+  if(valid.length){
+    const bounds=L.latLngBounds(valid.map(x=>[Number(x.lat),Number(x.lng)]));
+    map.fitBounds(bounds.pad(0.18),{maxZoom:15});
+  }
+}
+function centerNavigationUrl(x){
+  const lat=Number(x?.lat),lng=Number(x?.lng);
+  if(!Number.isFinite(lat)||!Number.isFinite(lng))return '#';
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(lat+','+lng)}&travelmode=driving`;
+}
+function centerNavigationLink(x,label='🧭 นำทางไปจุดนี้'){
+  const url=centerNavigationUrl(x);
+  if(url==='#')return '';
+  return `<a class="center-nav-btn" href="${url}" target="_blank" rel="noopener">${label}</a>`;
+}
+function renderNearbyCenterList(rows){
+  const box=$('centerNearbyList');if(!box)return;
+  if(!rows.length){box.innerHTML='<div class="empty">ยังไม่พบจุดช่วยเหลือที่มีพิกัด</div>';return}
+  box.innerHTML=rows.slice(0,10).map((x,i)=>{
+    const d=Number.isFinite(x._distance)?`<span class="center-distance">${x._distance<1?(x._distance*1000).toFixed(0)+' เมตร':x._distance.toFixed(2)+' กม.'}</span>`:'';
+    return `<div class="center-near-item"><b>${i+1}. 🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><span class="tag">${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}</span> ${d}${x.place?`<div class="small muted">📍 ${esc(x.place)}</div>`:''}${centerNavigationLink(x)}</div>`;
+  }).join('');
+}
+function locateCenterBrowse(){
+  if(!navigator.geolocation){toast('อุปกรณ์ไม่รองรับตำแหน่ง');return}
+  $('centerMapStatus').textContent='กำลังค้นหาจุดช่วยเหลือใกล้คุณ...';
+  const map=ensureCenterBrowseMap();
+  setTimeout(()=>map?.invalidateSize(),80);
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    const map=ensureCenterBrowseMap(lat,lng,15);
+    map.setView([lat,lng],14);
+    if(centerUserMarker)centerUserMarker.remove();
+    const icon=L.divIcon({className:'',html:'<div class="center-user-dot"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+    centerUserMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup('<b>📍 ตำแหน่งของฉัน</b>').openPopup();
+    const nearby=(centerRows||[]).filter(centerAreaMatches).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))
+      .map(x=>({...x,_distance:haversineKm(lat,lng,Number(x.lat),Number(x.lng))}))
+      .sort((a,b)=>a._distance-b._distance);
+    clearCenterBrowseMarkers();
+    nearby.forEach(x=>{
+      const marker=L.marker([Number(x.lat),Number(x.lng)]).addTo(map);
+      marker.bindPopup(`<b>🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><br>${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}<br><b>${x._distance<1?(x._distance*1000).toFixed(0)+' เมตร':x._distance.toFixed(2)+' กม.'}</b>${centerNavigationLink(x)}`);
+      centerBrowseMarkers.push(marker);
+    });
+    if(nearby.length){
+      const top=nearby.slice(0,10);
+      const bounds=L.latLngBounds([[lat,lng],...top.map(x=>[Number(x.lat),Number(x.lng)])]);
+      map.fitBounds(bounds.pad(0.18),{maxZoom:15});
+      $('centerMapStatus').textContent=`พบจุดช่วยเหลือ ${nearby.length} จุด • เรียงจากใกล้ไปไกล`;
+      renderNearbyCenterList(nearby);
+    }else{
+      $('centerMapStatus').textContent='ยังไม่มีจุดช่วยเหลือที่มีพิกัด';
+      renderNearbyCenterList([]);
+    }
+  },()=>{toast('ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง');$('centerMapStatus').textContent='ไม่สามารถใช้ตำแหน่งปัจจุบันได้'}, {enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+}
+async function showAllCenterBrowse(){
+  if(!centerRows.length){await loadCenters();return}
+  if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
+  const selected=selectedCenterRows();
+  await setCenterBrowseToSelectedArea();
+  renderCenterBrowseMarkers(selected);
+  renderNearbyCenterList([]);
+  $('centerMapStatus').textContent=selected.length
+    ? `แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`
+    : `พื้นที่ ${province}${district?' / '+district:''} ยังไม่มีจุดช่วยเหลือ`;
+}
+
+async function loadCenters(){
+  const box=$("centerList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    const rows=await api("help_centers?select=*&order=created_at.desc&limit=1000");
+    centerRows=rows||[];
+    $("countCenter").textContent=centerRows.length;
+    const selected=selectedCenterRows();
+    if($("centerBrowseCount")) $("centerBrowseCount").textContent=`${selected.length} จุด`;
+    box.innerHTML=selected.length?selected.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><p class="small muted">📍 ${esc(x.province||province)} / ${esc(x.district||district)}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">พื้นที่นี้ยังไม่มีจุดช่วยเหลือ</div>';
+    const map=ensureCenterBrowseMap();
+    setTimeout(()=>map?.invalidateSize(),80);
+    await setCenterBrowseToSelectedArea();
+    renderCenterBrowseMarkers(selected);
+    $("centerMapStatus").textContent=selected.length?`แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`:`พื้นที่ ${province}${district?' / '+district:''} ยังไม่มีจุดช่วยเหลือ`;
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`;if($("centerMapStatus"))$("centerMapStatus").textContent='โหลดจุดช่วยเหลือไม่ได้'}
+}
+async function addCenter(){
+  const nameV=$("centerName").value.trim();if(!nameV){toast("กรุณาใส่ชื่อจุดช่วยเหลือ");return}
+  if(!coords.center){toast("กรุณาแตะบนแผนที่เพื่อปักหมุดจุดช่วยเหลือ หรือกดใช้ตำแหน่งปัจจุบัน");return}
+  const saveLat=Number(coords.center.lat),saveLng=Number(coords.center.lng);
+  if(!Number.isFinite(saveLat)||!Number.isFinite(saveLng)){toast("พิกัดไม่ถูกต้อง กรุณาแตะเลือกจุดใหม่บนแผนที่");return}
+  try{
+    await api("help_centers",{method:"POST",body:JSON.stringify({
+      name:nameV,service_type:$("centerType").value,phone:$("centerPhone").value.trim(),
+      description:$("centerDesc").value.trim(),place:$("centerPlace").value.trim(),
+      province:province,district:district,
+      lat:saveLat,lng:saveLng
+    })});
+    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");
+    coords.center=null;
+    if(marks.center){marks.center.remove();marks.center=null}
+    $("centerCoords").textContent="ยังไม่ได้เลือกตำแหน่ง • แตะบนแผนที่เพื่อปักหมุด";
+    toast(`เพิ่มจุดช่วยเหลือแล้ว • พิกัด ${saveLat.toFixed(6)}, ${saveLng.toFixed(6)}`);
+    centerRows=[];loadCenters();
+  }catch(e){toast("เพิ่มไม่สำเร็จ: "+e.message)}
+}
+$("addCenter").addEventListener("click",addCenter);
+
+async function loadSituations(){
+  const box=$("situationList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
+  try{
+    const rows=await api("situations?select=*&order=created_at.desc&limit=200");$("countSituation").textContent=(rows||[]).length;
+    box.innerHTML=rows?.length?rows.map(x=>`<div class="situation"><h3>🌊 ${esc(x.title||x.name||"สถานการณ์น้ำ")}</h3><span class="tag">${esc(x.severity||"เล็กน้อย")}</span><p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${x.created_at?new Date(x.created_at).toLocaleString("th-TH"):""}</div></div>`).join(""):'<div class="empty">ยังไม่มีรายงาน</div>';
+  }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
+}
+async function addSituation(){
+  const title=$("sitTitle").value.trim(),desc=$("sitDesc").value.trim();
+  if(!title){toast("กรุณาใส่หัวข้อ");return}
+  try{
+    await api("situations",{method:"POST",body:JSON.stringify({
+      title,description:desc,severity:$("sitSeverity").value,place:$("sitPlace").value.trim(),
+      lat:coords.situation?.lat??null,lng:coords.situation?.lng??null,created_at:new Date().toISOString()
+    })});
+    $("sitTitle").value="";$("sitDesc").value="";$("sitPlace").value="";toast("แจ้งสถานการณ์น้ำแล้ว");loadSituations();
+  }catch(e){toast("แจ้งไม่สำเร็จ: "+e.message)}
+}
+$("addSituation").addEventListener("click",addSituation);
+
+async function loadAllInitial(){await loadSummary();if(role==="requester")showPage("ask");else if(role==="helper")showPage("all")}
+let pollTimer=null;
+
+const THAIWATER_API="https://api-v3.thaiwater.net/api/v1/thaiwater30/";
+// GISTDA Disaster Platform: official flood-map TMS. The public service may require an API key.
+// If a key is available, store it locally under GISTDA_FLOOD_API_KEY; never hard-code a secret in this file.
+const GISTDA_FLOOD_TMS_BASE="https://api-gateway.gistda.or.th/api/2.0/resources/maps/flood/";
+const GISTDA_FLOOD_WMS_BASE="https://api-gateway.gistda.or.th/api/2.0/resources/maps/flood/";
+const GISTDA_FLOOD_PORTAL="https://disaster.gistda.or.th/flood";
+// Public client key currently embedded by the GISTDA public dashboard.
+const GISTDA_PUBLIC_MAP_KEY="m4bUUjGDPc3rdxyb8JHcL8SDhgLHPgRjq2NBeibPIucJkpxuoHahMVwXwRjKTOq6";
+let gistdaFloodPeriod="1day";
+let gistdaFloodLayer=null;
+let gistdaFloodTileFailed=false;
+let gistdaFloodErrorCount=0;
+let gistdaFloodUsing="wms";
+let gistdaAutoRefreshTimer=null;
+let gistdaLastRefreshAt=null;
+let gistdaRefreshInFlight=false;
+let waterLoading=false;
+function initWaterSelectors(){
+  const r=$("waterRegion"),p=$("waterProvince"),d=$("waterDistrict"); if(!r||!p||!d)return;
+  r.innerHTML='<option value="">-- เลือกภาค --</option>'+Object.keys(TH_REGIONS).map(x=>`<option>${esc(x)}</option>`).join("");
+  r.value=region||"";
+  const plist=TH_REGIONS[region]||[];
+  p.innerHTML='<option value="">-- เลือกจังหวัด --</option>'+plist.map(x=>`<option>${esc(x)}</option>`).join("");
+  p.value=province||"";
+  d.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';
+  d.disabled=true;
+  r.onchange=()=>{ region=r.value; province=""; district=""; p.innerHTML='<option value="">-- เลือกจังหวัด --</option>'+(TH_REGIONS[region]||[]).map(x=>`<option>${esc(x)}</option>`).join(""); d.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';d.disabled=true;updateAreaPreview();waterSetLabel(); };
+  p.onchange=async()=>{province=p.value;district="";updateAreaPreview();waterSetLabel();await loadWaterDistrictOptions();};
+  d.onchange=()=>{district=d.value;updateAreaPreview();waterSetLabel();};
+  loadWaterDistrictOptions();
+}
+async function loadWaterDistrictOptions(){
+  const d=$("waterDistrict"); if(!d||!province)return;
+  d.disabled=true; d.innerHTML='<option value="">-- กำลังโหลดอำเภอ / เขต --</option>';
+  try{
+    const [provs,all]=await Promise.all([getProvinceData(),getDistrictData()]);
+    const row=provs.find(x=>String(x.name_th??x.name?.th??"").trim()===province);
+    const pid=row?Number(row.id):null;
+    const rows=pid?all.filter(x=>Number(x.province_id)===pid):[];
+    d.innerHTML='<option value="">-- ทั้งจังหวัด --</option>'+rows.map(x=>{const n=String(x.name_th??x.name?.th??"").trim();return n?`<option>${esc(n)}</option>`:""}).join("");
+    if(district && rows.some(x=>String(x.name_th??x.name?.th??"").trim()===district))d.value=district;else if(!district)d.value="";
+    d.disabled=false;
+  }catch(e){d.innerHTML='<option value="">-- โหลดอำเภอไม่สำเร็จ --</option>';d.disabled=true;}
+}
+function waterSetLabel(){
+  const t=areaLabel(); [$("activeAreaWater"),$("waterMapAreaLabel")].forEach(el=>{if(el)el.textContent=`📍 พื้นที่: ${t}`});
+}
+function clearWaterMarkers(){waterStationMarkers.forEach(m=>m.remove());waterStationMarkers=[];waterRoadMarkers.forEach(m=>m.remove());waterRoadMarkers=[];}
+function focusWaterMapOnSelectedArea(){
+  if(!waterMap)return;
+  const [lat,lng]=centerAreaMapPoint();
+  waterMap.setView([lat,lng],district?13:11,{animate:false});
+  geocodeSelectedArea(waterMap).then(()=>waterMap.invalidateSize());
+}
+function locateWaterUser(){
+  if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return;}
+  navigator.geolocation.getCurrentPosition(p=>{
+    const lat=p.coords.latitude,lng=p.coords.longitude;
+    if(waterAreaUserMarker)waterAreaUserMarker.remove();
+    waterAreaUserMarker=L.circleMarker([lat,lng],{radius:8,weight:3}).addTo(waterMap).bindPopup("📍 ตำแหน่งปัจจุบัน").openPopup();
+    waterMap.setView([lat,lng],15); waterMap.invalidateSize();
+  },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+}
+function gistdaFloodWmsUrl(period){
+  return GISTDA_FLOOD_WMS_BASE+period+"/wms?api_key="+encodeURIComponent(GISTDA_PUBLIC_MAP_KEY);
+}
+function gistdaFloodTmsUrl(period){
+  return GISTDA_FLOOD_TMS_BASE+period+"/tms/{z}/{x}/{y}?api_key="+encodeURIComponent(GISTDA_PUBLIC_MAP_KEY);
+}
+function setGistdaFloodStatus(text,ok=false){
+  const el=$("gistdaFloodStatus"); if(!el)return; el.textContent=text; el.style.background=ok?"#dff6e6":"";
+}
+function updateGistdaRefreshInfo(){
+  const el=$("gistdaFloodHint");
+  if(!el)return;
+  if(gistdaLastRefreshAt){
+    const t=new Date(gistdaLastRefreshAt);
+    const time=t.toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit",second:"2-digit"});
+    el.textContent=`พื้นที่สีบนแผนที่ = ข้อมูลพื้นที่น้ำท่วมจาก GISTDA • ตรวจสอบล่าสุด ${time} น. • ระบบจะอัปเดตอัตโนมัติทุก 5 นาที`;
+  }
+}
+function scheduleGistdaAutoRefresh(){
+  if(gistdaAutoRefreshTimer)clearInterval(gistdaAutoRefreshTimer);
+  gistdaAutoRefreshTimer=setInterval(()=>{
+    if(document.hidden)return;
+    refreshGistdaFloodLayer();
+  },5*60*1000);
+}
+async function refreshGistdaFloodLayer(){
+  if(!waterMap || gistdaRefreshInFlight)return;
+  gistdaRefreshInFlight=true;
+  try{
+    addGistdaFloodLayer(gistdaFloodPeriod);
+    gistdaLastRefreshAt=Date.now();
+    updateGistdaRefreshInfo();
+  }finally{gistdaRefreshInFlight=false;}
+}
+function clearGistdaFloodLayer(){
+  if(gistdaFloodLayer && waterMap){waterMap.removeLayer(gistdaFloodLayer);gistdaFloodLayer=null;}
+}
+function addGistdaFloodLayer(period){
+  if(!waterMap || typeof L==="undefined")return;
+  gistdaFloodPeriod=period||"1day"; gistdaFloodTileFailed=false; gistdaFloodErrorCount=0; gistdaFloodUsing="wms"; clearGistdaFloodLayer();
+  const label={"1day":"1 วันล่าสุด","3days":"3 วันล่าสุด","7days":"7 วันล่าสุด","30days":"30 วันล่าสุด"}[gistdaFloodPeriod]||gistdaFloodPeriod;
+  setGistdaFloodStatus("กำลังโหลดพื้นที่น้ำท่วม "+label+"…");
+  const wmsUrl=gistdaFloodWmsUrl(gistdaFloodPeriod);
+  gistdaFloodLayer=L.tileLayer.wms(wmsUrl,{
+    layers:"flood",styles:"",format:"image/png",transparent:true,version:"1.1.1",opacity:0.62,zIndex:450,
+    attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"
+  }).addTo(waterMap);
+  const layerRef=gistdaFloodLayer;
+  layerRef.on("tileload",()=>{if(layerRef!==gistdaFloodLayer)return;gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();updateGistdaRefreshInfo();});
+  layerRef.on("tileerror",()=>{
+    if(layerRef!==gistdaFloodLayer)return;
+    gistdaFloodErrorCount++;
+    if(gistdaFloodErrorCount>=2 && gistdaFloodUsing==="wms"){
+      gistdaFloodUsing="tms";gistdaFloodErrorCount=0;
+      try{waterMap.removeLayer(layerRef)}catch{}
+      setGistdaFloodStatus("กำลังลองชั้นแผนที่สำรอง…");
+      const tms=L.tileLayer(gistdaFloodTmsUrl(gistdaFloodPeriod),{tms:true,tileSize:256,opacity:0.62,maxZoom:18,zIndex:450,attribution:"© GISTDA • พื้นที่น้ำท่วมจากภาพดาวเทียม"}).addTo(waterMap);
+      gistdaFloodLayer=tms;
+      tms.on("tileload",()=>{gistdaFloodTileFailed=false;setGistdaFloodStatus("แสดงพื้นที่น้ำท่วม "+label,true);gistdaLastRefreshAt=Date.now();updateGistdaRefreshInfo();});
+      tms.on("tileerror",()=>{gistdaFloodTileFailed=true;setGistdaFloodStatus("โหลดพื้นที่น้ำท่วมไม่ได้");const h=$("gistdaFloodHint");if(h)h.innerHTML="บริการแผนที่ GISTDA ไม่ส่งชั้นข้อมูลกลับมาในขณะนี้ • สามารถกด “เปิดแผนที่น้ำท่วม GISTDA” เพื่อดูข้อมูลทางการได้";});
+    }
+  });
+}
+async function initWaterMap(){
+  const el=$("waterMap"); if(!el||typeof L==="undefined")return;
+  if(waterMap){waterMap.invalidateSize();if(!gistdaFloodLayer)addGistdaFloodLayer(gistdaFloodPeriod);return;}
+  waterMap=L.map(el).setView(centerAreaMapPoint(),district?13:11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(waterMap);
+  waterMap.invalidateSize();
+  await geocodeSelectedArea(waterMap);
+  addGistdaFloodLayer(gistdaFloodPeriod);
+  scheduleGistdaAutoRefresh();
+  waterMap.invalidateSize();
+}
+const THAIWATER_PROVINCE_CODES={
+  "กรุงเทพมหานคร":"10","สมุทรปราการ":"11","นนทบุรี":"12","ปทุมธานี":"13","พระนครศรีอยุธยา":"14","อ่างทอง":"15","ลพบุรี":"16","สิงห์บุรี":"17","ชัยนาท":"18","สระบุรี":"19",
+  "ชลบุรี":"20","ระยอง":"21","จันทบุรี":"22","ตราด":"23","ฉะเชิงเทรา":"24","ปราจีนบุรี":"25","นครนายก":"26","สระแก้ว":"27",
+  "นครราชสีมา":"30","บุรีรัมย์":"31","สุรินทร์":"32","ศรีสะเกษ":"33","อุบลราชธานี":"34","ยโสธร":"35","ชัยภูมิ":"36","อำนาจเจริญ":"37","หนองบัวลำภู":"39","ขอนแก่น":"40","อุดรธานี":"41","เลย":"42","หนองคาย":"43","มหาสารคาม":"44","ร้อยเอ็ด":"45","กาฬสินธุ์":"46","สกลนคร":"47","นครพนม":"48","มุกดาหาร":"49","บึงกาฬ":"97",
+  "เชียงใหม่":"50","ลำพูน":"51","ลำปาง":"52","อุตรดิตถ์":"53","แพร่":"54","น่าน":"55","พะเยา":"56","เชียงราย":"57","แม่ฮ่องสอน":"58",
+  "นครสวรรค์":"60","อุทัยธานี":"61","กำแพงเพชร":"62","ตาก":"63","สุโขทัย":"64","พิษณุโลก":"65","พิจิตร":"66","เพชรบูรณ์":"67",
+  "ราชบุรี":"70","กาญจนบุรี":"71","สุพรรณบุรี":"72","นครปฐม":"73","สมุทรสาคร":"74","สมุทรสงคราม":"75","เพชรบุรี":"76","ประจวบคีรีขันธ์":"77",
+  "นครศรีธรรมราช":"80","กระบี่":"81","พังงา":"82","ภูเก็ต":"83","สุราษฎร์ธานี":"84","ระนอง":"85","ชุมพร":"86","สงขลา":"90","สตูล":"91","ตรัง":"92","พัทลุง":"93","ปัตตานี":"94","ยะลา":"95","นราธิวาส":"96"
+};
+const THAIWATER_CACHE_TTL=10*60*1000;
+function twCacheKey(){return `thaiwater-area-v2:${province||""}`}
+function twNorm(v){return String(v??"").replace(/^จังหวัด\s*/i,"").replace(/^เขต\s*/i,"").replace(/\s+/g,"").trim()}
+async function thaiWaterJson(path,opts={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),8000);
+  try{
+    const r=await fetch(THAIWATER_API+path,{headers:{"Accept":"application/json"},signal:controller.signal,cache:"no-store"});
+    if(!r.ok){
+      const err=new Error("ThaiWater HTTP "+r.status);err.status=r.status;throw err;
+    }
+    return await r.json();
+  }finally{clearTimeout(timer)}
+}
+function thaiWaterRows(json){
+  if(!json)return [];
+  const candidates=[json?.waterlevel_data?.data,json?.rainfall_data?.data,json?.waterlevel?.data,json?.rain?.data,json?.data,json?.result?.data];
+  for(const x of candidates)if(Array.isArray(x))return x;
+  return [];
+}
+function twPick(obj, paths){
+  for(const path of paths){
+    let v=obj;
+    for(const k of path.split('.')) v=v?.[k];
+    if(v!==undefined&&v!==null&&v!==""){
+      if(typeof v==='object'&&v.th!==undefined)return v.th;
+      if(typeof v==='object'&&v.TH!==undefined)return v.TH;
+      return v;
+    }
+  }
+  return "";
+}
+function twNum(v){const n=Number(v);return Number.isFinite(n)?n:null}
+function twStationName(r){return twPick(r,["station.tele_station_name.th","station.tele_station_name","station_name.th","station_name","station.name.th","station.name"] )||"สถานีวัดน้ำ"}
+function twProvince(r){return String(twPick(r,["geocode.province_name.th","geocode.province_name","province_name.th","province_name","province"])||"").trim()}
+function twDistrict(r){return String(twPick(r,["geocode.amphoe_name.th","geocode.amphoe_name","geocode.district_name.th","geocode.district_name","amphoe_name.th","amphoe_name","district_name.th","district_name","amphoe","district"])||"").trim()}
+function twTambon(r){return String(twPick(r,["geocode.tambon_name.th","geocode.tambon_name","tambon_name.th","tambon_name","tambon"])||"").trim()}
+function twLat(r){return twNum(twPick(r,["station.tele_station_lat","station.latitude","station.lat","latitude","lat"]))}
+function twLng(r){return twNum(twPick(r,["station.tele_station_long","station.longitude","station.lng","longitude","lng"]))}
+function twTime(r){return twPick(r,["waterlevel_datetime","rainfall_datetime","rainfall_datetime_th","datetime","data_datetime","station.tele_station_datetime","station_time_t","update_time"])||""}
+function twSituation(r){const n=twNum(r.situation_level);if(n===5)return "น้ำล้นตลิ่ง";if(n===4)return "วิกฤต / เสี่ยงน้ำท่วม";if(n===3)return "เตือนภัย";if(n===2)return "เฝ้าระวัง";if(n===1)return "ปกติ";return String(r.diff_wl_bank_text||r.situation_level||"")}
+function twAreaMatch(r){
+  if(!province)return false;
+  const rp=twProvince(r); if(rp && twNorm(rp)!==twNorm(province))return false;
+  if(district){const rd=twDistrict(r); if(rd && twNorm(rd)!==twNorm(district))return false;}
+  return !rp || twNorm(rp)===twNorm(province);
+}
+function fmtMm(v){const n=twNum(v);return n===null?"-":n.toFixed(1)+" มม."}
+function fmtM(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม."}
+function fmtCms(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม³/วินาที"}
+async function queryThaiWater(){
+  if(!province)return {wl:[],rain:[],cached:false};
+  const key=twCacheKey();
+  try{
+    const cached=JSON.parse(localStorage.getItem(key)||"null");
+    if(cached?.savedAt && Date.now()-cached.savedAt<THAIWATER_CACHE_TTL && cached.data){
+      const wl=(cached.data.wl||[]).filter(twAreaMatch), rain=(cached.data.rain||[]).filter(twAreaMatch);
+      return {wl,rain,cached:true,savedAt:cached.savedAt};
+    }
+  }catch{}
+  const code=THAIWATER_PROVINCE_CODES[province];
+  if(!code)throw new Error("ยังไม่มีรหัสจังหวัดของ ThaiWater สำหรับ "+province);
+  const results=await Promise.allSettled([
+    thaiWaterJson(`public/waterlevel?province_code=${encodeURIComponent(code)}`),
+    thaiWaterJson(`public/rain_24h?province_code=${encodeURIComponent(code)}`)
+  ]);
+  const wlErr=results[0].status==="rejected"?results[0].reason:null;
+  const rainErr=results[1].status==="rejected"?results[1].reason:null;
+  let wl=results[0].status==="fulfilled"?thaiWaterRows(results[0].value):[];
+  let rain=results[1].status==="fulfilled"?thaiWaterRows(results[1].value):[];
+  if(wlErr && rainErr){
+    try{
+      const cached=JSON.parse(localStorage.getItem(key)||"null");
+      if(cached?.data){
+        wl=cached.data.wl||[];rain=cached.data.rain||[];
+        return {wl:wl.filter(twAreaMatch),rain:rain.filter(twAreaMatch),cached:true,stale:true,error:wlErr};
+      }
+    }catch{}
+    throw wlErr||rainErr;
+  }
+  const data={wl,rain};
+  try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),data}))}catch{}
+  return {wl:wl.filter(twAreaMatch),rain:rain.filter(twAreaMatch),cached:false,partial:!!(wlErr||rainErr),errors:[wlErr,rainErr]};
+}
+function waterStationPopup(a){
+  const name=twStationName(a),prov=twProvince(a),amp=twDistrict(a),tamb=twTambon(a);
+  const level=twPick(a,["waterlevel_m","waterlevel_msl"]),dis=twPick(a,["discharge"]),status=twSituation(a);
+  return `<div class="water-popup"><strong>💧 ${esc(name)}</strong><br>📍 ${esc(prov)}${amp?" / "+esc(amp):""}${tamb?" / "+esc(tamb):""}<br>🌊 ระดับน้ำ: <b>${esc(fmtM(level))}</b><br>💦 อัตราการไหล: ${esc(fmtCms(dis))}${status?`<br>🚦 สถานะ: <b>${esc(status)}</b>`:""}${twTime(a)?`<br>🕐 ${esc(twTime(a))}`:""}<br><span class="water-source">แหล่งข้อมูล: ThaiWater / คลังข้อมูลน้ำแห่งชาติ</span></div>`;
+}
+function rainStationPopup(a){
+  const name=twPick(a,["station.tele_station_name.th","station.tele_station_name","station_name"])||"สถานีฝน";
+  return `<div class="water-popup"><strong>🌧️ ${esc(name)}</strong><br>📍 ${esc(twProvince(a))}${twDistrict(a)?" / "+esc(twDistrict(a)):""}<br>🌧️ ฝน 24 ชม.: <b>${esc(fmtMm(twPick(a,["rain_24h"])))}</b>${twTime(a)?`<br>🕐 ${esc(twTime(a))}`:""}<br><span class="water-source">แหล่งข้อมูล: ThaiWater / คลังข้อมูลน้ำแห่งชาติ</span></div>`;
+}
+function renderWaterStations(waterData){
+  const list=$("waterStationList");
+  waterStationMarkers.forEach(m=>m.remove());waterStationMarkers=[];
+  const rows=[];
+  const wl=waterData.wl||[], rain=waterData.rain||[];
+  wl.forEach(r=>{
+    const lat=twLat(r),lng=twLng(r); if(lat===null||lng===null)return;
+    const marker=L.circleMarker([lat,lng],{radius:8,weight:2}).addTo(waterMap).bindPopup(waterStationPopup(r)); waterStationMarkers.push(marker);
+    const status=twSituation(r), level=twPick(r,["waterlevel_m","waterlevel_msl"]),dis=twPick(r,["discharge"]);
+    rows.push(`<div class="water-station"><h3>💧 ${esc(twStationName(r))}</h3><div>${esc(twDistrict(r))}${twTambon(r)?" / "+esc(twTambon(r)):""}</div><div>🌊 ระดับน้ำ: <b>${esc(fmtM(level))}</b> • 💦 อัตราการไหล: ${esc(fmtCms(dis))}</div><div>🚦 สถานะ: <b>${esc(status||"ไม่มีสถานะ")}</b></div><div class="water-source">${twTime(r)?"อัปเดต "+esc(twTime(r)):""} • ThaiWater</div></div>`);
+  });
+  rain.forEach(r=>{
+    const n=twNum(r.rain_24h); if(n===null)return;
+    const lat=twLat(r),lng=twLng(r); if(lat!==null&&lng!==null){const marker=L.circleMarker([lat,lng],{radius:6,weight:2}).addTo(waterMap).bindPopup(rainStationPopup(r));waterStationMarkers.push(marker)}
+    rows.push(`<div class="water-station"><h3>🌧️ ${esc(twPick(r,["station.tele_station_name.th","station.tele_station_name","station_name"])||"สถานีฝน")}</h3><div>${esc(twDistrict(r))}${twTambon(r)?" / "+esc(twTambon(r)):""}</div><div>🌧️ ฝนสะสม 24 ชั่วโมง: <b>${esc(fmtMm(n))}</b></div><div class="water-source">${twTime(r)?"อัปเดต "+esc(twTime(r)):""} • ThaiWater</div></div>`);
+  });
+  list.innerHTML=rows.length?rows.join(""):"<div class='empty'>ไม่พบข้อมูลระดับน้ำหรือฝนจาก ThaiWater ในพื้นที่ที่เลือกในขณะนี้</div>";
+  $("countWater").textContent=wl.length+rain.length;
+  $("waterDataCount").textContent=`ระดับน้ำ ${wl.length} จุด • ฝน ${rain.length} จุด`;
+  const maxRain=rain.reduce((m,r)=>Math.max(m,twNum(r.rain_24h)||0),0);
+  const over=wl.filter(r=>(r.diff_wl_bank_text||"").startsWith("ล้นตลิ่ง")||twNum(r.situation_level)===5).length;
+  const summary=$("waterSummary");
+  if(summary)summary.innerHTML=`<div class="grid"><div class="stat"><b>🌧️ ฝนสูงสุด 24 ชม.</b><strong>${maxRain.toFixed(1)} มม.</strong></div><div class="stat"><b>💧 สถานีระดับน้ำ</b><strong>${wl.length} จุด</strong></div><div class="stat"><b>🚨 ล้นตลิ่ง/ระดับ 5</b><strong>${over} จุด</strong></div></div>`;
+}
+async function loadThaiWater(){
+  try{
+    const data=await queryThaiWater();
+    renderWaterStations(data);
+    const note=$("waterDataCount");
+    if(note){
+      const base=`ระดับน้ำ ${data.wl.length} จุด • ฝน ${data.rain.length} จุด`;
+      note.textContent=data.cached?(data.stale?base+" • ใช้ข้อมูลล่าสุดที่เก็บไว้":"ข้อมูลล่าสุด • "+base):base;
+    }
+    if(data.partial){
+      const failed=data.errors?.filter(Boolean).map(e=>e.status||e.message).join(", ");
+      const box=$("waterStationList");
+      if(box && !data.wl.length && !data.rain.length)box.insertAdjacentHTML("afterbegin",`<div class='small muted'>⚠️ ThaiWater ตอบกลับไม่ครบ (${esc(failed||"ชั่วคราว")})</div>`);
+    }
+  }catch(e){
+    $("waterStationList").innerHTML=`<div class='empty'>ข้อมูลระดับน้ำ/ฝนจาก ThaiWater ยังเชื่อมต่อไม่ได้ในขณะนี้<br><small>${esc(e.message||"")}</small><br><span class='small muted'>แต่ชั้นพื้นที่น้ำท่วม GISTDA บนแผนที่ยังใช้ตรวจพื้นที่น้ำท่วมได้</span></div>`;
+    $("waterDataCount").textContent="ThaiWater เชื่อมต่อไม่ได้";
+    const ws=$("waterSummary");
+    if(ws)ws.innerHTML=`<div class="grid"><div class="stat"><b>🛰️ พื้นที่น้ำท่วม</b><strong>ดูจากชั้น GISTDA บนแผนที่</strong></div><div class="stat"><b>📍 พื้นที่</b><strong>${esc(province||"-")}${district?" / "+esc(district):""}</strong></div><div class="stat"><b>💧 ThaiWater</b><strong>รอเชื่อมต่อ</strong></div></div>`;
+  }
+}
+async function loadWaterRoadReports(){
+  const box=$("waterRoadList");
+  try{
+    if(!province){box.innerHTML="<div class='empty'>กรุณาเลือกพื้นที่ก่อน</div>";return;}
+    const params=`select=*&province=eq.${encodeURIComponent(province)}&limit=200&order=created_at.desc`;
+    const rows=await api("situations?"+params);
+    const hits=(rows||[]).filter(x=>/รถผ่านไม่ได้|รถไม่สามารถสัญจร|สัญจรไม่ได้|ผ่านไม่ได้|ถนนถูกตัดขาด|ถนนปิด/i.test(`${x.title||""} ${x.description||""}`));
+    waterRoadMarkers.forEach(m=>m.remove());waterRoadMarkers=[];
+    const html=hits.map(x=>`<div class="water-road"><div class="water-danger">🚧 รถผ่านไม่ได้</div><h3>${esc(x.title||"รายงานถนน")}</h3><div>${esc(x.description||"")}</div><div>📍 ${esc(x.place||"")}${x.district?" / "+esc(x.district):""}</div><div class="water-source">รายงานในระบบประชาชน • ${formatTime(x.created_at)}</div></div>`).join("");
+    box.innerHTML=html||"<div class='empty'>ยังไม่มีรายงานในระบบที่ระบุชัดว่า “รถผ่านไม่ได้” ในพื้นที่นี้</div>";
+    hits.forEach(x=>{const lat=Number(x.lat),lng=Number(x.lng);if(Number.isFinite(lat)&&Number.isFinite(lng)&&waterMap){const m=L.marker([lat,lng]).addTo(waterMap).bindPopup(`<b>🚧 รถผ่านไม่ได้</b><br>${esc(x.title||"")}<br>${esc(x.place||"")}`);waterRoadMarkers.push(m)}});
+  }catch(e){box.innerHTML="<div class='empty'>โหลดรายงานถนนไม่ได้ในขณะนี้</div>";}
+}
+async function loadWaterPage(force=false){
+  if(waterLoading&&!force)return; waterLoading=true;
+  try{
+    if(force){try{localStorage.removeItem(twCacheKey())}catch{}}
+    waterSetLabel();initWaterSelectors();await initWaterMap();
+    if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
+    if(waterMap)focusWaterMapOnSelectedArea();
+    const ws=$("waterSummary");
+    if(ws)ws.innerHTML=`<div class="grid"><div class="stat"><b>🛰️ พื้นที่น้ำท่วม</b><strong>กำลังตรวจสอบแผนที่ GISTDA</strong></div><div class="stat"><b>📍 พื้นที่</b><strong>${esc(province||"-")}${district?" / "+esc(district):""}</strong></div><div class="stat"><b>💧 สถานีระดับน้ำ</b><strong>กำลังโหลดข้อมูลประกอบ</strong></div></div>`;
+    $("waterStationList").innerHTML="<div class='empty'>กำลังโหลดข้อมูลระดับน้ำและฝนจาก ThaiWater...</div>";
+    $("waterDataCount").textContent="กำลังโหลด ThaiWater...";
+    await loadThaiWater();
+    await loadWaterRoadReports();
+  }finally{waterLoading=false;}
+}
+
+function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(()=>{loadSummary();const active=document.querySelector(".page.active")?.id;if(active==="all")loadRequests("all");if(active==="mine")loadRequests("mine");if(active==="centers")loadCenters();if(active==="situations")loadSituations()},10000)}
+
+updateHeader();
+inferRegionFromProvince();
+initRegionSelect();
+initProvinceSelect();
+updateAreaPreview();
+loadAllInitial();
+if(!region||!province||!district){
+  role="";
+  localStorage.removeItem(ROLE_KEY);
+  openArea();
+}else{
+  closeGate();
+}
+startPolling();
+})();
+</script>
+</body>
+</html>
