@@ -82,7 +82,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
   <button data-page="mine">👤 เคสของฉัน</button>
   <button data-page="centers">🏥 จุดช่วยเหลือ</button>
   <button data-page="water">🌊 ระดับน้ำ / น้ำท่วม</button>
-  <button data-page="situations">📢 สถานการณ์</button>
+  <button data-page="situations">🌊 สถานการณ์น้ำ</button>
 </nav>
 
 <main>
@@ -91,7 +91,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
 
   <div class="hero">
     <h1>🌊 จากประชาชนสู่ประชาชน</h1>
-    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์จากประชาชน</p>
+    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์น้ำจากประชาชน</p>
     <b style="color:#18864d">● ระบบอัปเดตแบบ Real Time</b>
   </div>
   <div class="card">
@@ -110,7 +110,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
         <span>🌊 ระดับน้ำ / น้ำท่วม</span><b id="countWater">0</b><span>สถานี/จุดข้อมูล • กดเพื่อดูแผนที่</span>
       </button>
       <button class="stat" id="situationStat" type="button" style="text-align:left;width:100%">
-        <span>📢 สถานการณ์จากประชาชน</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
+        <span>🌊 สถานการณ์น้ำจากประชาชน</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
       </button>
     </div>
   </div>
@@ -263,25 +263,25 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
       <button class="secondary" id="waterMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="waterShowArea">🎯 กลับพื้นที่ที่เลือก</button>
     </div>
-    <div class="small muted" style="margin-top:8px">🔵 จุดสถานี/ข้อมูลน้ำจาก GISTDA • 🟦 ชั้นพื้นที่น้ำท่วมจากบริการแผนที่ GISTDA • 🚧 ถนนผ่านไม่ได้จะแสดงเฉพาะเมื่อมีรายงานที่ระบุสถานะโดยตรง</div>
+    <div class="small muted" style="margin-top:8px">🔵 ระดับน้ำ/ฝนจาก ThaiWater • 🟦 ชั้นพื้นที่น้ำท่วมจากบริการแผนที่ GISTDA • 🚧 ถนนผ่านไม่ได้จะแสดงเฉพาะเมื่อมีรายงานที่ระบุสถานะโดยตรง</div>
   </div>
-  <div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
+  <div class="card"><h2>📊 สรุปข้อมูลน้ำในพื้นที่</h2><div id="waterSummary"><div class="empty">กำลังโหลดข้อมูล...</div></div></div><div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
   <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
 </section>
 
 <section id="situations" class="page">
   <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaSituations">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
-    <h2>🌊 แจ้งสถานการณ์</h2>
+    <h2>🌊 แจ้งสถานการณ์น้ำ</h2>
     <label>หัวข้อ</label><input id="sitTitle" placeholder="เช่น น้ำเริ่มท่วมถนน">
     <label>รายละเอียด</label><textarea id="sitDesc" placeholder="เกิดอะไรขึ้น"></textarea>
     <label>ระดับ</label>
     <select id="sitSeverity"><option>เล็กน้อย</option><option>ปานกลาง</option><option>มาก</option><option>รุนแรง</option></select>
     <label>สถานที่</label><input id="sitPlace" placeholder="บริเวณ / จุดสังเกต">
     <label>📍 ตำแหน่ง</label><div id="sitMap" class="map"></div><div id="sitCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
-    <div class="row" style="margin-top:10px"><button class="secondary" id="sitLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addSituation">แจ้งสถานการณ์</button></div>
+    <div class="row" style="margin-top:10px"><button class="secondary" id="sitLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addSituation">แจ้งสถานการณ์น้ำ</button></div>
   </div>
-  <div class="card"><h2>📢 สถานการณ์ล่าสุด</h2><div id="situationList"></div></div>
+  <div class="card"><h2>🌊 สถานการณ์น้ำล่าสุด</h2><div id="situationList"></div></div>
 </section>
 </main>
 
@@ -546,7 +546,16 @@ function saveArea(){
   localStorage.setItem(DISTRICT_KEY,district);
   updateAreaPreview();
   const active=document.querySelector('.page.active')?.id;
-  if(active==='centers'){ centerRows=[]; loadCenters(); }
+  if(active==='centers'){
+    centerRows=[];
+    loadCenters().then(()=>{
+      setTimeout(()=>{
+        focusCenterBrowseOnSelectedArea();
+        const m=ensureCenterBrowseMap();
+        m?.invalidateSize();
+      },60);
+    });
+  }
   return true;
 }
 function openArea(){
@@ -617,7 +626,11 @@ function showPage(id){
   if(id==="home")loadSummary();
   if(id==="all")loadRequests("all");
   if(id==="mine")loadRequests("mine");
-  if(id==="centers")loadCenters();
+  if(id==="centers"){
+    loadCenters().then(()=>{
+      setTimeout(()=>focusCenterBrowseOnSelectedArea(),80);
+    });
+  }
   if(id==="water")loadWaterPage();
   if(id==="situations")loadSituations();
   window.scrollTo(0,0);
@@ -1094,7 +1107,8 @@ const TH_PROVINCE_MAP_POINTS={
 };
 
 function centerAreaMapPoint(){
-  return TH_PROVINCE_MAP_POINTS[province]||[13.7563,100.5018];
+  const key=String(province||'').trim();
+  return TH_PROVINCE_MAP_POINTS[key]||[13.7563,100.5018];
 }
 async function focusCenterAddMapOnSelectedArea(){
   const map=maps.center || ensureCenterBrowseMap();
@@ -1149,8 +1163,10 @@ async function setCenterBrowseToSelectedArea(){
   const map=ensureCenterBrowseMap();if(!map)return;
   if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
   const [lat,lng]=centerAreaMapPoint();
-  map.setView([lat,lng],district?14:11);
+  map.setView([lat,lng],district?14:11,{animate:false});
+  map.invalidateSize();
   await geocodeSelectedArea(map);
+  map.invalidateSize();
 }
 function renderCenterBrowseMarkers(rows){
   const map=ensureCenterBrowseMap();if(!map)return;
@@ -1273,7 +1289,7 @@ async function loadSituations(){
   const box=$("situationList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
   try{
     const rows=await api("situations?select=*&order=created_at.desc&limit=200");$("countSituation").textContent=(rows||[]).length;
-    box.innerHTML=rows?.length?rows.map(x=>`<div class="situation"><h3>🌊 ${esc(x.title||x.name||"สถานการณ์")}</h3><span class="tag">${esc(x.severity||"เล็กน้อย")}</span><p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${x.created_at?new Date(x.created_at).toLocaleString("th-TH"):""}</div></div>`).join(""):'<div class="empty">ยังไม่มีรายงาน</div>';
+    box.innerHTML=rows?.length?rows.map(x=>`<div class="situation"><h3>🌊 ${esc(x.title||x.name||"สถานการณ์น้ำ")}</h3><span class="tag">${esc(x.severity||"เล็กน้อย")}</span><p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${x.created_at?new Date(x.created_at).toLocaleString("th-TH"):""}</div></div>`).join(""):'<div class="empty">ยังไม่มีรายงาน</div>';
   }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
 }
 async function addSituation(){
@@ -1284,7 +1300,7 @@ async function addSituation(){
       title,description:desc,severity:$("sitSeverity").value,place:$("sitPlace").value.trim(),
       lat:coords.situation?.lat??null,lng:coords.situation?.lng??null,created_at:new Date().toISOString()
     })});
-    $("sitTitle").value="";$("sitDesc").value="";$("sitPlace").value="";toast("แจ้งสถานการณ์แล้ว");loadSituations();
+    $("sitTitle").value="";$("sitDesc").value="";$("sitPlace").value="";toast("แจ้งสถานการณ์น้ำแล้ว");loadSituations();
   }catch(e){toast("แจ้งไม่สำเร็จ: "+e.message)}
 }
 $("addSituation").addEventListener("click",addSituation);
@@ -1292,7 +1308,7 @@ $("addSituation").addEventListener("click",addSituation);
 async function loadAllInitial(){await loadSummary();if(role==="requester")showPage("ask");else if(role==="helper")showPage("all")}
 let pollTimer=null;
 
-const GISTDA_WATER_POINTS="https://gistdaportal.gistda.or.th/arcgis/rest/services/Hosted/GISTDA_FLOOD/FeatureServer/0/query";
+const THAIWATER_API="https://api-v3.thaiwater.net/api/v1/thaiwater30/";
 const GISTDA_FLOOD_MAP="https://gistdaportal.gistda.or.th/arcgis/rest/services/app/GISTDA_flood/MapServer";
 let waterLoading=false;
 function initWaterSelectors(){
@@ -1352,31 +1368,92 @@ async function initWaterMap(){
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
 }
-async function queryGistdaStations(){
-  if(!province)return [];
-  let where=`province='${province.replace(/'/g,"''")}'`;
-  if(district)where+=` AND amphoe='${district.replace(/'/g,"''")}'`;
-  const params=new URLSearchParams({where,outFields:"station_name,province,amphoe,tambon,value,discharge,flow_rate,percentage,classify_name,station_time_t,update_time,agency_name,basin_name",returnGeometry:"true",outSR:"4326",resultRecordCount:"2000",f:"json"});
-  const r=await fetch(GISTDA_WATER_POINTS+"?"+params.toString());
-  if(!r.ok)throw new Error("GISTDA water query failed");
-  const j=await r.json(); return j.features||[];
+async function thaiWaterJson(path){
+  const r=await fetch(THAIWATER_API+path,{headers:{"Accept":"application/json"}});
+  if(!r.ok)throw new Error("ThaiWater HTTP "+r.status);
+  return await r.json();
+}
+function thaiWaterRows(json){
+  if(!json)return [];
+  const candidates=[json?.waterlevel_data?.data,json?.rainfall_data?.data,json?.data,json?.result?.data,json?.waterlevel?.data,json?.rain?.data];
+  for(const x of candidates)if(Array.isArray(x))return x;
+  return [];
+}
+function twPick(obj, paths){
+  for(const path of paths){
+    let v=obj;
+    for(const k of path.split('.')) v=v?.[k];
+    if(v!==undefined&&v!==null&&v!==""){
+      if(typeof v==='object'&&v.th!==undefined)return v.th;
+      if(typeof v==='object'&&v.TH!==undefined)return v.TH;
+      return v;
+    }
+  }
+  return "";
+}
+function twNum(v){const n=Number(v);return Number.isFinite(n)?n:null}
+function twStationName(r){return twPick(r,["station.tele_station_name.th","station.tele_station_name","station_name.th","station_name","station.name.th","station.name"] )||"สถานีวัดน้ำ"}
+function twProvince(r){return String(twPick(r,["geocode.province_name.th","geocode.province_name","province_name.th","province_name","province"])||"").trim()}
+function twDistrict(r){return String(twPick(r,["geocode.amphoe_name.th","geocode.amphoe_name","geocode.district_name.th","geocode.district_name","amphoe_name.th","amphoe_name","district_name.th","district_name","amphoe","district"])||"").trim()}
+function twTambon(r){return String(twPick(r,["geocode.tambon_name.th","geocode.tambon_name","tambon_name.th","tambon_name","tambon"])||"").trim()}
+function twLat(r){return twNum(twPick(r,["station.tele_station_lat","station.latitude","station.lat","latitude","lat"]))}
+function twLng(r){return twNum(twPick(r,["station.tele_station_long","station.longitude","station.lng","longitude","lng"]))}
+function twTime(r){return twPick(r,["waterlevel_datetime","rainfall_datetime","rainfall_datetime_th","datetime","data_datetime","station.tele_station_datetime","station_time_t","update_time"])||""}
+function twSituation(r){const n=twNum(r.situation_level);if(n===5)return "น้ำล้นตลิ่ง";if(n===4)return "วิกฤต / เสี่ยงน้ำท่วม";if(n===3)return "เตือนภัย";if(n===2)return "เฝ้าระวัง";if(n===1)return "ปกติ";return String(r.diff_wl_bank_text||r.situation_level||"")}
+function twAreaMatch(r){
+  if(!province)return false;
+  const rp=twProvince(r); if(rp && rp!==province)return false;
+  if(district){const rd=twDistrict(r); if(rd && rd!==district)return false;}
+  return !rp || rp===province;
+}
+function fmtMm(v){const n=twNum(v);return n===null?"-":n.toFixed(1)+" มม."}
+function fmtM(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม."}
+function fmtCms(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม³/วินาที"}
+async function queryThaiWater(){
+  const [wlJson,rainJson]=await Promise.all([
+    thaiWaterJson("public/waterlevel_load"),
+    thaiWaterJson("public/rain_24h")
+  ]);
+  const wl=thaiWaterRows(wlJson).filter(twAreaMatch);
+  const rain=thaiWaterRows(rainJson).filter(twAreaMatch);
+  return {wl,rain};
 }
 function waterStationPopup(a){
-  const p=a.properties||{};
-  return `<div class="water-popup"><strong>💧 ${esc(p.station_name||"สถานีวัดน้ำ")}</strong><br>📍 ${esc(p.province||"")}${p.amphoe?" / "+esc(p.amphoe):""}${p.tambon?" / "+esc(p.tambon):""}<br>📊 ค่าที่รายงาน: <b>${esc(p.value??"-")}</b>${p.percentage!=null?`<br>📈 ร้อยละ: ${esc(p.percentage)}`:""}${p.discharge!=null?`<br>💦 ปริมาณ/อัตราที่รายงาน: ${esc(p.discharge)}`:""}${p.flow_rate!=null?`<br>🌊 อัตราการไหล: ${esc(p.flow_rate)}`:""}${p.classify_name?`<br>สถานะ: ${esc(p.classify_name)}`:""}<br><span class="water-source">แหล่งข้อมูล: GISTDA</span></div>`;
+  const name=twStationName(a),prov=twProvince(a),amp=twDistrict(a),tamb=twTambon(a);
+  const level=twPick(a,["waterlevel_m","waterlevel_msl"]),dis=twPick(a,["discharge"]),status=twSituation(a);
+  return `<div class="water-popup"><strong>💧 ${esc(name)}</strong><br>📍 ${esc(prov)}${amp?" / "+esc(amp):""}${tamb?" / "+esc(tamb):""}<br>🌊 ระดับน้ำ: <b>${esc(fmtM(level))}</b><br>💦 อัตราการไหล: ${esc(fmtCms(dis))}${status?`<br>🚦 สถานะ: <b>${esc(status)}</b>`:""}${twTime(a)?`<br>🕐 ${esc(twTime(a))}`:""}<br><span class="water-source">แหล่งข้อมูล: ThaiWater / คลังข้อมูลน้ำแห่งชาติ</span></div>`;
 }
-function renderWaterStations(features){
+function rainStationPopup(a){
+  const name=twPick(a,["station.tele_station_name.th","station.tele_station_name","station_name"])||"สถานีฝน";
+  return `<div class="water-popup"><strong>🌧️ ${esc(name)}</strong><br>📍 ${esc(twProvince(a))}${twDistrict(a)?" / "+esc(twDistrict(a)):""}<br>🌧️ ฝน 24 ชม.: <b>${esc(fmtMm(twPick(a,["rain_24h"])))}</b>${twTime(a)?`<br>🕐 ${esc(twTime(a))}`:""}<br><span class="water-source">แหล่งข้อมูล: ThaiWater / คลังข้อมูลน้ำแห่งชาติ</span></div>`;
+}
+function renderWaterStations(waterData){
   const list=$("waterStationList");
   waterStationMarkers.forEach(m=>m.remove());waterStationMarkers=[];
   const rows=[];
-  features.forEach(f=>{
-    const g=f.geometry||{},a=f.attributes||{};const lat=Number(g.y),lng=Number(g.x); if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
-    const marker=L.circleMarker([lat,lng],{radius:8,weight:2}).addTo(waterMap).bindPopup(waterStationPopup(a)); waterStationMarkers.push(marker);
-    rows.push(`<div class="water-station"><h3>💧 ${esc(a.station_name||"สถานีวัดน้ำ")}</h3><div>${esc(a.amphoe||"")}${a.tambon?" / "+esc(a.tambon):""}</div><div>📊 ค่าที่รายงาน: <b>${esc(a.value??"-")}</b>${a.classify_name?` • ${esc(a.classify_name)}`:""}</div><div class="water-source">${a.update_time?"อัปเดต "+formatTime(a.update_time):a.station_time_t?"เวลา "+esc(a.station_time_t):""} • GISTDA</div></div>`);
+  const wl=waterData.wl||[], rain=waterData.rain||[];
+  wl.forEach(r=>{
+    const lat=twLat(r),lng=twLng(r); if(lat===null||lng===null)return;
+    const marker=L.circleMarker([lat,lng],{radius:8,weight:2}).addTo(waterMap).bindPopup(waterStationPopup(r)); waterStationMarkers.push(marker);
+    const status=twSituation(r), level=twPick(r,["waterlevel_m","waterlevel_msl"]),dis=twPick(r,["discharge"]);
+    rows.push(`<div class="water-station"><h3>💧 ${esc(twStationName(r))}</h3><div>${esc(twDistrict(r))}${twTambon(r)?" / "+esc(twTambon(r)):""}</div><div>🌊 ระดับน้ำ: <b>${esc(fmtM(level))}</b> • 💦 อัตราการไหล: ${esc(fmtCms(dis))}</div><div>🚦 สถานะ: <b>${esc(status||"ไม่มีสถานะ")}</b></div><div class="water-source">${twTime(r)?"อัปเดต "+esc(twTime(r)):""} • ThaiWater</div></div>`);
   });
-  list.innerHTML=rows.length?rows.join(""):"<div class='empty'>ไม่พบจุดข้อมูลน้ำของพื้นที่ที่เลือกจากบริการ GISTDA</div>";
-  $("countWater").textContent=features.length;
-  $("waterDataCount").textContent=`พบ ${features.length} จุด`;
+  rain.forEach(r=>{
+    const n=twNum(r.rain_24h); if(n===null)return;
+    const lat=twLat(r),lng=twLng(r); if(lat!==null&&lng!==null){const marker=L.circleMarker([lat,lng],{radius:6,weight:2}).addTo(waterMap).bindPopup(rainStationPopup(r));waterStationMarkers.push(marker)}
+    rows.push(`<div class="water-station"><h3>🌧️ ${esc(twPick(r,["station.tele_station_name.th","station.tele_station_name","station_name"])||"สถานีฝน")}</h3><div>${esc(twDistrict(r))}${twTambon(r)?" / "+esc(twTambon(r)):""}</div><div>🌧️ ฝนสะสม 24 ชั่วโมง: <b>${esc(fmtMm(n))}</b></div><div class="water-source">${twTime(r)?"อัปเดต "+esc(twTime(r)):""} • ThaiWater</div></div>`);
+  });
+  list.innerHTML=rows.length?rows.join(""):"<div class='empty'>ไม่พบข้อมูลระดับน้ำหรือฝนจาก ThaiWater ในพื้นที่ที่เลือกในขณะนี้</div>";
+  $("countWater").textContent=wl.length+rain.length;
+  $("waterDataCount").textContent=`ระดับน้ำ ${wl.length} จุด • ฝน ${rain.length} จุด`;
+  const maxRain=rain.reduce((m,r)=>Math.max(m,twNum(r.rain_24h)||0),0);
+  const over=wl.filter(r=>(r.diff_wl_bank_text||"").startsWith("ล้นตลิ่ง")||twNum(r.situation_level)===5).length;
+  const summary=$("waterSummary");
+  if(summary)summary.innerHTML=`<div class="grid"><div class="stat"><b>🌧️ ฝนสูงสุด 24 ชม.</b><strong>${maxRain.toFixed(1)} มม.</strong></div><div class="stat"><b>💧 สถานีระดับน้ำ</b><strong>${wl.length} จุด</strong></div><div class="stat"><b>🚨 ล้นตลิ่ง/ระดับ 5</b><strong>${over} จุด</strong></div></div>`;
+}
+async function loadThaiWater(){
+  try{const data=await queryThaiWater();renderWaterStations(data);}
+  catch(e){$("waterStationList").innerHTML=`<div class='empty'>เชื่อมต่อ ThaiWater ไม่สำเร็จในขณะนี้<br><small>${esc(e.message||"")}</small></div>`;$("waterDataCount").textContent="โหลดข้อมูลภายนอกไม่ได้";}
 }
 async function loadWaterRoadReports(){
   const box=$("waterRoadList");
@@ -1398,6 +1475,7 @@ async function loadWaterPage(force=false){
     if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
     if(waterMap)focusWaterMapOnSelectedArea();
     try{const features=await queryGistdaStations();renderWaterStations(features);}catch(e){$("waterStationList").innerHTML="<div class='empty'>เชื่อมต่อข้อมูลสถานีน้ำ GISTDA ไม่สำเร็จในขณะนี้</div>";$("waterDataCount").textContent="โหลดข้อมูลไม่ได้";}
+    await loadThaiWater();
     await loadWaterRoadReports();
   }finally{waterLoading=false;}
 }
