@@ -628,7 +628,15 @@ $("centerMapMyLocationFloating").addEventListener("click",()=>locate("center"));
 $("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
 $("centerBrowseMapAreaLabel").addEventListener("click",()=>focusCenterBrowseOnSelectedArea());
 $("centerBrowseMapAreaLabel").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();focusCenterBrowseOnSelectedArea()}});
-$("openAddCenterForm").addEventListener("click",()=>{ $("addCenterCard").style.display="block"; setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80); window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'}); });
+$("openAddCenterForm").addEventListener("click",()=>{
+  // เปิดฟอร์มใหม่ทุกครั้ง ต้องเริ่มจากยังไม่เลือกพิกัด เพื่อไม่ให้พิกัดเดิม/พิกัด GPS ถูกนำมาใช้ซ้ำ
+  coords.center=null;
+  if(marks.center){marks.center.remove();marks.center=null}
+  $("centerCoords").textContent="ยังไม่ได้เลือกตำแหน่ง • แตะบนแผนที่เพื่อปักหมุด";
+  $("addCenterCard").style.display="block";
+  setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80);
+  window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'});
+});
 $("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
 
 $("situationStat").addEventListener("click",()=>showPage("situations"));
@@ -650,12 +658,12 @@ function initMapFor(id){
   maps[id]=map;marks[id]=null;
 }
 function setPoint(id,lat,lng){
-  coords[id]={lat,lng};
+  coords[id]={lat:Number(lat),lng:Number(lng)};
   if(marks[id])marks[id].setLatLng([lat,lng]);
-  else if(typeof L!=="undefined")marks[id]=L.marker([lat,lng]).addTo(maps[id]);
+  else if(typeof L!=="undefined" && maps[id])marks[id]=L.marker([lat,lng]).addTo(maps[id]);
   const out=$(id==="ask"?"askCoords":id==="center"?"centerCoords":"sitCoords");
-  if(out)out.textContent=`ละติจูด ${lat.toFixed(6)} • ลองจิจูด ${lng.toFixed(6)}`;
-  if(id==="ask" && $("place")) $("place").value=`พิกัด ${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  if(out)out.textContent=`📌 จุดที่เลือก: ละติจูด ${Number(lat).toFixed(6)} • ลองจิจูด ${Number(lng).toFixed(6)}`;
+  if(id==="ask" && $("place")) $("place").value=`พิกัด ${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}`;
 }
 function locate(id){
   if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return}
@@ -1116,15 +1124,22 @@ async function loadCenters(){
 }
 async function addCenter(){
   const nameV=$("centerName").value.trim();if(!nameV){toast("กรุณาใส่ชื่อจุดช่วยเหลือ");return}
-  if(!coords.center){toast("กรุณาเลือกตำแหน่งบนแผนที่");return}
+  if(!coords.center){toast("กรุณาแตะบนแผนที่เพื่อปักหมุดจุดช่วยเหลือ หรือกดใช้ตำแหน่งปัจจุบัน");return}
+  const saveLat=Number(coords.center.lat),saveLng=Number(coords.center.lng);
+  if(!Number.isFinite(saveLat)||!Number.isFinite(saveLng)){toast("พิกัดไม่ถูกต้อง กรุณาแตะเลือกจุดใหม่บนแผนที่");return}
   try{
     await api("help_centers",{method:"POST",body:JSON.stringify({
       name:nameV,service_type:$("centerType").value,phone:$("centerPhone").value.trim(),
       description:$("centerDesc").value.trim(),place:$("centerPlace").value.trim(),
       province:province,district:district,
-      lat:coords.center.lat,lng:coords.center.lng
+      lat:saveLat,lng:saveLng
     })});
-    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");toast("เพิ่มจุดช่วยเหลือแล้ว");centerRows=[];loadCenters();
+    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");
+    coords.center=null;
+    if(marks.center){marks.center.remove();marks.center=null}
+    $("centerCoords").textContent="ยังไม่ได้เลือกตำแหน่ง • แตะบนแผนที่เพื่อปักหมุด";
+    toast(`เพิ่มจุดช่วยเหลือแล้ว • พิกัด ${saveLat.toFixed(6)}, ${saveLng.toFixed(6)}`);
+    centerRows=[];loadCenters();
   }catch(e){toast("เพิ่มไม่สำเร็จ: "+e.message)}
 }
 $("addCenter").addEventListener("click",addCenter);
