@@ -45,7 +45,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   font-size:24px;cursor:pointer;
 }
 .map-my-location-btn:active{transform:scale(.96)}
-.location-map-wrap{position:relative}
+.location-map-wrap{position:relative}.map-area-overlay{position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;color:#167a4a;border:1px solid #ccebd8;border-radius:14px;padding:9px 12px;font-weight:800;font-size:15px;line-height:1.35;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none;text-align:center}.map-area-overlay b{font-weight:900}
 .current-location-dot{
   width:20px;height:20px;border-radius:50%;
   background:#1976d2;border:4px solid #fff;
@@ -199,7 +199,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
       <div><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">แสดงจุดช่วยเหลือทั้งหมดบนแผนที่</p></div>
       <span class="tag" id="centerBrowseCount">กำลังโหลด...</span>
     </div>
-    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
+    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><div class="map-area-overlay" id="centerBrowseMapAreaLabel">📍 พื้นที่: กำลังโหลด</div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div class="center-map-actions row" style="margin-top:10px">
       <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
@@ -494,7 +494,7 @@ function initProvinceSelect(){populateProvinceSelect(true);loadDistrictsForProvi
 function areaLabel(){return region?(region+(province?` / ${province}`:"")+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
 function updateAreaPreview(){
   const t=areaLabel();
-  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation"].forEach(id=>{
+  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation","centerBrowseMapAreaLabel"].forEach(id=>{
     const el=$(id);if(el)el.textContent=`📍 พื้นที่: ${t}`;
   });
 }
