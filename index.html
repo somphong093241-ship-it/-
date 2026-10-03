@@ -647,7 +647,7 @@ let centerBrowseMap=null, centerBrowseMarkers=[], centerUserMarker=null, centerR
 let locationPickerBackup={ask:null,place:""};
 function initMapFor(id){
   if(typeof L==="undefined")return;
-  const cfg={ask:["askMap",13.7563,100.5018],centers:["centerMap",13.7563,100.5018],situations:["sitMap",13.7563,100.5018]};
+  const cfg={ask:["askMap",13.7563,100.5018],center:["centerMap",13.7563,100.5018],centers:["centerBrowseMap",13.7563,100.5018],situations:["sitMap",13.7563,100.5018]};
   if(!cfg[id])return;
   const [el,lat,lng]=cfg[id];
   if(maps[id]){maps[id].invalidateSize();return}
