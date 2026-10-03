@@ -646,16 +646,37 @@ let maps={},marks={},coords={ask:null,center:null,situation:null};
 let centerBrowseMap=null, centerBrowseMarkers=[], centerUserMarker=null, centerRows=[];
 let locationPickerBackup={ask:null,place:""};
 function initMapFor(id){
-  if(typeof L==="undefined")return;
+  if(typeof L==="undefined")return null;
   const cfg={ask:["askMap",13.7563,100.5018],center:["centerMap",13.7563,100.5018],situations:["sitMap",13.7563,100.5018]};
-  if(!cfg[id])return;
-  const [el,lat,lng]=cfg[id];
-  if(maps[id]){maps[id].invalidateSize();return}
-  if(!$(el))return;
+  if(!cfg[id])return null;
+  const [elId,lat,lng]=cfg[id];
+  const el=$(elId);
+  if(!el)return null;
+  // ป้องกัน Leaflet error: “Map container is already initialized”
+  // รองรับกรณีหน้าเดิมถูกเปิดซ้ำ/โหลดข้อมูลซ้ำ แต่ใช้ container เดิม
+  if(maps[id]){
+    try{maps[id].invalidateSize();return maps[id]}catch(e){maps[id]=null}
+  }
+  if(el.__leafletMap){
+    maps[id]=el.__leafletMap;
+    try{maps[id].invalidateSize();return maps[id]}catch(e){el.__leafletMap=null;maps[id]=null}
+  }
+  if(el._leaflet_id){
+    // มี Leaflet ผูกกับ container แล้ว แต่ตัวแปรในแอปอาจหายไป
+    // ล้าง instance เดิมก่อนสร้างใหม่ เพื่อไม่ให้เกิด error ซ้ำ
+    try{
+      const oldId=el._leaflet_id;
+      const oldMap=el.__leafletMap;
+      if(oldMap) oldMap.remove();
+    }catch(e){}
+    el._leaflet_id=null;
+    el.__leafletMap=null;
+  }
   const map=L.map(el).setView([lat,lng],12);
   L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(map);
   map.on("click",e=>setPoint(id,e.latlng.lat,e.latlng.lng));
-  maps[id]=map;marks[id]=null;
+  maps[id]=map;marks[id]=null;el.__leafletMap=map;
+  return map;
 }
 function setPoint(id,lat,lng){
   coords[id]={lat:Number(lat),lng:Number(lng)};
@@ -967,9 +988,23 @@ function clearCenterBrowseMarkers(){
 }
 function ensureCenterBrowseMap(lat=13.7563,lng=100.5018,zoom=12){
   if(typeof L==='undefined')return null;
-  if(centerBrowseMap){centerBrowseMap.invalidateSize();return centerBrowseMap}
-  centerBrowseMap=L.map('centerBrowseMap').setView([lat,lng],zoom);
+  const el=$('centerBrowseMap');
+  if(!el)return null;
+  if(centerBrowseMap){
+    try{centerBrowseMap.invalidateSize();return centerBrowseMap}catch(e){centerBrowseMap=null}
+  }
+  if(el.__leafletMap){
+    centerBrowseMap=el.__leafletMap;
+    try{centerBrowseMap.invalidateSize();return centerBrowseMap}catch(e){el.__leafletMap=null;centerBrowseMap=null}
+  }
+  if(el._leaflet_id){
+    try{if(el.__leafletMap)el.__leafletMap.remove()}catch(e){}
+    el._leaflet_id=null;
+    el.__leafletMap=null;
+  }
+  centerBrowseMap=L.map(el).setView([lat,lng],zoom);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(centerBrowseMap);
+  el.__leafletMap=centerBrowseMap;
   return centerBrowseMap;
 }
 function centerAreaMatches(x){
