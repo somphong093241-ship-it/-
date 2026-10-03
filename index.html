@@ -34,6 +34,8 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 .small{font-size:13px}.right{text-align:right}
 .case.clickable{cursor:pointer}.case.clickable:hover{border-color:#8fc9e4}.detail-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.52);z-index:10500;display:none;align-items:flex-end;justify-content:center;padding:12px}.detail-backdrop.show{display:flex}.detail-card{width:min(760px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:24px;padding:20px;box-shadow:0 15px 50px #0005}.detail-card h2{margin-top:0}.detail-map{height:280px;border-radius:16px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.timeline{display:grid;gap:8px;margin:12px 0}.timeline div{background:#f5f8fa;border-radius:12px;padding:10px}.detail-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
 @media(max-width:600px){.brand{font-size:23px}main{padding:12px}.hero h1{font-size:27px}nav button{font-size:15px;padding:10px 4px}}
+
+.area-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:12px}.area-box{background:#f6fbfd;border:1px solid #d5e8ee;border-radius:14px;padding:12px}.area-box label{margin-top:0}.area-current{font-size:14px;color:#17677b;margin-top:8px}.area-required{color:#b42318;font-size:13px}.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.filter-bar button{min-height:44px}.area-pill{display:inline-block;background:#e8f7ee;color:#087a43;padding:7px 11px;border-radius:999px;font-size:14px;font-weight:700}.success-list{margin-top:10px}.table-wrap{overflow:auto}.table-wrap table{width:100%;border-collapse:collapse}.table-wrap th,.table-wrap td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.table-wrap th{font-weight:800}
 </style>
 </head>
 <body>
@@ -43,6 +45,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   <div class="sub">ประชาชนขอ • ประชาชนช่วย • ประชาชนแจ้งสถานการณ์</div>
   <div class="hello" id="helloName"></div>
   <div class="header-actions">
+    <button class="chip" id="changeAreaBtn">📍 เปลี่ยนพื้นที่</button>
     <button class="chip" id="changeRoleBtn">🔄 เปลี่ยนบทบาท</button>
     <button class="chip" id="changeNameBtn">✏️ เปลี่ยนชื่อ</button>
   </div>
@@ -50,7 +53,6 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 
 <nav>
   <button data-page="home">🏠 หน้าแรก</button>
-  <button data-page="nationwide">🇹🇭 ทั่วประเทศ</button>
   <button data-page="ask">🆘 ขอความช่วยเหลือ</button>
   <button data-page="all">🌍 เคสทั้งหมด</button>
   <button data-page="mine">👤 เคสของฉัน</button>
@@ -59,7 +61,43 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 </nav>
 
 <main>
+<section id="home" class="page active">
+  <div class="area-banner" style="margin-bottom:12px"><span class="area-pill" id="activeAreaHome">📍 พื้นที่: ยังไม่ได้เลือก</span></div>
+
+  <div class="hero">
+    <h1>🌊 จากประชาชนสู่ประชาชน</h1>
+    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์จากประชาชน</p>
+    <b style="color:#18864d">● ระบบอัปเดตแบบ Real Time</b>
+  </div>
+  <div class="card">
+    <h2>📊 สรุปตอนนี้</h2>
+    <div class="grid">
+      <button class="stat red" id="waitingStat" type="button" style="text-align:left;width:100%">
+        <span>🔴 คำขอรอความช่วยเหลือ</span><b id="countWait">0</b><span>เคส • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat green" id="helpStat" type="button" style="text-align:left;width:100%">
+        <span>🟢 กำลังช่วยเหลือ</span><b id="countHelp">0</b><span>เคส • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat blue" id="centerStat" type="button" style="text-align:left;width:100%">
+        <span>🏥 จุดช่วยเหลือ</span><b id="countCenter">0</b><span>จุด • กดเพื่อดูรายละเอียด</span>
+      </button>
+      <button class="stat" id="situationStat" type="button" style="text-align:left;width:100%">
+        <span>🌊 สถานการณ์</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="card">
+    <button class="stat green" id="nationwideStat" type="button" style="text-align:left;width:100%">
+      <span>🇹🇭 การช่วยเหลือสำเร็จทั่วประเทศ</span>
+      <b id="nationCompleted">0</b>
+      <span>เคส • กดเพื่อดูยอดรวมทั่วประเทศ</span>
+    </button>
+  </div>
+</section>
+
 <section id="nationwide" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaNation">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="hero">
     <h1>🇹🇭 การช่วยเหลือทั่วประเทศ</h1>
     <p>ดูเฉพาะเคสที่ช่วยเหลือสำเร็จแล้วทั่วประเทศ</p>
@@ -68,7 +106,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <h2>🤝 ช่วยเหลือสำเร็จทั้งหมด</h2>
     <div class="stat green" style="max-width:320px">
       <span>🇹🇭 รวมทั่วประเทศ</span>
-      <b id="nationCompleted">0</b>
+      <b id="nationCompletedPage">0</b>
       <span>เคส</span>
     </div>
   </div>
@@ -82,28 +120,12 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   </div>
 </section>
 
-<section id="home" class="page active">
-  <div class="hero">
-    <h1>🌊 จากประชาชนสู่ประชาชน</h1>
-    <p>ระบบกลางสำหรับขอความช่วยเหลือ ดูเคสที่กำลังรอความช่วยเหลือ จุดช่วยเหลือ และสถานการณ์จากประชาชน</p>
-    <b style="color:#18864d">● ระบบอัปเดตแบบ Real Time</b>
-  </div>
-  <div class="card">
-    <h2>📊 สรุปตอนนี้</h2>
-    <div class="grid">
-      <button class="stat red" id="waitingStat" type="button" style="text-align:left;width:100%"><span>🔴 คำขอรอความช่วยเหลือ</span><b id="countWait">0</b><span>เคส • กดเพื่อดูรายละเอียด</span></button>
-      <div class="stat green"><span>🟢 กำลังช่วยเหลือ</span><b id="countHelp">0</b><span>เคส</span></div>
-      <div class="stat blue"><span>🏥 จุดช่วยเหลือ</span><b id="countCenter">0</b><span>จุด</span></div>
-      <div class="stat"><span>🌊 สถานการณ์</span><b id="countSituation">0</b><span>รายการ</span></div>
-    </div>
-  </div>
-</section>
-
 <section id="ask" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaAsk">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
     <h2>📍 พื้นที่คำขอ</h2>
-    <p class="muted">คำขอนี้จะถูกแสดงเฉพาะในจังหวัดที่เลือก</p>
-    <input id="requestProvince" maxlength="80" placeholder="จังหวัด">
+    <p class="muted">พื้นที่ถูกเลือกตั้งแต่ตอนเริ่มใช้งาน เพื่อไม่ให้เคสต่างจังหวัดปะปนกัน</p>
+    <div class="area-pill" id="requestAreaText">📍 ยังไม่ได้เลือกพื้นที่</div>
   </div>
   
   <div class="card">
@@ -127,13 +149,24 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 </section>
 
 <section id="all" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaAll">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card" id="allRoleHint">
+    <p class="muted" style="margin:0">👀 ทุกคนดูรายละเอียดเคสได้ • 🟢 ผู้ช่วยเหลือเท่านั้นที่รับเคสได้</p>
+  </div>
   <div class="card">
-    <div class="between"><h2>🌍 เคสทั้งหมด</h2><button class="secondary" id="refreshAll">↻ รีเฟรช</button></div>
+    <div class="between"><h2>🌍 เคสในพื้นที่</h2><button class="secondary" id="refreshAll">↻ รีเฟรช</button></div>
+    <div class="filter-bar">
+      <button class="secondary caseFilter" data-status="">ทั้งหมด</button>
+      <button class="secondary caseFilter" data-status="รอความช่วยเหลือ">🔴 รอความช่วยเหลือ</button>
+      <button class="secondary caseFilter" data-status="กำลังช่วยเหลือ">🟢 กำลังช่วยเหลือ</button>
+      <button class="secondary caseFilter" data-status="ได้รับความช่วยเหลือแล้ว">✅ ช่วยเหลือสำเร็จ</button>
+    </div>
     <div id="allList"></div>
   </div>
 </section>
 
 <section id="mine" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaMine">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
     <div class="between"><h2>👤 เคสของฉัน</h2><button class="secondary" id="refreshMine">↻ รีเฟรช</button></div>
     <div id="mineList"></div>
@@ -141,6 +174,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 </section>
 
 <section id="centers" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaCenters">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
     <h2>🏥 จุดช่วยเหลือ</h2>
     <label>ชื่อจุดช่วยเหลือ</label><input id="centerName" placeholder="เช่น ศูนย์พักพิงชุมชน">
@@ -160,6 +194,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 </section>
 
 <section id="situations" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaSituations">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
     <h2>🌊 แจ้งสถานการณ์</h2>
     <label>หัวข้อ</label><input id="sitTitle" placeholder="เช่น น้ำเริ่มท่วมถนน">
@@ -176,8 +211,28 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 
 <div id="gate" class="gate">
   <div class="gate-card">
-    <div id="roleStep">
-      <h2>👋 ก่อนเริ่มใช้งาน</h2>
+    <div id="areaStep">
+      <h2>📍 เลือกพื้นที่ก่อน</h2>
+      <p>เลือกจังหวัดและอำเภอ/เขตที่คุณอยู่หรือกำลังช่วยเหลือ</p>
+      <div class="area-grid">
+        <div class="area-box">
+          <label>จังหวัด <span class="area-required">*</span></label>
+          <select id="provinceInput">
+            <option value="">-- เลือกจังหวัด --</option>
+          </select>
+        </div>
+        <div class="area-box">
+          <label>อำเภอ / เขต <span class="area-required">*</span></label>
+          <input id="districtInput" maxlength="100" placeholder="เช่น บางนา / เมืองเชียงใหม่">
+        </div>
+      </div>
+      <div class="area-current" id="areaPreview">ยังไม่ได้เลือกพื้นที่</div>
+      <button class="primary" id="areaNextBtn" style="width:100%;margin-top:12px">ไปเลือกบทบาท</button>
+    </div>
+
+    <div id="roleStep" style="display:none">
+      <h2>👋 เลือกบทบาท</h2>
+      <p id="roleAreaText" class="area-current"></p>
       <p>วันนี้คุณเข้ามาเพื่ออะไร?</p>
       <div class="role-grid">
         <button class="role-btn requester" id="requesterBtn"><b>🔴 มาขอความช่วยเหลือ</b><span>แจ้งเหตุหรือส่งคำขอความช่วยเหลือของคุณ</span></button>
@@ -266,18 +321,52 @@ async function rpc(name,body){
   return data;
 }
 
+
+const TH_PROVINCES=["กรุงเทพมหานคร","กระบี่","กาญจนบุรี","กาฬสินธุ์","กำแพงเพชร","ขอนแก่น","จันทบุรี","ฉะเชิงเทรา","ชลบุรี","ชัยนาท","ชัยภูมิ","ชุมพร","ตรัง","ตราด","ตาก","นครนายก","นครปฐม","นครพนม","นครราชสีมา","นครศรีธรรมราช","นครสวรรค์","นนทบุรี","นราธิวาส","น่าน","บึงกาฬ","บุรีรัมย์","ปทุมธานี","ประจวบคีรีขันธ์","ปราจีนบุรี","ปัตตานี","พะเยา","พังงา","พัทลุง","พิจิตร","พิษณุโลก","ภูเก็ต","มหาสารคาม","มุกดาหาร","ยะลา","ยโสธร","ร้อยเอ็ด","ระนอง","ระยอง","ราชบุรี","ลพบุรี","ลำปาง","ลำพูน","ศรีสะเกษ","สกลนคร","สงขลา","สตูล","สมุทรปราการ","สมุทรสงคราม","สมุทรสาคร","สระแก้ว","สระบุรี","สิงห์บุรี","สุพรรณบุรี","สุราษฎร์ธานี","สุรินทร์","สุโขทัย","สุราษฎร์ธานี","หนองคาย","หนองบัวลำภู","อำนาจเจริญ","อุดรธานี","อุตรดิตถ์","อุทัยธานี","อุบลราชธานี","เชียงราย","เชียงใหม่","เพชรบุรี","เพชรบูรณ์","เลย","แพร่","แม่ฮ่องสอน"];
+function initProvinceSelect(){
+  const el=$("provinceInput"); if(!el||el.options.length>1)return;
+  TH_PROVINCES.forEach(p=>{const o=document.createElement("option");o.value=p;o.textContent=p;el.appendChild(o)});
+  el.value=province||"";
+  updateAreaPreview();
+}
+function areaLabel(){return province?(province+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
+function updateAreaPreview(){
+  const t=areaLabel();
+  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation"].forEach(id=>{
+    const el=$(id);if(el)el.textContent=`📍 พื้นที่: ${t}`;
+  });
+}
+function saveArea(){
+  province=String($("provinceInput")?.value||"").trim();
+  district=String($("districtInput")?.value||"").trim();
+  if(!province){toast("กรุณาเลือกจังหวัด");return false}
+  if(!district){toast("กรุณาระบุอำเภอ / เขต");return false}
+  localStorage.setItem(PROVINCE_KEY,province);
+  localStorage.setItem(DISTRICT_KEY,district);
+  updateAreaPreview();
+  return true;
+}
+function openArea(){
+  $("gate").classList.add("show");
+  $("areaStep").style.display="block";
+  $("roleStep").style.display="none";
+  $("nameStep").style.display="none";
+  $("helperStep").style.display="none";
+  $("provinceInput").value=province||"";
+  $("districtInput").value=district||"";
+  updateAreaPreview();
+}
+
 function updateHeader(){
   $("helloName").textContent=name?`สวัสดี ${name} 👋`: "";
   $("changeRoleBtn").textContent=role==="helper"?"🟢 บทบาท: ช่วยเหลือผู้อื่น":"🔴 บทบาท: ขอความช่วยเหลือ";
 }
 function openGate(mode){
-  $("gate").classList.add("show");
-  $("roleStep").style.display="block";
-  $("nameStep").style.display="none";
-  $("helperStep").style.display="none";
+  openArea();
 }
 function closeGate(){ $("gate").classList.remove("show") }
 function chooseRole(r){
+  if(!province || !district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   role=r;localStorage.setItem(ROLE_KEY,r);
   if(r==="requester"){
     $("roleStep").style.display="none";$("helperStep").style.display="none";$("nameStep").style.display="block";
@@ -290,11 +379,13 @@ function chooseRole(r){
   $("helperNameInput").value=name;
 }
 function start(){
+  if(!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   const v=$("nameInput").value.trim();
   if(!v){toast("กรุณาพิมพ์ชื่อของคุณ");return}
   name=v;localStorage.setItem(NAME_KEY,name);updateHeader();closeGate();showPage("ask");
 }
 function startHelper(){
+  if(!province||!district){toast("กรุณาเลือกพื้นที่ก่อน");openArea();return}
   const n=$("helperNameInput").value.trim();
   const t=$("helperTypeInput").value;
   const a=$("helperAffiliationInput").value.trim();
@@ -326,15 +417,24 @@ function showPage(id){
 }
 
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showPage(b.dataset.page)));
-$("changeRoleBtn").addEventListener("click",()=>openGate("role"));
+$("changeAreaBtn").addEventListener("click",openArea);
+$("changeRoleBtn").addEventListener("click",()=>{openArea();$("areaStep").style.display="none";$("roleStep").style.display="block";});
 $("changeNameBtn").addEventListener("click",changeName);
+$("provinceInput").addEventListener("change",updateAreaPreview);
+$("districtInput").addEventListener("input",updateAreaPreview);
+$("areaNextBtn").addEventListener("click",()=>{if(saveArea()){$("areaStep").style.display="none";$("roleStep").style.display="block";updateAreaPreview()}});
 $("startBtn").addEventListener("click",start);
 $("requesterBtn").addEventListener("click",()=>chooseRole("requester"));
 $("helperBtn").addEventListener("click",()=>chooseRole("helper"));
 $("helperStartBtn").addEventListener("click",startHelper);
 $("refreshAll").addEventListener("click",()=>loadRequests("all"));
+document.querySelectorAll(".caseFilter").forEach(b=>b.addEventListener("click",()=>loadRequests("all",b.dataset.status||"")));
 $("refreshMine").addEventListener("click",()=>loadRequests("mine"));
 $("waitingStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","รอความช่วยเหลือ"),60)});
+$("helpStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","กำลังช่วยเหลือ"),60)});
+$("centerStat").addEventListener("click",()=>showPage("centers"));
+$("situationStat").addEventListener("click",()=>showPage("situations"));
+$("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
 
 let maps={},marks={},coords={ask:null,center:null,situation:null};
 function initMapFor(id){
@@ -386,7 +486,7 @@ function requestCard(x, mine=false){
     <div class="tag">👤 ${esc(x.requester_name||"ไม่ระบุชื่อ")}</div>
     ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
     ${note}
-    <p>📍 ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    <p>📍 ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
     <div class="small muted">🕒 แจ้งเมื่อ ${formatTime(x.submitted||x.created_at)}</div>
     <div class="small muted" style="margin-top:6px">แตะเพื่อดูรายละเอียด</div>
   </div>`;
@@ -408,7 +508,7 @@ function renderDetail(x){
     ${x.urgent?'<span class="tag" style="background:#ffe1e1;color:#a40000">🔴 เร่งด่วน</span>':""}
     <h3>${esc(x.need||"ไม่ได้ระบุความต้องการ")}</h3>
     <p>👤 ผู้ขอ: ${esc(x.requester_name||"ไม่ระบุชื่อ")}</p>
-    <p>📍 สถานที่: ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
+    <p>📍 พื้นที่: ${esc(x.province||"ไม่ระบุจังหวัด")} / ${esc(x.district||"ไม่ระบุอำเภอ/เขต")}</p><p>📍 สถานที่: ${esc(x.place||"ไม่ได้ระบุสถานที่")}</p>
     <div class="timeline">
       <div>🕒 <b>เวลาขอความช่วยเหลือ</b><br>${formatTime(x.submitted||x.created_at)}</div>
       <div>🙋 <b>เวลารับเคส / เริ่มช่วยเหลือ</b><br>${formatTime(x.accepted_at)}</div>
@@ -454,6 +554,7 @@ async function loadRequests(mode, filterStatus=""){
   try{
     let q="requests?select=*&order=created_at.desc&limit=100";
     if(mode==="mine")q+=`&requester_token=eq.${encodeURIComponent(reqToken)}`;
+    if(province)q+=`&province=eq.${encodeURIComponent(province)}`;
     if(filterStatus)q+=`&status=eq.${encodeURIComponent(filterStatus)}`;
     const rows=await api(q);
     const visible=(rows||[]).filter(x=>!x.hidden);
@@ -465,7 +566,7 @@ async function loadRequests(mode, filterStatus=""){
 
 async function loadSummary(){
   try{
-    const rows=await api("requests?select=status,hidden&order=created_at.desc&limit=1000");
+    const rows=await api(`requests?select=status,hidden,province&province=eq.${encodeURIComponent(province)}&order=created_at.desc&limit=1000`);
     const a=(rows||[]).filter(x=>!x.hidden);updateCounts(a);loadNationwide();
     const c=await api("help_centers?select=id&limit=1000");$("countCenter").textContent=(c||[]).length;
     const s=await api("situations?select=id&limit=1000");$("countSituation").textContent=(s||[]).length;
@@ -479,7 +580,7 @@ async function submitRequest(){
   try{
     await api("requests",{method:"POST",body:JSON.stringify({
       need,place,urgent:$("urgent").value==="true",status:"รอความช่วยเหลือ",
-      requester_token:reqToken,requester_name:name,submitted:new Date().toISOString(),
+      requester_token:reqToken,requester_name:name,province,district,submitted:new Date().toISOString(),
       created_at:new Date().toISOString(),lat:coords.ask?.lat??null,lng:coords.ask?.lng??null,hidden:false
     })});
     $("need").value="";$("place").value="";coords.ask=null;
@@ -568,8 +669,10 @@ let pollTimer=null;
 function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(()=>{loadSummary();const active=document.querySelector(".page.active")?.id;if(active==="all")loadRequests("all");if(active==="mine")loadRequests("mine");if(active==="centers")loadCenters();if(active==="situations")loadSituations()},10000)}
 
 updateHeader();
+initProvinceSelect();
+updateAreaPreview();
 loadAllInitial();
-openGate("role");
+if(!province||!district){openArea()}else{closeGate()}
 startPolling();
 })();
 </script>
