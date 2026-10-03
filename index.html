@@ -45,7 +45,9 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   font-size:24px;cursor:pointer;
 }
 .map-my-location-btn:active{transform:scale(.96)}
-.location-map-wrap{position:relative}.map-area-overlay{position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;color:#167a4a;border:1px solid #ccebd8;border-radius:14px;padding:9px 12px;font-weight:800;font-size:15px;line-height:1.35;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none;text-align:center}.map-area-overlay b{font-weight:900}
+.location-map-wrap{position:relative}.map-area-overlay{cursor:pointer;user-select:none;}
+.map-area-overlay:active{transform:scale(.99)}
+position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;color:#167a4a;border:1px solid #ccebd8;border-radius:14px;padding:9px 12px;font-weight:800;font-size:15px;line-height:1.35;box-shadow:0 2px 10px rgba(0,0,0,.12);pointer-events:none;text-align:center}.map-area-overlay b{font-weight:900}
 .current-location-dot{
   width:20px;height:20px;border-radius:50%;
   background:#1976d2;border:4px solid #fff;
@@ -199,7 +201,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
       <div><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">แสดงจุดช่วยเหลือทั้งหมดบนแผนที่</p></div>
       <span class="tag" id="centerBrowseCount">กำลังโหลด...</span>
     </div>
-    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><div class="map-area-overlay" id="centerBrowseMapAreaLabel">📍 พื้นที่: กำลังโหลด</div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
+    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><div class="map-area-overlay" id="centerBrowseMapAreaLabel" role="button" tabindex="0" title="กดเพื่อให้แผนที่ไปยังพื้นที่ที่เลือก">📍 พื้นที่: กำลังโหลด</div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div class="center-map-actions row" style="margin-top:10px">
       <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="centerMapShowAll">🌍 แสดงในพื้นที่</button>
@@ -624,6 +626,8 @@ $("centerMapMyLocation").addEventListener("click",locateCenterBrowse);
 $("centerBrowseMapMyLocationFloating").addEventListener("click",locateCenterBrowse);
 $("centerMapMyLocationFloating").addEventListener("click",()=>locate("center"));
 $("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
+$("centerBrowseMapAreaLabel").addEventListener("click",()=>focusCenterBrowseOnSelectedArea());
+$("centerBrowseMapAreaLabel").addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();focusCenterBrowseOnSelectedArea()}});
 $("openAddCenterForm").addEventListener("click",()=>{ $("addCenterCard").style.display="block"; setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80); window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'}); });
 $("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
 
@@ -979,6 +983,36 @@ function centerAreaMapPoint(){
     'สมุทรปราการ':[13.5991,100.5998]
   };
   return points[province]||[13.7563,100.5018];
+}
+async function focusCenterBrowseOnSelectedArea(){
+  const map=ensureCenterBrowseMap();
+  if(!map)return;
+  const selected=selectedCenterRows();
+  if(selected.length){
+    renderCenterBrowseMarkers(selected);
+    const valid=selected.filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
+    if(valid.length){
+      const bounds=L.latLngBounds(valid.map(x=>[Number(x.lat),Number(x.lng)]));
+      map.fitBounds(bounds.pad(0.25),{maxZoom:15});
+      if($('centerMapStatus')) $('centerMapStatus').textContent=`แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`;
+      return;
+    }
+  }
+  const [fallbackLat,fallbackLng]=centerAreaMapPoint();
+  map.setView([fallbackLat,fallbackLng],district?14:11);
+  if($('centerMapStatus')) $('centerMapStatus').textContent=`แสดงพื้นที่ ${province}${district?' / '+district:''} — ${selected.length?'มีจุดช่วยเหลือ':'ยังไม่มีจุดช่วยเหลือ'}`;
+  if(district && province){
+    try{
+      const q=encodeURIComponent(`${district}, ${province}, Thailand`);
+      const r=await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=th&q=${q}`,{headers:{Accept:'application/json'}});
+      if(r.ok){
+        const a=await r.json();
+        if(a[0] && Number.isFinite(Number(a[0].lat)) && Number.isFinite(Number(a[0].lon))){
+          map.setView([Number(a[0].lat),Number(a[0].lon)],13);
+        }
+      }
+    }catch(e){}
+  }
 }
 function setCenterBrowseToSelectedArea(){
   const map=ensureCenterBrowseMap();if(!map)return;
