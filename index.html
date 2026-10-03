@@ -636,7 +636,12 @@ $("openAddCenterForm").addEventListener("click",()=>{
   if(marks.center){marks.center.remove();marks.center=null}
   $("centerCoords").textContent="ยังไม่ได้เลือกตำแหน่ง • แตะบนแผนที่เพื่อปักหมุด";
   $("addCenterCard").style.display="block";
-  setTimeout(()=>{initMapFor("center");maps.center?.invalidateSize()},80);
+  setTimeout(async()=>{
+    const centerAddMap=initMapFor("center");
+    centerAddMap?.invalidateSize();
+    await focusCenterAddMapOnSelectedArea();
+    centerAddMap?.invalidateSize();
+  },80);
   window.scrollTo({top:$('addCenterCard').getBoundingClientRect().top+window.scrollY-12,behavior:'smooth'});
 });
 $("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
@@ -1050,6 +1055,15 @@ const TH_PROVINCE_MAP_POINTS={
 
 function centerAreaMapPoint(){
   return TH_PROVINCE_MAP_POINTS[province]||[13.7563,100.5018];
+}
+async function focusCenterAddMapOnSelectedArea(){
+  const map=maps.center || ensureCenterBrowseMap();
+  if(!map)return;
+  const [lat,lng]=centerAreaMapPoint();
+  // แผนที่เพิ่มจุดช่วยเหลือเริ่มจากพื้นที่ที่ผู้ใช้เลือก
+  // ไม่ใช้ตำแหน่ง GPS ปัจจุบันเป็นจุดเริ่มต้น
+  map.setView([lat,lng],district?14:11,{animate:false});
+  await geocodeSelectedArea(map);
 }
 async function geocodeSelectedArea(map){
   if(!province)return false;
