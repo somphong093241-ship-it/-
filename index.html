@@ -764,9 +764,17 @@ async function claim(id){
   try{
     const r=await rpc("claim_request",{p_helper_token:helpToken,p_id:Number(id),p_helper_name:name,p_helper_type:helperType,p_helper_affiliation:helperAffiliation});
     if(r?.ok===false){toast("เคสนี้ถูกรับไปแล้ว");return}
+
+    // หลังรับเคส ให้เปิด/คงหน้า “รายละเอียดเคส” ไว้ทันที
+    // ไม่โหลดรายการเคสก่อน เพราะอาจทำให้หน้ารายละเอียดถูกแทนด้วยหน้ารายการบนมือถือ
     toast("รับเคสแล้ว");
-    await Promise.all([loadRequests("all"), loadRequests("mine")]);
     await openCase(id);
+
+    // ค่อยอัปเดตรายการด้านหลังโดยไม่เปลี่ยนหน้า
+    setTimeout(()=>{
+      loadRequests("all");
+      loadRequests("mine");
+    },150);
   }catch(e){toast("รับเคสไม่สำเร็จ: "+e.message)}
 }
 
