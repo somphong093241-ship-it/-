@@ -202,9 +202,10 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><div class="map-area-overlay" id="centerBrowseMapAreaLabel">📍 พื้นที่: กำลังโหลด</div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div class="center-map-actions row" style="margin-top:10px">
       <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
-      <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
+      <button class="secondary" id="centerMapShowAll">🌍 แสดงในพื้นที่</button>
     </div>
     <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
+    <div class="small muted" style="margin-top:6px">แผนที่จะแสดงเฉพาะจุดช่วยเหลือในจังหวัด/อำเภอที่เลือก แม้พื้นที่นั้นจะมี 0 จุดก็ตาม</div>
     <div id="centerNearbyList" class="center-near-list"></div>
   </div>
 
@@ -959,10 +960,35 @@ function ensureCenterBrowseMap(lat=13.7563,lng=100.5018,zoom=12){
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(centerBrowseMap);
   return centerBrowseMap;
 }
+function centerAreaMatches(x){
+  const xp=String(x?.province||'').trim();
+  const xd=String(x?.district||'').trim();
+  if(!province || !xp) return false;
+  if(xp!==province) return false;
+  if(district && xd!==district) return false;
+  return true;
+}
+function selectedCenterRows(){ return (centerRows||[]).filter(centerAreaMatches); }
+function centerAreaMapPoint(){
+  const points={
+    'กรุงเทพมหานคร':[13.7563,100.5018],'เชียงใหม่':[18.7883,98.9853],'เชียงราย':[19.9105,99.8406],
+    'ลำพูน':[18.5745,99.0087],'ลำปาง':[18.2888,99.4909],'ขอนแก่น':[16.4322,102.8236],
+    'นครราชสีมา':[14.9799,102.0977],'อุดรธานี':[17.4138,102.7875],'ภูเก็ต':[7.8804,98.3923],
+    'สงขลา':[7.1898,100.5954],'ชลบุรี':[13.3611,100.9847],'พระนครศรีอยุธยา':[14.3532,100.5683],
+    'นครปฐม':[13.8199,100.0622],'นนทบุรี':[13.8621,100.5144],'ปทุมธานี':[14.0208,100.5250],
+    'สมุทรปราการ':[13.5991,100.5998]
+  };
+  return points[province]||[13.7563,100.5018];
+}
+function setCenterBrowseToSelectedArea(){
+  const map=ensureCenterBrowseMap();if(!map)return;
+  const [lat,lng]=centerAreaMapPoint();
+  map.setView([lat,lng],district?14:11);
+}
 function renderCenterBrowseMarkers(rows){
   const map=ensureCenterBrowseMap();if(!map)return;
   clearCenterBrowseMarkers();
-  const valid=(rows||[]).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
+  const valid=(rows||[]).filter(x=>centerAreaMatches(x)&&Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
   valid.forEach(x=>{
     const marker=L.marker([Number(x.lat),Number(x.lng)]).addTo(map);
     const phone=x.phone?`<br>☎️ ${esc(x.phone)}`:'';
@@ -1005,7 +1031,7 @@ function locateCenterBrowse(){
     if(centerUserMarker)centerUserMarker.remove();
     const icon=L.divIcon({className:'',html:'<div class="center-user-dot"></div>',iconSize:[20,20],iconAnchor:[10,10]});
     centerUserMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup('<b>📍 ตำแหน่งของฉัน</b>').openPopup();
-    const nearby=(centerRows||[]).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))
+    const nearby=(centerRows||[]).filter(centerAreaMatches).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))
       .map(x=>({...x,_distance:haversineKm(lat,lng,Number(x.lat),Number(x.lng))}))
       .sort((a,b)=>a._distance-b._distance);
     clearCenterBrowseMarkers();
@@ -1028,11 +1054,14 @@ function locateCenterBrowse(){
 }
 function showAllCenterBrowse(){
   if(!centerRows.length){loadCenters();return}
-  const map=ensureCenterBrowseMap();
   if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
-  renderCenterBrowseMarkers(centerRows);
+  const selected=selectedCenterRows();
+  setCenterBrowseToSelectedArea();
+  renderCenterBrowseMarkers(selected);
   renderNearbyCenterList([]);
-  $('centerMapStatus').textContent=`แสดงจุดช่วยเหลือทั้งหมด ${centerRows.length} จุด`;
+  $('centerMapStatus').textContent=selected.length
+    ? `แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`
+    : `พื้นที่ ${province}${district?' / '+district:''} ยังไม่มีจุดช่วยเหลือ`;
 }
 
 async function loadCenters(){
@@ -1041,12 +1070,14 @@ async function loadCenters(){
     const rows=await api("help_centers?select=*&order=created_at.desc&limit=1000");
     centerRows=rows||[];
     $("countCenter").textContent=centerRows.length;
-    if($("centerBrowseCount")) $("centerBrowseCount").textContent=`${centerRows.length} จุด`;
-    box.innerHTML=rows?.length?rows.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">ยังไม่มีจุดช่วยเหลือ</div>';
+    const selected=selectedCenterRows();
+    if($("centerBrowseCount")) $("centerBrowseCount").textContent=`${selected.length} จุด`;
+    box.innerHTML=selected.length?selected.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><p class="small muted">📍 ${esc(x.province||province)} / ${esc(x.district||district)}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">พื้นที่นี้ยังไม่มีจุดช่วยเหลือ</div>';
     const map=ensureCenterBrowseMap();
     setTimeout(()=>map?.invalidateSize(),80);
-    renderCenterBrowseMarkers(centerRows);
-    $("centerMapStatus").textContent=centerRows.length?`แสดงจุดช่วยเหลือ ${centerRows.length} จุดบนแผนที่`:'ยังไม่มีจุดช่วยเหลือ';
+    setCenterBrowseToSelectedArea();
+    renderCenterBrowseMarkers(selected);
+    $("centerMapStatus").textContent=selected.length?`แสดงจุดช่วยเหลือ ${selected.length} จุดใน ${province}${district?' / '+district:''}`:`พื้นที่ ${province}${district?' / '+district:''} ยังไม่มีจุดช่วยเหลือ`;
   }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`;if($("centerMapStatus"))$("centerMapStatus").textContent='โหลดจุดช่วยเหลือไม่ได้'}
 }
 async function addCenter(){
@@ -1056,6 +1087,7 @@ async function addCenter(){
     await api("help_centers",{method:"POST",body:JSON.stringify({
       name:nameV,service_type:$("centerType").value,phone:$("centerPhone").value.trim(),
       description:$("centerDesc").value.trim(),place:$("centerPlace").value.trim(),
+      province:province,district:district,
       lat:coords.center.lat,lng:coords.center.lng
     })});
     ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");toast("เพิ่มจุดช่วยเหลือแล้ว");centerRows=[];loadCenters();
