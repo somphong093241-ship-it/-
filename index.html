@@ -1368,14 +1368,32 @@ async function initWaterMap(){
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
 }
-async function thaiWaterJson(path){
-  const r=await fetch(THAIWATER_API+path,{headers:{"Accept":"application/json"}});
-  if(!r.ok)throw new Error("ThaiWater HTTP "+r.status);
-  return await r.json();
+const THAIWATER_PROVINCE_CODES={
+  "กรุงเทพมหานคร":"10","สมุทรปราการ":"11","นนทบุรี":"12","ปทุมธานี":"13","พระนครศรีอยุธยา":"14","อ่างทอง":"15","ลพบุรี":"16","สิงห์บุรี":"17","ชัยนาท":"18","สระบุรี":"19",
+  "ชลบุรี":"20","ระยอง":"21","จันทบุรี":"22","ตราด":"23","ฉะเชิงเทรา":"24","ปราจีนบุรี":"25","นครนายก":"26","สระแก้ว":"27",
+  "นครราชสีมา":"30","บุรีรัมย์":"31","สุรินทร์":"32","ศรีสะเกษ":"33","อุบลราชธานี":"34","ยโสธร":"35","ชัยภูมิ":"36","อำนาจเจริญ":"37","หนองบัวลำภู":"39","ขอนแก่น":"40","อุดรธานี":"41","เลย":"42","หนองคาย":"43","มหาสารคาม":"44","ร้อยเอ็ด":"45","กาฬสินธุ์":"46","สกลนคร":"47","นครพนม":"48","มุกดาหาร":"49","บึงกาฬ":"97",
+  "เชียงใหม่":"50","ลำพูน":"51","ลำปาง":"52","อุตรดิตถ์":"53","แพร่":"54","น่าน":"55","พะเยา":"56","เชียงราย":"57","แม่ฮ่องสอน":"58",
+  "นครสวรรค์":"60","อุทัยธานี":"61","กำแพงเพชร":"62","ตาก":"63","สุโขทัย":"64","พิษณุโลก":"65","พิจิตร":"66","เพชรบูรณ์":"67",
+  "ราชบุรี":"70","กาญจนบุรี":"71","สุพรรณบุรี":"72","นครปฐม":"73","สมุทรสาคร":"74","สมุทรสงคราม":"75","เพชรบุรี":"76","ประจวบคีรีขันธ์":"77",
+  "นครศรีธรรมราช":"80","กระบี่":"81","พังงา":"82","ภูเก็ต":"83","สุราษฎร์ธานี":"84","ระนอง":"85","ชุมพร":"86","สงขลา":"90","สตูล":"91","ตรัง":"92","พัทลุง":"93","ปัตตานี":"94","ยะลา":"95","นราธิวาส":"96"
+};
+const THAIWATER_CACHE_TTL=10*60*1000;
+function twCacheKey(){return `thaiwater-area-v2:${province||""}`}
+function twNorm(v){return String(v??"").replace(/^จังหวัด\s*/i,"").replace(/^เขต\s*/i,"").replace(/\s+/g,"").trim()}
+async function thaiWaterJson(path,opts={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const r=await fetch(THAIWATER_API+path,{headers:{"Accept":"application/json"},signal:controller.signal,cache:"no-store"});
+    if(!r.ok){
+      const err=new Error("ThaiWater HTTP "+r.status);err.status=r.status;throw err;
+    }
+    return await r.json();
+  }finally{clearTimeout(timer)}
 }
 function thaiWaterRows(json){
   if(!json)return [];
-  const candidates=[json?.waterlevel_data?.data,json?.rainfall_data?.data,json?.data,json?.result?.data,json?.waterlevel?.data,json?.rain?.data];
+  const candidates=[json?.waterlevel_data?.data,json?.rainfall_data?.data,json?.waterlevel?.data,json?.rain?.data,json?.data,json?.result?.data];
   for(const x of candidates)if(Array.isArray(x))return x;
   return [];
 }
@@ -1402,21 +1420,46 @@ function twTime(r){return twPick(r,["waterlevel_datetime","rainfall_datetime","r
 function twSituation(r){const n=twNum(r.situation_level);if(n===5)return "น้ำล้นตลิ่ง";if(n===4)return "วิกฤต / เสี่ยงน้ำท่วม";if(n===3)return "เตือนภัย";if(n===2)return "เฝ้าระวัง";if(n===1)return "ปกติ";return String(r.diff_wl_bank_text||r.situation_level||"")}
 function twAreaMatch(r){
   if(!province)return false;
-  const rp=twProvince(r); if(rp && rp!==province)return false;
-  if(district){const rd=twDistrict(r); if(rd && rd!==district)return false;}
-  return !rp || rp===province;
+  const rp=twProvince(r); if(rp && twNorm(rp)!==twNorm(province))return false;
+  if(district){const rd=twDistrict(r); if(rd && twNorm(rd)!==twNorm(district))return false;}
+  return !rp || twNorm(rp)===twNorm(province);
 }
 function fmtMm(v){const n=twNum(v);return n===null?"-":n.toFixed(1)+" มม."}
 function fmtM(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม."}
 function fmtCms(v){const n=twNum(v);return n===null?"-":n.toFixed(2)+" ม³/วินาที"}
 async function queryThaiWater(){
-  const [wlJson,rainJson]=await Promise.all([
-    thaiWaterJson("public/waterlevel_load"),
-    thaiWaterJson("public/rain_24h")
+  if(!province)return {wl:[],rain:[],cached:false};
+  const key=twCacheKey();
+  try{
+    const cached=JSON.parse(localStorage.getItem(key)||"null");
+    if(cached?.savedAt && Date.now()-cached.savedAt<THAIWATER_CACHE_TTL && cached.data){
+      const wl=(cached.data.wl||[]).filter(twAreaMatch), rain=(cached.data.rain||[]).filter(twAreaMatch);
+      return {wl,rain,cached:true,savedAt:cached.savedAt};
+    }
+  }catch{}
+  const code=THAIWATER_PROVINCE_CODES[province];
+  if(!code)throw new Error("ยังไม่มีรหัสจังหวัดของ ThaiWater สำหรับ "+province);
+  const results=await Promise.allSettled([
+    thaiWaterJson(`public/waterlevel?province_code=${encodeURIComponent(code)}`),
+    thaiWaterJson(`public/rain_24h?province_code=${encodeURIComponent(code)}`)
   ]);
-  const wl=thaiWaterRows(wlJson).filter(twAreaMatch);
-  const rain=thaiWaterRows(rainJson).filter(twAreaMatch);
-  return {wl,rain};
+  const wlErr=results[0].status==="rejected"?results[0].reason:null;
+  const rainErr=results[1].status==="rejected"?results[1].reason:null;
+  let wl=results[0].status==="fulfilled"?thaiWaterRows(results[0].value):[];
+  let rain=results[1].status==="fulfilled"?thaiWaterRows(results[1].value):[];
+  if(wlErr && rainErr){
+    try{
+      const cached=JSON.parse(localStorage.getItem(key)||"null");
+      if(cached?.data){
+        wl=cached.data.wl||[];rain=cached.data.rain||[];
+        return {wl:wl.filter(twAreaMatch),rain:rain.filter(twAreaMatch),cached:true,stale:true,error:wlErr};
+      }
+    }catch{}
+    throw wlErr||rainErr;
+  }
+  const data={wl,rain};
+  try{localStorage.setItem(key,JSON.stringify({savedAt:Date.now(),data}))}catch{}
+  return {wl:wl.filter(twAreaMatch),rain:rain.filter(twAreaMatch),cached:false,partial:!!(wlErr||rainErr),errors:[wlErr,rainErr]};
 }
 function waterStationPopup(a){
   const name=twStationName(a),prov=twProvince(a),amp=twDistrict(a),tamb=twTambon(a);
@@ -1452,8 +1495,23 @@ function renderWaterStations(waterData){
   if(summary)summary.innerHTML=`<div class="grid"><div class="stat"><b>🌧️ ฝนสูงสุด 24 ชม.</b><strong>${maxRain.toFixed(1)} มม.</strong></div><div class="stat"><b>💧 สถานีระดับน้ำ</b><strong>${wl.length} จุด</strong></div><div class="stat"><b>🚨 ล้นตลิ่ง/ระดับ 5</b><strong>${over} จุด</strong></div></div>`;
 }
 async function loadThaiWater(){
-  try{const data=await queryThaiWater();renderWaterStations(data);}
-  catch(e){$("waterStationList").innerHTML=`<div class='empty'>เชื่อมต่อ ThaiWater ไม่สำเร็จในขณะนี้<br><small>${esc(e.message||"")}</small></div>`;$("waterDataCount").textContent="โหลดข้อมูลภายนอกไม่ได้";}
+  try{
+    const data=await queryThaiWater();
+    renderWaterStations(data);
+    const note=$("waterDataCount");
+    if(note){
+      const base=`ระดับน้ำ ${data.wl.length} จุด • ฝน ${data.rain.length} จุด`;
+      note.textContent=data.cached?(data.stale?base+" • ใช้ข้อมูลล่าสุดที่เก็บไว้":"ข้อมูลล่าสุด • "+base):base;
+    }
+    if(data.partial){
+      const failed=data.errors?.filter(Boolean).map(e=>e.status||e.message).join(", ");
+      const box=$("waterStationList");
+      if(box && !data.wl.length && !data.rain.length)box.insertAdjacentHTML("afterbegin",`<div class='small muted'>⚠️ ThaiWater ตอบกลับไม่ครบ (${esc(failed||"ชั่วคราว")})</div>`);
+    }
+  }catch(e){
+    $("waterStationList").innerHTML=`<div class='empty'>เชื่อมต่อข้อมูลน้ำภายนอกไม่สำเร็จในขณะนี้<br><small>${esc(e.message||"")}</small><br><span class='small muted'>ระบบจะไม่แสดงว่า “ไม่มีน้ำ” หากแหล่งข้อมูลภายนอกไม่ตอบกลับ</span></div>`;
+    $("waterDataCount").textContent="เชื่อมต่อข้อมูลภายนอกไม่ได้";
+  }
 }
 async function loadWaterRoadReports(){
   const box=$("waterRoadList");
@@ -1471,6 +1529,7 @@ async function loadWaterRoadReports(){
 async function loadWaterPage(force=false){
   if(waterLoading&&!force)return; waterLoading=true;
   try{
+    if(force){try{localStorage.removeItem(twCacheKey())}catch{}}
     waterSetLabel();initWaterSelectors();await initWaterMap();
     if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
     if(waterMap)focusWaterMapOnSelectedArea();
