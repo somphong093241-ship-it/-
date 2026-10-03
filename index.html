@@ -51,6 +51,7 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
   background:#1976d2;border:4px solid #fff;
   box-shadow:0 1px 6px rgba(0,0,0,.35);
 }
+ .center-browse-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.center-browse-actions button{flex:1;min-width:180px}.center-map-wrap{position:relative}.center-browse-map{height:min(62vh,520px);min-height:320px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.center-map-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10600;display:none;align-items:flex-end;justify-content:center;padding:12px}.center-map-backdrop.show{display:flex}.center-map-card{width:min(820px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.center-map-card h2{margin-top:0}.center-near-list{display:grid;gap:8px;margin-top:10px}.center-near-item{background:#f6fafc;border:1px solid #dbe7ed;border-radius:14px;padding:11px}.center-near-item b{display:block;margin-bottom:3px}.center-distance{font-weight:800;color:#087a43}.center-user-dot{width:20px;height:20px;border-radius:50%;background:#1976d2;border:4px solid #fff;box-shadow:0 1px 7px rgba(0,0,0,.35)}
 </style>
 </head>
 <body>
@@ -202,6 +203,15 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
     <div id="centerMap" class="map"></div><div id="centerCoords" class="coords">ยังไม่ได้เลือกตำแหน่ง</div>
     <div class="row" style="margin-top:10px"><button class="secondary" id="centerLocate">📍 ใช้ตำแหน่งปัจจุบัน</button><button class="primary" id="addCenter">เพิ่มจุดช่วยเหลือ</button></div>
   </div>
+  <div class="card">
+    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><span class="tag">ดูจุดบนแผนที่</span></div>
+    <p class="muted" style="margin:8px 0 0">กดเพื่อดูจุดช่วยเหลือทั้งหมดบนแผนที่ หรือค้นหาจุดที่อยู่ใกล้คุณ</p>
+    <div class="center-browse-actions">
+      <button class="primary" id="openCenterMap">🗺️ เปิดแผนที่</button>
+      <button class="secondary" id="findNearbyCenters">📍 ค้นหาใกล้ฉัน</button>
+    </div>
+    <div id="nearbyCenterSummary" class="small muted" style="margin-top:8px"></div>
+  </div>
   <div class="card"><h2>📍 จุดที่มีอยู่</h2><div id="centerList"></div></div>
 </section>
 
@@ -317,6 +327,21 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
       <button class="secondary" id="closeDetail">✕ ปิด</button>
     </div>
     <div id="detailBody"></div>
+  </div>
+</div>
+<div id="centerMapBackdrop" class="center-map-backdrop" role="dialog" aria-modal="true" aria-labelledby="centerMapTitle">
+  <div class="center-map-card">
+    <div class="between">
+      <h2 id="centerMapTitle">🗺️ แผนที่จุดช่วยเหลือ</h2>
+      <button class="secondary" id="closeCenterMap">✕ ปิด</button>
+    </div>
+    <div class="center-map-actions row" style="margin-top:8px">
+      <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
+    </div>
+    <div id="centerBrowseMap" class="center-browse-map"></div>
+    <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
+    <div id="centerNearbyList" class="center-near-list"></div>
   </div>
 </div>
 <div id="toast" class="toast"></div>
@@ -587,11 +612,18 @@ document.querySelectorAll(".caseFilter").forEach(b=>b.addEventListener("click",(
 $("refreshMine").addEventListener("click",()=>loadRequests("mine"));
 $("waitingStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","รอความช่วยเหลือ"),60)});
 $("helpStat").addEventListener("click",()=>{showPage("all");setTimeout(()=>loadRequests("all","กำลังช่วยเหลือ"),60)});
-$("centerStat").addEventListener("click",()=>showPage("centers"));
+$("centerStat").addEventListener("click",()=>showPage("centers"));$("openCenterMap").addEventListener("click",openCenterMapModal);
+$("findNearbyCenters").addEventListener("click",async()=>{await openCenterMapModal();locateCenterBrowse()});
+$("closeCenterMap").addEventListener("click",closeCenterMapModal);
+$("centerMapMyLocation").addEventListener("click",locateCenterBrowse);
+$("centerMapShowAll").addEventListener("click",showAllCenterBrowse);
+$("centerMapBackdrop").addEventListener("click",e=>{if(e.target===$("centerMapBackdrop"))closeCenterMapModal()});
+
 $("situationStat").addEventListener("click",()=>showPage("situations"));
 $("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
 
 let maps={},marks={},coords={ask:null,center:null,situation:null};
+let centerBrowseMap=null, centerBrowseMarkers=[], centerUserMarker=null, centerRows=[];
 let locationPickerBackup={ask:null,place:""};
 function initMapFor(id){
   if(typeof L==="undefined")return;
@@ -904,11 +936,104 @@ async function loadNationwide(){
   }
 }
 
+function haversineKm(lat1,lng1,lat2,lng2){
+  const R=6371,rad=Math.PI/180;
+  const dLat=(lat2-lat1)*rad,dLng=(lng2-lng1)*rad;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*rad)*Math.cos(lat2*rad)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(a));
+}
+function clearCenterBrowseMarkers(){
+  centerBrowseMarkers.forEach(m=>m.remove());centerBrowseMarkers=[];
+}
+function ensureCenterBrowseMap(lat=13.7563,lng=100.5018,zoom=12){
+  if(typeof L==='undefined')return null;
+  if(centerBrowseMap){centerBrowseMap.invalidateSize();return centerBrowseMap}
+  centerBrowseMap=L.map('centerBrowseMap').setView([lat,lng],zoom);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(centerBrowseMap);
+  return centerBrowseMap;
+}
+function renderCenterBrowseMarkers(rows){
+  const map=ensureCenterBrowseMap();if(!map)return;
+  clearCenterBrowseMarkers();
+  const valid=(rows||[]).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)));
+  valid.forEach(x=>{
+    const marker=L.marker([Number(x.lat),Number(x.lng)]).addTo(map);
+    const phone=x.phone?`<br>☎️ ${esc(x.phone)}`:'';
+    const place=x.place?`<br>📍 ${esc(x.place)}`:'';
+    marker.bindPopup(`<b>🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><br>${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}${phone}${place}`);
+    centerBrowseMarkers.push(marker);
+  });
+  if(valid.length){
+    const bounds=L.latLngBounds(valid.map(x=>[Number(x.lat),Number(x.lng)]));
+    map.fitBounds(bounds.pad(0.18),{maxZoom:15});
+  }
+}
+function renderNearbyCenterList(rows){
+  const box=$('centerNearbyList');if(!box)return;
+  if(!rows.length){box.innerHTML='<div class="empty">ยังไม่พบจุดช่วยเหลือที่มีพิกัด</div>';return}
+  box.innerHTML=rows.slice(0,10).map((x,i)=>{
+    const d=Number.isFinite(x._distance)?`<span class="center-distance">${x._distance<1?(x._distance*1000).toFixed(0)+' เมตร':x._distance.toFixed(2)+' กม.'}</span>`:'';
+    return `<div class="center-near-item"><b>${i+1}. 🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><span class="tag">${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}</span> ${d}${x.place?`<div class="small muted">📍 ${esc(x.place)}</div>`:''}</div>`;
+  }).join('');
+}
+async function openCenterMapModal(){
+  $('centerMapBackdrop').classList.add('show');
+  const map=ensureCenterBrowseMap();
+  setTimeout(()=>map?.invalidateSize(),80);
+  if(!centerRows.length){
+    try{centerRows=await api('help_centers?select=*&order=created_at.desc&limit=1000');}
+    catch(e){$('centerMapStatus').textContent='โหลดจุดช่วยเหลือไม่ได้: '+e.message;return}
+  }
+  renderCenterBrowseMarkers(centerRows);
+  $('centerMapStatus').textContent=`มีจุดช่วยเหลือ ${centerRows.length} จุด`;
+}
+function closeCenterMapModal(){$('centerMapBackdrop').classList.remove('show')}
+function locateCenterBrowse(){
+  if(!navigator.geolocation){toast('อุปกรณ์ไม่รองรับตำแหน่ง');return}
+  $('centerMapStatus').textContent='กำลังค้นหาจุดช่วยเหลือใกล้คุณ...';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude,lng=pos.coords.longitude;
+    const map=ensureCenterBrowseMap(lat,lng,15);
+    map.setView([lat,lng],14);
+    if(centerUserMarker)centerUserMarker.remove();
+    const icon=L.divIcon({className:'',html:'<div class="center-user-dot"></div>',iconSize:[20,20],iconAnchor:[10,10]});
+    centerUserMarker=L.marker([lat,lng],{icon}).addTo(map).bindPopup('<b>📍 ตำแหน่งของฉัน</b>').openPopup();
+    const nearby=(centerRows||[]).filter(x=>Number.isFinite(Number(x.lat))&&Number.isFinite(Number(x.lng)))
+      .map(x=>({...x,_distance:haversineKm(lat,lng,Number(x.lat),Number(x.lng))}))
+      .sort((a,b)=>a._distance-b._distance);
+    clearCenterBrowseMarkers();
+    nearby.forEach(x=>{
+      const marker=L.marker([Number(x.lat),Number(x.lng)]).addTo(map);
+      marker.bindPopup(`<b>🏥 ${esc(x.name||'จุดช่วยเหลือ')}</b><br>${esc(x.service_type||'ศูนย์ชุมชน/อื่นๆ')}<br><b>${x._distance<1?(x._distance*1000).toFixed(0)+' เมตร':x._distance.toFixed(2)+' กม.'}</b>`);
+      centerBrowseMarkers.push(marker);
+    });
+    if(nearby.length){
+      const top=nearby.slice(0,10);
+      const bounds=L.latLngBounds([[lat,lng],...top.map(x=>[Number(x.lat),Number(x.lng)])]);
+      map.fitBounds(bounds.pad(0.18),{maxZoom:15});
+      $('centerMapStatus').textContent=`พบจุดช่วยเหลือ ${nearby.length} จุด • เรียงจากใกล้ไปไกล`;
+      renderNearbyCenterList(nearby);
+    }else{
+      $('centerMapStatus').textContent='ยังไม่มีจุดช่วยเหลือที่มีพิกัด';
+      renderNearbyCenterList([]);
+    }
+  },()=>{toast('ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง');$('centerMapStatus').textContent='ไม่สามารถใช้ตำแหน่งปัจจุบันได้'}, {enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+}
+function showAllCenterBrowse(){
+  if(!centerRows.length){openCenterMapModal();return}
+  const map=ensureCenterBrowseMap();
+  if(centerUserMarker){centerUserMarker.remove();centerUserMarker=null}
+  renderCenterBrowseMarkers(centerRows);
+  renderNearbyCenterList([]);
+  $('centerMapStatus').textContent=`แสดงจุดช่วยเหลือทั้งหมด ${centerRows.length} จุด`;
+}
+
 async function loadCenters(){
   const box=$("centerList");box.innerHTML='<div class="empty">กำลังโหลด...</div>';
   try{
-    const rows=await api("help_centers?select=*&order=created_at.desc&limit=200");
-    $("countCenter").textContent=(rows||[]).length;
+    const rows=await api("help_centers?select=*&order=created_at.desc&limit=1000");
+    centerRows=rows||[];
+    $("countCenter").textContent=centerRows.length;
     box.innerHTML=rows?.length?rows.map(x=>`<div class="center"><h3>🏥 ${esc(x.name)}</h3><span class="tag">${esc(x.service_type||"ศูนย์ชุมชน/อื่นๆ")}</span>${x.phone?`<span class="tag">☎️ ${esc(x.phone)}</span>`:""}<p>${esc(x.description||"")}</p><p>📍 ${esc(x.place||"")}</p><div class="small muted">${Number(x.lat).toFixed(5)}, ${Number(x.lng).toFixed(5)}</div></div>`).join(""):'<div class="empty">ยังไม่มีจุดช่วยเหลือ</div>';
   }catch(e){box.innerHTML=`<div class="empty">โหลดไม่ได้<br>${esc(e.message)}</div>`}
 }
@@ -921,7 +1046,7 @@ async function addCenter(){
       description:$("centerDesc").value.trim(),place:$("centerPlace").value.trim(),
       lat:coords.center.lat,lng:coords.center.lng
     })});
-    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");toast("เพิ่มจุดช่วยเหลือแล้ว");loadCenters();
+    ["centerName","centerPhone","centerDesc","centerPlace"].forEach(id=>$(id).value="");toast("เพิ่มจุดช่วยเหลือแล้ว");centerRows=[];loadCenters();
   }catch(e){toast("เพิ่มไม่สำเร็จ: "+e.message)}
 }
 $("addCenter").addEventListener("click",addCenter);
