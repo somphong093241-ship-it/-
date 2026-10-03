@@ -260,7 +260,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
     </div>
   </div>
   <div class="card">
-    <div class="between"><div><h2 style="margin:0">🗺️ แผนที่น้ำ</h2><p class="muted" style="margin:6px 0 0">แผนที่จะย้ายไปยังจังหวัด/อำเภอที่เลือก ไม่ใช้ GPS เป็นศูนย์กลาง</p></div><span class="tag" id="waterMapStatus">กำลังโหลด...</span></div>
+    <div class="between"><div><h2 style="margin:0">🗺️ แผนที่น้ำ</h2><p class="muted" style="margin:6px 0 0">ใช้แผนที่พื้นฐาน GISTDA Sphere และชั้นพื้นที่น้ำท่วมจาก GISTDA</p></div><span class="tag" id="waterMapStatus">กำลังโหลด...</span></div>
     <div class="location-map-wrap" style="margin-top:10px;position:relative"><div id="waterMap" class="center-browse-map" style="height:520px"></div><div class="map-area-overlay" id="waterMapAreaLabel">📍 พื้นที่: กำลังโหลด</div></div>
     <div class="row" style="margin-top:10px">
       <button class="secondary" id="waterMyLocation">📍 ตำแหน่งปัจจุบัน</button>
@@ -275,7 +275,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
         <button class="secondary gistda-period" data-period="30days">30 วันล่าสุด</button>
       </div>
       <div class="small" id="gistdaFloodLastCheck" style="margin-top:9px;font-weight:700">🕒 ตรวจสอบข้อมูลล่าสุด: กำลังโหลด...</div>
-      <div class="small muted" id="gistdaFloodSourceTime" style="margin-top:4px">📡 แหล่งข้อมูล: GISTDA • ระบบตรวจสอบชั้นข้อมูลอัตโนมัติทุก 5 นาที</div>
+      <div class="small muted" id="gistdaFloodSourceTime" style="margin-top:4px">📡 แหล่งข้อมูล: GISTDA Sphere + GISTDA Disaster Platform • ตรวจสอบชั้นข้อมูลทุก 5 นาที</div>
       <div style="margin-top:10px;padding:10px;border:1px solid #d8e8f5;border-radius:10px;background:#fff">
         <div style="font-weight:800;margin-bottom:7px">🎨 ระดับน้ำ / ความรุนแรงบนแผนที่</div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -1500,8 +1500,37 @@ function startGistdaAutoRefresh(){
 async function initWaterMap(){
   const el=$("waterMap"); if(!el||typeof L==="undefined")return;
   if(waterMap){waterMap.invalidateSize();if(!gistdaFloodLayer)addGistdaFloodLayer(gistdaFloodPeriod);loadWaterSeverityOverlay();return;}
-  waterMap=L.map(el).setView(centerAreaMapPoint(),district?13:11);
-  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(waterMap);
+  waterMap=L.map(el,{zoomControl:true}).setView(centerAreaMapPoint(),district?13:11);
+
+  // ใช้แผนที่พื้นฐาน GISTDA Sphere ให้ใกล้เคียงกับหน้า Flood ของ GISTDA
+  // และคงชั้นน้ำท่วม GISTDA ไว้ด้านบนตามช่วงเวลาที่เลือก
+  const gistdaSphereBase=L.tileLayer(
+    "https://msq.sphere.gistda.or.th/tms/1.0.0/sphere_hybrid_en/EPSG3857/{z}/{x}/{y}.jpeg",
+    {
+      tms:true,
+      tileSize:256,
+      minZoom:0,
+      maxZoom:18,
+      opacity:1,
+      attribution:"© GISTDA Sphere • © OpenStreetMap contributors"
+    }
+  ).addTo(waterMap);
+
+  // ถ้า GISTDA Sphere โหลดไม่ได้ ให้กลับไปใช้ OSM อัตโนมัติ
+  let sphereTileErrors=0;
+  gistdaSphereBase.on("tileerror",()=>{
+    sphereTileErrors++;
+    if(sphereTileErrors>=3 && !waterMap.__gistdaBaseFallback){
+      waterMap.__gistdaBaseFallback=true;
+      try{waterMap.removeLayer(gistdaSphereBase)}catch{}
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{
+        attribution:"© OpenStreetMap contributors"
+      }).addTo(waterMap);
+      const st=$("waterMapStatus");
+      if(st)st.textContent="ใช้แผนที่สำรอง • ชั้นน้ำท่วม GISTDA ยังทำงาน";
+    }
+  });
+
   waterMap.invalidateSize();
   await geocodeSelectedArea(waterMap);
   addGistdaFloodLayer(gistdaFloodPeriod);
