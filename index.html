@@ -54,6 +54,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
   box-shadow:0 1px 6px rgba(0,0,0,.35);
 }
  .center-browse-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:10px}.center-browse-actions button{flex:1;min-width:180px}.center-map-wrap{position:relative}.center-browse-map{height:min(62vh,520px);min-height:320px;border-radius:18px;overflow:hidden;border:1px solid var(--line);margin-top:10px}.center-map-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:10600;display:none;align-items:flex-end;justify-content:center;padding:12px}.center-map-backdrop.show{display:flex}.center-map-card{width:min(820px,100%);max-height:94vh;overflow:auto;background:#fff;border-radius:24px;padding:18px;box-shadow:0 15px 50px #0005}.center-map-card h2{margin-top:0}.center-near-list{display:grid;gap:8px;margin-top:10px}.center-near-item{background:#f6fafc;border:1px solid #dbe7ed;border-radius:14px;padding:11px}.center-near-item b{display:block;margin-bottom:3px}.center-distance{font-weight:800;color:#087a43}.center-nav-btn{display:block;width:100%;box-sizing:border-box;margin-top:9px;min-height:46px;border:0;border-radius:12px;background:#0f6f91;color:#fff;font-weight:800;font-size:16px;padding:10px 12px;text-decoration:none;text-align:center}.center-nav-btn:active{transform:scale(.99)}.center-user-dot{width:20px;height:20px;border-radius:50%;background:#1976d2;border:4px solid #fff;box-shadow:0 1px 7px rgba(0,0,0,.35)}
+.water-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.water-legend span{padding:6px 10px;border-radius:999px;background:#eef5f8;font-size:13px}.water-danger{color:#b42318;font-weight:800}.water-warn{color:#a15c00;font-weight:800}.water-ok{color:#18794e;font-weight:800}.water-station{background:#f8fbfc;border:1px solid var(--line);border-radius:16px;padding:12px;margin:8px 0}.water-station h3{margin:0 0 6px}.water-road{background:#fff7f5;border:1px solid #ffd4cc;border-radius:16px;padding:12px;margin:8px 0}.water-source{font-size:12px;color:#667085;margin-top:5px}
 </style>
 
 <style>
@@ -80,7 +81,8 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
   <button data-page="all">🌍 เคสทั้งหมด</button>
   <button data-page="mine">👤 เคสของฉัน</button>
   <button data-page="centers">🏥 จุดช่วยเหลือ</button>
-  <button data-page="situations">🌊 สถานการณ์</button>
+  <button data-page="water">🌊 ระดับน้ำ / น้ำท่วม</button>
+  <button data-page="situations">📢 สถานการณ์</button>
 </nav>
 
 <main>
@@ -104,8 +106,11 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
       <button class="stat blue" id="centerStat" type="button" style="text-align:left;width:100%">
         <span>🏥 จุดช่วยเหลือ</span><b id="countCenter">0</b><span>จุด • กดเพื่อดูรายละเอียด</span>
       </button>
+      <button class="stat" id="waterStat" type="button" style="text-align:left;width:100%">
+        <span>🌊 ระดับน้ำ / น้ำท่วม</span><b id="countWater">0</b><span>สถานี/จุดข้อมูล • กดเพื่อดูแผนที่</span>
+      </button>
       <button class="stat" id="situationStat" type="button" style="text-align:left;width:100%">
-        <span>🌊 สถานการณ์</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
+        <span>📢 สถานการณ์จากประชาชน</span><b id="countSituation">0</b><span>รายการ • กดเพื่อดูรายละเอียด</span>
       </button>
     </div>
   </div>
@@ -237,6 +242,33 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
   <div class="card"><h2>📍 จุดที่มีอยู่</h2><div id="centerList"></div></div>
 </section>
 
+<section id="water" class="page">
+  <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaWater">📍 พื้นที่: กำลังโหลด</span></div>
+  <div class="card">
+    <div class="between"><div><h2 style="margin:0">🌊 ระดับน้ำ / น้ำท่วม</h2><p class="muted" style="margin:6px 0 0">เลือกพื้นที่เพื่อดูข้อมูลน้ำและชั้นแผนที่น้ำท่วม</p></div><span class="tag" id="waterDataCount">กำลังโหลด...</span></div>
+    <div class="grid" style="margin-top:12px">
+      <div><label>ภาค</label><select id="waterRegion"></select></div>
+      <div><label>จังหวัด</label><select id="waterProvince"></select></div>
+      <div><label>อำเภอ / เขต</label><select id="waterDistrict"></select></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="primary" id="waterApplyArea">🌍 แสดงพื้นที่ที่เลือก</button>
+      <button class="secondary" id="waterRefresh">↻ รีเฟรชข้อมูลน้ำ</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="between"><div><h2 style="margin:0">🗺️ แผนที่น้ำ</h2><p class="muted" style="margin:6px 0 0">แผนที่จะย้ายไปยังจังหวัด/อำเภอที่เลือก ไม่ใช้ GPS เป็นศูนย์กลาง</p></div><span class="tag" id="waterMapStatus">กำลังโหลด...</span></div>
+    <div class="location-map-wrap" style="margin-top:10px;position:relative"><div id="waterMap" class="center-browse-map" style="height:520px"></div><div class="map-area-overlay" id="waterMapAreaLabel">📍 พื้นที่: กำลังโหลด</div></div>
+    <div class="row" style="margin-top:10px">
+      <button class="secondary" id="waterMyLocation">📍 ตำแหน่งปัจจุบัน</button>
+      <button class="secondary" id="waterShowArea">🎯 กลับพื้นที่ที่เลือก</button>
+    </div>
+    <div class="small muted" style="margin-top:8px">🔵 จุดสถานี/ข้อมูลน้ำจาก GISTDA • 🟦 ชั้นพื้นที่น้ำท่วมจากบริการแผนที่ GISTDA • 🚧 ถนนผ่านไม่ได้จะแสดงเฉพาะเมื่อมีรายงานที่ระบุสถานะโดยตรง</div>
+  </div>
+  <div class="card"><h2>💧 ข้อมูลสถานีในพื้นที่</h2><div id="waterStationList"></div></div>
+  <div class="card"><h2>🚧 ถนน/พื้นที่สัญจรไม่ได้</h2><div id="waterRoadList"><div class="empty">กำลังค้นหารายงานที่ระบุว่า “รถผ่านไม่ได้”...</div></div><p class="small muted" style="margin-bottom:0">ส่วนนี้ไม่เดาจากระดับน้ำ แต่ใช้เฉพาะรายงานที่มีข้อความระบุว่าสัญจรไม่ได้/รถผ่านไม่ได้ในข้อมูลของระบบ</p></div>
+</section>
+
 <section id="situations" class="page">
   <div style="margin-bottom:12px"><span class="area-pill" id="activeAreaSituations">📍 พื้นที่: กำลังโหลด</span></div>
   <div class="card">
@@ -355,6 +387,7 @@ position:absolute;top:12px;left:12px;right:12px;z-index:700;background:#eaf8ef;c
 <div id="toast" class="toast"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/esri-leaflet@3.0.16/dist/esri-leaflet.js"></script>
 <script>
 (function(){
 "use strict";
@@ -497,7 +530,7 @@ function initProvinceSelect(){populateProvinceSelect(true);loadDistrictsForProvi
 function areaLabel(){return region?(region+(province?` / ${province}`:"")+(district?` / ${district}`:"")):"ยังไม่ได้เลือกพื้นที่"}
 function updateAreaPreview(){
   const t=areaLabel();
-  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation","centerBrowseMapAreaLabel"].forEach(id=>{
+  ["areaPreview","roleAreaText","requestAreaText","activeAreaHome","activeAreaAsk","activeAreaAll","activeAreaMine","activeAreaCenters","activeAreaSituations","activeAreaNation","activeAreaWater","centerBrowseMapAreaLabel"].forEach(id=>{
     const el=$(id);if(el)el.textContent=`📍 พื้นที่: ${t}`;
   });
 }
@@ -585,6 +618,7 @@ function showPage(id){
   if(id==="all")loadRequests("all");
   if(id==="mine")loadRequests("mine");
   if(id==="centers")loadCenters();
+  if(id==="water")loadWaterPage();
   if(id==="situations")loadSituations();
   window.scrollTo(0,0);
 }
@@ -647,9 +681,15 @@ $("openAddCenterForm").addEventListener("click",()=>{
 $("closeAddCenterForm").addEventListener("click",()=>$("addCenterCard").style.display="none");
 
 $("situationStat").addEventListener("click",()=>showPage("situations"));
+$("waterStat").addEventListener("click",()=>showPage("water"));
+$("waterApplyArea").addEventListener("click",()=>loadWaterPage(true));
+$("waterRefresh").addEventListener("click",()=>loadWaterPage(true));
+$("waterShowArea").addEventListener("click",()=>focusWaterMapOnSelectedArea());
+$("waterMyLocation").addEventListener("click",()=>locateWaterUser());
 $("nationwideStat").addEventListener("click",()=>showPage("nationwide"));
 
 let maps={},marks={},coords={ask:null,center:null,situation:null};
+let waterMap=null,waterFloodLayer=null,waterStationMarkers=[],waterRoadMarkers=[],waterAreaUserMarker=null;
 let centerBrowseMap=null, centerBrowseMarkers=[], centerUserMarker=null, centerRows=[];
 let locationPickerBackup={ask:null,place:""};
 function initMapFor(id){
@@ -1251,6 +1291,117 @@ $("addSituation").addEventListener("click",addSituation);
 
 async function loadAllInitial(){await loadSummary();if(role==="requester")showPage("ask");else if(role==="helper")showPage("all")}
 let pollTimer=null;
+
+const GISTDA_WATER_POINTS="https://gistdaportal.gistda.or.th/arcgis/rest/services/Hosted/GISTDA_FLOOD/FeatureServer/0/query";
+const GISTDA_FLOOD_MAP="https://gistdaportal.gistda.or.th/arcgis/rest/services/app/GISTDA_flood/MapServer";
+let waterLoading=false;
+function initWaterSelectors(){
+  const r=$("waterRegion"),p=$("waterProvince"),d=$("waterDistrict"); if(!r||!p||!d)return;
+  r.innerHTML='<option value="">-- เลือกภาค --</option>'+Object.keys(TH_REGIONS).map(x=>`<option>${esc(x)}</option>`).join("");
+  r.value=region||"";
+  const plist=TH_REGIONS[region]||[];
+  p.innerHTML='<option value="">-- เลือกจังหวัด --</option>'+plist.map(x=>`<option>${esc(x)}</option>`).join("");
+  p.value=province||"";
+  d.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';
+  d.disabled=true;
+  r.onchange=()=>{ region=r.value; province=""; district=""; p.innerHTML='<option value="">-- เลือกจังหวัด --</option>'+(TH_REGIONS[region]||[]).map(x=>`<option>${esc(x)}</option>`).join(""); d.innerHTML='<option value="">-- เลือกอำเภอ / เขต --</option>';d.disabled=true;updateAreaPreview();waterSetLabel(); };
+  p.onchange=async()=>{province=p.value;district="";updateAreaPreview();waterSetLabel();await loadWaterDistrictOptions();};
+  d.onchange=()=>{district=d.value;updateAreaPreview();waterSetLabel();};
+  loadWaterDistrictOptions();
+}
+async function loadWaterDistrictOptions(){
+  const d=$("waterDistrict"); if(!d||!province)return;
+  d.disabled=true; d.innerHTML='<option value="">-- กำลังโหลดอำเภอ / เขต --</option>';
+  try{
+    const [provs,all]=await Promise.all([getProvinceData(),getDistrictData()]);
+    const row=provs.find(x=>String(x.name_th??x.name?.th??"").trim()===province);
+    const pid=row?Number(row.id):null;
+    const rows=pid?all.filter(x=>Number(x.province_id)===pid):[];
+    d.innerHTML='<option value="">-- ทั้งจังหวัด --</option>'+rows.map(x=>{const n=String(x.name_th??x.name?.th??"").trim();return n?`<option>${esc(n)}</option>`:""}).join("");
+    if(district && rows.some(x=>String(x.name_th??x.name?.th??"").trim()===district))d.value=district;else if(!district)d.value="";
+    d.disabled=false;
+  }catch(e){d.innerHTML='<option value="">-- โหลดอำเภอไม่สำเร็จ --</option>';d.disabled=true;}
+}
+function waterSetLabel(){
+  const t=areaLabel(); [$("activeAreaWater"),$("waterMapAreaLabel")].forEach(el=>{if(el)el.textContent=`📍 พื้นที่: ${t}`});
+}
+function clearWaterMarkers(){waterStationMarkers.forEach(m=>m.remove());waterStationMarkers=[];waterRoadMarkers.forEach(m=>m.remove());waterRoadMarkers=[];}
+function focusWaterMapOnSelectedArea(){
+  if(!waterMap)return;
+  const [lat,lng]=centerAreaMapPoint();
+  waterMap.setView([lat,lng],district?13:11,{animate:false});
+  geocodeSelectedArea(waterMap).then(()=>waterMap.invalidateSize());
+}
+function locateWaterUser(){
+  if(!navigator.geolocation){toast("อุปกรณ์ไม่รองรับตำแหน่ง");return;}
+  navigator.geolocation.getCurrentPosition(p=>{
+    const lat=p.coords.latitude,lng=p.coords.longitude;
+    if(waterAreaUserMarker)waterAreaUserMarker.remove();
+    waterAreaUserMarker=L.circleMarker([lat,lng],{radius:8,weight:3}).addTo(waterMap).bindPopup("📍 ตำแหน่งปัจจุบัน").openPopup();
+    waterMap.setView([lat,lng],15); waterMap.invalidateSize();
+  },()=>toast("ไม่สามารถอ่านตำแหน่งได้ กรุณาอนุญาตตำแหน่ง"),{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
+}
+async function initWaterMap(){
+  const el=$("waterMap"); if(!el||typeof L==="undefined")return;
+  if(waterMap){waterMap.invalidateSize();return;}
+  waterMap=L.map(el).setView(centerAreaMapPoint(),district?13:11);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap"}).addTo(waterMap);
+  if(window.L && L.esri && L.esri.dynamicMapLayer){
+    waterFloodLayer=L.esri.dynamicMapLayer({url:GISTDA_FLOOD_MAP,layers:[0],opacity:0.38,useCors:true}).addTo(waterMap);
+  }
+  waterMap.invalidateSize();
+  await geocodeSelectedArea(waterMap);
+}
+async function queryGistdaStations(){
+  if(!province)return [];
+  let where=`province='${province.replace(/'/g,"''")}'`;
+  if(district)where+=` AND amphoe='${district.replace(/'/g,"''")}'`;
+  const params=new URLSearchParams({where,outFields:"station_name,province,amphoe,tambon,value,discharge,flow_rate,percentage,classify_name,station_time_t,update_time,agency_name,basin_name",returnGeometry:"true",outSR:"4326",resultRecordCount:"2000",f:"json"});
+  const r=await fetch(GISTDA_WATER_POINTS+"?"+params.toString());
+  if(!r.ok)throw new Error("GISTDA water query failed");
+  const j=await r.json(); return j.features||[];
+}
+function waterStationPopup(a){
+  const p=a.properties||{};
+  return `<div class="water-popup"><strong>💧 ${esc(p.station_name||"สถานีวัดน้ำ")}</strong><br>📍 ${esc(p.province||"")}${p.amphoe?" / "+esc(p.amphoe):""}${p.tambon?" / "+esc(p.tambon):""}<br>📊 ค่าที่รายงาน: <b>${esc(p.value??"-")}</b>${p.percentage!=null?`<br>📈 ร้อยละ: ${esc(p.percentage)}`:""}${p.discharge!=null?`<br>💦 ปริมาณ/อัตราที่รายงาน: ${esc(p.discharge)}`:""}${p.flow_rate!=null?`<br>🌊 อัตราการไหล: ${esc(p.flow_rate)}`:""}${p.classify_name?`<br>สถานะ: ${esc(p.classify_name)}`:""}<br><span class="water-source">แหล่งข้อมูล: GISTDA</span></div>`;
+}
+function renderWaterStations(features){
+  const list=$("waterStationList");
+  waterStationMarkers.forEach(m=>m.remove());waterStationMarkers=[];
+  const rows=[];
+  features.forEach(f=>{
+    const g=f.geometry||{},a=f.attributes||{};const lat=Number(g.y),lng=Number(g.x); if(!Number.isFinite(lat)||!Number.isFinite(lng))return;
+    const marker=L.circleMarker([lat,lng],{radius:8,weight:2}).addTo(waterMap).bindPopup(waterStationPopup(a)); waterStationMarkers.push(marker);
+    rows.push(`<div class="water-station"><h3>💧 ${esc(a.station_name||"สถานีวัดน้ำ")}</h3><div>${esc(a.amphoe||"")}${a.tambon?" / "+esc(a.tambon):""}</div><div>📊 ค่าที่รายงาน: <b>${esc(a.value??"-")}</b>${a.classify_name?` • ${esc(a.classify_name)}`:""}</div><div class="water-source">${a.update_time?"อัปเดต "+formatTime(a.update_time):a.station_time_t?"เวลา "+esc(a.station_time_t):""} • GISTDA</div></div>`);
+  });
+  list.innerHTML=rows.length?rows.join(""):"<div class='empty'>ไม่พบจุดข้อมูลน้ำของพื้นที่ที่เลือกจากบริการ GISTDA</div>";
+  $("countWater").textContent=features.length;
+  $("waterDataCount").textContent=`พบ ${features.length} จุด`;
+}
+async function loadWaterRoadReports(){
+  const box=$("waterRoadList");
+  try{
+    if(!province){box.innerHTML="<div class='empty'>กรุณาเลือกพื้นที่ก่อน</div>";return;}
+    const params=`select=*&province=eq.${encodeURIComponent(province)}&limit=200&order=created_at.desc`;
+    const rows=await api("situations?"+params);
+    const hits=(rows||[]).filter(x=>/รถผ่านไม่ได้|รถไม่สามารถสัญจร|สัญจรไม่ได้|ผ่านไม่ได้|ถนนถูกตัดขาด|ถนนปิด/i.test(`${x.title||""} ${x.description||""}`));
+    waterRoadMarkers.forEach(m=>m.remove());waterRoadMarkers=[];
+    const html=hits.map(x=>`<div class="water-road"><div class="water-danger">🚧 รถผ่านไม่ได้</div><h3>${esc(x.title||"รายงานถนน")}</h3><div>${esc(x.description||"")}</div><div>📍 ${esc(x.place||"")}${x.district?" / "+esc(x.district):""}</div><div class="water-source">รายงานในระบบประชาชน • ${formatTime(x.created_at)}</div></div>`).join("");
+    box.innerHTML=html||"<div class='empty'>ยังไม่มีรายงานในระบบที่ระบุชัดว่า “รถผ่านไม่ได้” ในพื้นที่นี้</div>";
+    hits.forEach(x=>{const lat=Number(x.lat),lng=Number(x.lng);if(Number.isFinite(lat)&&Number.isFinite(lng)&&waterMap){const m=L.marker([lat,lng]).addTo(waterMap).bindPopup(`<b>🚧 รถผ่านไม่ได้</b><br>${esc(x.title||"")}<br>${esc(x.place||"")}`);waterRoadMarkers.push(m)}});
+  }catch(e){box.innerHTML="<div class='empty'>โหลดรายงานถนนไม่ได้ในขณะนี้</div>";}
+}
+async function loadWaterPage(force=false){
+  if(waterLoading&&!force)return; waterLoading=true;
+  try{
+    waterSetLabel();initWaterSelectors();await initWaterMap();
+    if($("waterMapStatus"))$("waterMapStatus").textContent=`${province||"ยังไม่เลือกจังหวัด"}${district?" / "+district:""}`;
+    if(waterMap)focusWaterMapOnSelectedArea();
+    try{const features=await queryGistdaStations();renderWaterStations(features);}catch(e){$("waterStationList").innerHTML="<div class='empty'>เชื่อมต่อข้อมูลสถานีน้ำ GISTDA ไม่สำเร็จในขณะนี้</div>";$("waterDataCount").textContent="โหลดข้อมูลไม่ได้";}
+    await loadWaterRoadReports();
+  }finally{waterLoading=false;}
+}
+
 function startPolling(){clearInterval(pollTimer);pollTimer=setInterval(()=>{loadSummary();const active=document.querySelector(".page.active")?.id;if(active==="all")loadRequests("all");if(active==="mine")loadRequests("mine");if(active==="centers")loadCenters();if(active==="situations")loadSituations()},10000)}
 
 updateHeader();
