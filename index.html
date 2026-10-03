@@ -196,15 +196,14 @@ textarea{min-height:100px;resize:vertical}.primary{background:var(--blue);color:
 
   <div class="card" id="centerBrowseCard">
     <div class="between">
-      <div><h2 style="margin:0">🏥 จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">ดูจุดช่วยเหลือทั้งหมดบนแผนที่ หรือค้นหาจุดที่อยู่ใกล้คุณ</p></div>
+      <div><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2><p class="muted" style="margin:6px 0 0">แสดงจุดช่วยเหลือทั้งหมดบนแผนที่</p></div>
       <span class="tag" id="centerBrowseCount">กำลังโหลด...</span>
     </div>
-    <div class="between"><h2 style="margin:0">🗺️ แผนที่จุดช่วยเหลือ</h2></div>
+    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div class="center-map-actions row" style="margin-top:10px">
       <button class="secondary" id="centerMapMyLocation">📍 ตำแหน่งปัจจุบัน</button>
       <button class="secondary" id="centerMapShowAll">🌍 แสดงทั้งหมด</button>
     </div>
-    <div class="location-map-wrap center-browse-map-wrap" style="margin-top:10px"><div id="centerBrowseMap" class="center-browse-map"></div><button type="button" class="map-my-location-btn" id="centerBrowseMapMyLocationFloating" aria-label="ไปยังตำแหน่งปัจจุบัน" title="ตำแหน่งปัจจุบัน">⊙</button></div>
     <div id="centerMapStatus" class="small muted" style="margin-top:8px">กำลังโหลดจุดช่วยเหลือ...</div>
     <div id="centerNearbyList" class="center-near-list"></div>
   </div>
